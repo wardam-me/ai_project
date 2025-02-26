@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('topology_title') }}{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='topology.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h1>{{ t('topology_title') }}</h1>
+    <p class="lead">{{ t('topology_description') }}</p>
+
+    <div class="network-stats">
+        <div class="stat-item">
+            <div class="stat-value" id="total-devices">0</div>
+            <div class="stat-label">{{ t('topology_total_devices') }}</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="online-devices">0</div>
+            <div class="stat-label">{{ t('topology_online_devices') }}</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="secure-devices">0</div>
+            <div class="stat-label">{{ t('topology_secure_devices') }}</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="vulnerable-devices">0</div>
+            <div class="stat-label">{{ t('topology_vulnerable_devices') }}</div>
+        </div>
+    </div>
+
+    <div class="topology-container">
+        <div class="topology-controls">
+            <button id="refresh-topology">{{ t('topology_refresh_button') }}</button>
+            <button id="reset-layout">{{ t('topology_reset_layout_button') }}</button>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-icon device-high"></div>
+                <span>{{ t('topology_high_security') }}</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon device-medium"></div>
+                <span>{{ t('topology_medium_security') }}</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon device-low"></div>
+                <span>{{ t('topology_low_security') }}</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon device-offline"></div>
+                <span>{{ t('topology_offline_device') }}</span>
+            </div>
+        </div>
+        
+        <div id="topology-canvas">
+            <!-- La visualisation sera rendue ici par D3.js -->
+            <div id="device-info-panel" class="device-info-panel">
+                <!-- Les détails de l'appareil sélectionné seront affichés ici -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="card my-4">
+        <div class="card-header">
+            <h2>{{ t('topology_explanation_title') }}</h2>
+        </div>
+        <div class="card-body">
+            <h3>{{ t('topology_how_to_use') }}</h3>
+            <ul>
+                <li>{{ t('topology_drag_devices') }}</li>
+                <li>{{ t('topology_click_details') }}</li>
+                <li>{{ t('topology_save_layout') }}</li>
+            </ul>
+            
+            <h3>{{ t('topology_security_colors') }}</h3>
+            <p>{{ t('topology_color_explanation') }}</p>
+            
+            <h3>{{ t('topology_signal_strength') }}</h3>
+            <p>{{ t('topology_signal_explanation') }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="{{ url_for('static', filename='topology.js') }}"></script>
+{% endblock %}

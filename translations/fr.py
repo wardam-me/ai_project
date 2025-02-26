@@ -16,6 +16,7 @@ translations = {
     "nav_language": "Langue",
     "nav_recommendations": "Recommandations",
     "nav_device_security": "Sécurité Appareils",
+    "nav_network_topology": "Topologie Réseau",
     
     # Page d'accueil
     "best_network": "Meilleur Réseau Recommandé",
@@ -143,5 +144,28 @@ translations = {
     "critical": "Critique",
     "warning": "À risque",
     "secure": "Sécurisé",
-    "firmware_version": "Version du Firmware"
+    "firmware_version": "Version du Firmware",
+    
+    # Topologie réseau
+    "topology_title": "Topologie du Réseau",
+    "topology_description": "Visualisez et analysez tous les appareils connectés à votre réseau en temps réel",
+    "topology_total_devices": "Appareils totaux",
+    "topology_online_devices": "Appareils en ligne",
+    "topology_secure_devices": "Appareils sécurisés",
+    "topology_vulnerable_devices": "Appareils vulnérables",
+    "topology_refresh_button": "Rafraîchir",
+    "topology_reset_layout_button": "Réinitialiser la disposition",
+    "topology_high_security": "Sécurité élevée",
+    "topology_medium_security": "Sécurité moyenne",
+    "topology_low_security": "Sécurité faible",
+    "topology_offline_device": "Appareil hors ligne",
+    "topology_explanation_title": "Guide d'utilisation de la topologie",
+    "topology_how_to_use": "Comment utiliser cette visualisation",
+    "topology_drag_devices": "Glissez et déplacez les appareils pour organiser la topologie selon vos préférences",
+    "topology_click_details": "Cliquez sur un appareil pour voir ses informations détaillées",
+    "topology_save_layout": "La disposition est automatiquement sauvegardée",
+    "topology_security_colors": "Signification des couleurs",
+    "topology_color_explanation": "Les couleurs indiquent le niveau de sécurité de chaque appareil: vert pour les appareils bien sécurisés, jaune pour les appareils avec une sécurité moyenne, rouge pour les appareils vulnérables, et gris pour les appareils hors ligne.",
+    "topology_signal_strength": "Force du signal",
+    "topology_signal_explanation": "L'épaisseur des connexions entre les appareils et le routeur représente la force du signal: plus la ligne est épaisse, meilleur est le signal."
 }
