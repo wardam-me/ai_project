@@ -1,242 +1,174 @@
-/* Styles additionnels spécifiques */
+/* Styles généraux */
 body {
-    background: var(--bs-dark);
-    color: var(--bs-light);
+    background-color: #212529;
+    color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.card {
-    border-radius: 15px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    margin-bottom: 1.5rem;
+.bg-gradient {
+    background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
 }
 
-.display-4 {
-    font-weight: 300;
-    color: var(--bs-info);
-}
-
-.lead {
-    font-size: 1.25rem;
-}
-
-.alert {
+/* Styles pour la topologie réseau */
+#network-topology {
+    background-color: #2c3034;
     border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    height: 600px;
 }
 
-/* Styles pour l'indicateur de signal WiFi */
-.network-icon {
-    position: relative;
+.device-node {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.device-node:hover {
+    filter: brightness(1.2);
+}
+
+.device-link {
+    stroke-width: 2px;
+    stroke-opacity: 0.6;
+    transition: all 0.3s ease;
+}
+
+.device-link:hover {
+    stroke-opacity: 1;
+}
+
+/* Styles pour les cartes et sections */
+.card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+/* Styles pour les notifications */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    max-width: 300px;
+}
+
+/* Animation pour le chargement */
+.loading-spinner {
     display: inline-block;
-}
-
-.signal-strength {
-    position: absolute;
-    bottom: 0;
-    right: -10px;
-    font-size: 1.5rem;
-    color: var(--bs-success);
-}
-
-.signal-strength[data-strength="1"], 
-.signal-strength[data-strength="2"] {
-    color: var(--bs-danger);
-}
-
-.signal-strength[data-strength="3"], 
-.signal-strength[data-strength="4"] {
-    color: var(--bs-warning);
-}
-
-.signal-strength[data-strength="5"], 
-.signal-strength[data-strength="6"] {
-    color: var(--bs-info);
-}
-
-.signal-strength[data-strength="7"], 
-.signal-strength[data-strength="8"],
-.signal-strength[data-strength="9"],
-.signal-strength[data-strength="10"] {
-    color: var(--bs-success);
-}
-
-/* Indicateur de signal dans le tableau */
-.signal-indicator {
-    position: relative;
-    width: 100%;
-    display: flex;
-    align-items: center;
-}
-
-.signal-bar {
-    position: absolute;
-    height: 5px;
-    background: linear-gradient(90deg, var(--bs-danger) 0%, var(--bs-warning) 50%, var(--bs-success) 100%);
-    border-radius: 2px;
-    z-index: 0;
-    opacity: 0.7;
-}
-
-/* Ajustements pour la table */
-.table {
-    margin-bottom: 0;
-}
-
-.table-responsive {
-    max-height: 300px;
-    overflow-y: auto;
-}
-
-/* Animation pour les mises à jour */
-@keyframes highlight {
-    0% { background-color: transparent; }
-    50% { background-color: rgba(var(--bs-info-rgb), 0.2); }
-    100% { background-color: transparent; }
-}
-
-.highlight {
-    animation: highlight 1s ease-in-out;
-}
-
-/* Styles pour les rapports de sécurité */
-.security-badge {
-    border-radius: 50px;
-    padding: 0.25rem 0.75rem;
-    font-size: 0.8rem;
-    font-weight: 600;
-}
-
-.chart-container {
-    position: relative;
-    height: 180px;
-    width: 100%;
-}
-
-.accordion-button:not(.collapsed) {
-    background-color: rgba(var(--bs-info-rgb), 0.1);
-    color: var(--bs-light);
-}
-
-.accordion-button:focus {
-    box-shadow: none;
-    border-color: rgba(0,0,0,.125);
-}
-
-.accordion-item {
-    border-bottom: 1px solid rgba(255,255,255,.05) !important;
-}
-
-.accordion-item:last-child {
-    border-bottom: none !important;
-}
-
-/* Styles pour les cartes de niveaux de sécurité */
-.card .display-4 {
-    font-size: 2.5rem;
-    font-weight: 400;
-}
-
-/* Styles pour les icônes de technologie réseau */
-.technology-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
     width: 50px;
     height: 50px;
+    border: 5px solid rgba(255, 255, 255, 0.3);
     border-radius: 50%;
-    background-color: var(--bs-dark);
-    border: 2px solid var(--bs-danger);
-    color: var(--bs-light);
-    opacity: 0.6;
-    font-size: 1.5rem;
+    border-top-color: #0d6efd;
+    animation: spin 1s ease-in-out infinite;
 }
 
-.technology-icon.active {
-    border-color: var(--bs-success);
-    background-color: rgba(var(--bs-success-rgb), 0.2);
-    color: var(--bs-success);
-    opacity: 1;
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
-/* Styles pour l'assistant de sécurité conversationnel */
+/* Styles pour l'assistant conversationnel */
 .chat-container {
-    display: flex;
-    flex-direction: column;
-    height: 500px;
-    background-color: var(--bs-dark);
+    height: 400px;
+    overflow-y: auto;
+    padding: 20px;
     border-radius: 10px;
-    overflow: hidden;
+    background-color: #343a40;
 }
 
-.chat-messages {
-    flex: 1;
-    overflow-y: auto;
-    padding: 1rem;
-}
-
-.chat-input-container {
-    padding: 1rem;
-    background-color: rgba(var(--bs-dark-rgb), 0.7);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.message {
-    margin-bottom: 1rem;
-    display: flex;
-    flex-direction: column;
-}
-
-.message-content {
-    padding: 0.75rem 1rem;
-    border-radius: 15px;
+.chat-message {
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    border-radius: 20px;
     max-width: 80%;
-    word-wrap: break-word;
 }
 
-.message-time {
-    margin-top: 0.25rem;
-    color: var(--bs-secondary);
-    font-size: 0.7rem;
+.chat-message.user {
+    background-color: #0d6efd;
+    align-self: flex-end;
+    margin-left: auto;
 }
 
-.user-message {
-    align-items: flex-end;
+.chat-message.assistant {
+    background-color: #495057;
+    align-self: flex-start;
+    margin-right: auto;
 }
 
-.user-message .message-content {
-    background-color: var(--bs-info);
-    color: var(--bs-dark);
+/* Styles pour les jauges et graphiques */
+.security-gauge {
+    height: 150px;
 }
 
-.assistant-message {
-    align-items: flex-start;
+/* Styles pour les formulaires */
+.form-control {
+    background-color: #343a40;
+    border-color: #495057;
+    color: #f8f9fa;
 }
 
-.assistant-message .message-content {
-    background-color: var(--bs-secondary);
+.form-control:focus {
+    background-color: #2c3034;
+    border-color: #0d6efd;
+    color: #f8f9fa;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }
 
-.conversations-list {
-    max-height: 500px;
-    overflow-y: auto;
+.form-check-input:checked {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
 }
 
-.suggestion-list {
-    list-style: none;
-    padding-left: 0;
+/* Styles pour les tableaux */
+.table {
+    border-collapse: separate;
+    border-spacing: 0;
 }
 
-.suggestion-list li {
-    margin-bottom: 0.5rem;
+.table-dark {
+    background-color: #343a40;
 }
 
-.suggestion {
-    display: inline-block;
-    color: var(--bs-info);
-    text-decoration: none;
-    font-size: 0.9rem;
+.table-dark th,
+.table-dark td {
+    border-color: #495057;
 }
 
-.suggestion:hover {
-    text-decoration: underline;
-    color: var(--bs-primary);
+/* Styles pour la navigation */
+.navbar {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.nav-link {
+    position: relative;
+    padding: 0.5rem 1rem;
+    transition: color 0.3s ease;
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 0;
+    background-color: #0dcaf0;
+    transition: width 0.3s ease;
+}
+
+.nav-link:hover::after,
+.nav-link.active::after {
+    width: 100%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #network-topology {
+        height: 400px;
+    }
 }

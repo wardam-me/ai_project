@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <title>Inscription</title>
+</head>
+<body>
+    <h2>Créer un compte</h2>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        {{ form.username.label }} {{ form.username() }}<br>
+        {{ form.email.label }} {{ form.email() }}<br>
+        {{ form.password.label }} {{ form.password() }}<br>
+        {{ form.confirm_password.label }} {{ form.confirm_password() }}<br>
+        {{ form.submit() }}
+    </form>
+    <a href="{{ url_for('login') }}">Déjà un compte ? Connecte-toi.</a>
+</body>
+</html>
+

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <title>Connexion</title>
+</head>
+<body>
+    <h2>Se connecter</h2>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        {{ form.email.label }} {{ form.email() }}<br>
+        {{ form.password.label }} {{ form.password() }}<br>
+        {{ form.submit() }}
+    </form>
+    <a href="{{ url_for('register') }}">Pas encore de compte ? Inscris-toi.</a>
+</body>
+</html>
