@@ -1,17 +1,18 @@
 {% extends "base.html" %}
 
-{% block title %}Inscription{% endblock %}
+{% block title %}Inscription | NetSecure Pro{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-6 mx-auto">
-        <div class="card bg-dark text-light">
-            <div class="card-header bg-primary bg-gradient text-white">
-                <h3 class="mb-0">Créer un compte</h3>
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-user-plus me-2"></i>Créer un compte</h4>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ url_for('register') }}">
+                <form method="POST" action="{{ url_for('register') }}" class="needs-validation" novalidate>
                     {{ form.hidden_tag() }}
+                    
                     <div class="mb-3">
                         {{ form.username.label(class="form-label") }}
                         {% if form.username.errors %}
@@ -24,7 +25,9 @@
                         {% else %}
                             {{ form.username(class="form-control") }}
                         {% endif %}
+                        <div class="form-text">Choisissez un nom d'utilisateur entre 2 et 20 caractères.</div>
                     </div>
+                    
                     <div class="mb-3">
                         {{ form.email.label(class="form-label") }}
                         {% if form.email.errors %}
@@ -37,7 +40,9 @@
                         {% else %}
                             {{ form.email(class="form-control") }}
                         {% endif %}
+                        <div class="form-text">Nous ne partagerons jamais votre email avec des tiers.</div>
                     </div>
+                    
                     <div class="mb-3">
                         {{ form.password.label(class="form-label") }}
                         {% if form.password.errors %}
@@ -50,8 +55,10 @@
                         {% else %}
                             {{ form.password(class="form-control") }}
                         {% endif %}
+                        <div class="form-text">Utilisez un mot de passe fort avec au moins 6 caractères.</div>
                     </div>
-                    <div class="mb-3">
+                    
+                    <div class="mb-4">
                         {{ form.confirm_password.label(class="form-label") }}
                         {% if form.confirm_password.errors %}
                             {{ form.confirm_password(class="form-control is-invalid") }}
@@ -64,17 +71,49 @@
                             {{ form.confirm_password(class="form-control") }}
                         {% endif %}
                     </div>
+                    
                     <div class="d-grid">
-                        {{ form.submit(class="btn btn-primary") }}
+                        {{ form.submit(class="btn btn-primary btn-lg") }}
                     </div>
                 </form>
             </div>
             <div class="card-footer text-center">
-                <div class="small">
-                    Vous avez déjà un compte ? <a href="{{ url_for('login') }}" class="text-primary">Connectez-vous</a>
-                </div>
+                <p class="mb-0">Vous avez déjà un compte ? <a href="{{ url_for('login') }}">Connectez-vous</a></p>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Validation côté client
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('.needs-validation');
+        
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            // Vérifier que les mots de passe correspondent
+            const password = document.getElementById('password');
+            const confirmPassword = document.getElementById('confirm_password');
+            
+            if (password.value !== confirmPassword.value) {
+                confirmPassword.setCustomValidity('Les mots de passe ne correspondent pas');
+            } else {
+                confirmPassword.setCustomValidity('');
+            }
+            
+            form.classList.add('was-validated');
+        }, false);
+        
+        // Réinitialiser la validation personnalisée lors de la saisie
+        document.getElementById('confirm_password').addEventListener('input', function() {
+            this.setCustomValidity('');
+        });
+    });
+</script>
 {% endblock %}

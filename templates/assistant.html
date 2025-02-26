@@ -1,260 +1,402 @@
-<!DOCTYPE html>
-<html lang="{{ current_language }}" data-bs-theme="dark" dir="{{ text_direction }}">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ t('nav_assistant') }} - {{ t('app_name') }}</title>
-    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-</head>
-<body>
-    <div class="container py-5">
-        <nav class="navbar navbar-expand-lg navbar-dark mb-4">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="{{ url_for('accueil') }}">
-                    <i class="fas fa-wifi me-2"></i> {{ t('app_name') }}
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav me-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('accueil') }}">{{ t('nav_home') }}</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('security_report') }}">{{ t('nav_security_report') }}</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link active" href="{{ url_for('assistant_page') }}">{{ t('nav_assistant') }}</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('personalized_recommendations') }}">{{ t('nav_recommendations') }}</a>
-                        </li>
-                    </ul>
-                    <!-- Language selector -->
-                    <div class="dropdown">
-                        <button class="btn btn-dark dropdown-toggle" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-globe me-2"></i> {{ t('nav_language') }}
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
-                            {% for code, name in available_languages.items() %}
-                            <li>
-                                <a class="dropdown-item {% if current_language == code %}active{% endif %}" href="{{ url_for('set_language', language=code) }}">
-                                    {{ name }}
-                                </a>
-                            </li>
+{% extends "base.html" %}
+
+{% block title %}Assistant de Sécurité | NetSecure Pro{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chat-container {
+        height: 600px;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .chat-history {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        background-color: #f8f9fa;
+        border-radius: 8px 8px 0 0;
+    }
+    
+    .chat-form {
+        background-color: white;
+        border-top: 1px solid #dee2e6;
+        padding: 15px;
+        border-radius: 0 0 8px 8px;
+    }
+    
+    .message {
+        max-width: 80%;
+        margin-bottom: 15px;
+        padding: 10px 15px;
+        border-radius: 15px;
+        position: relative;
+    }
+    
+    .message.user {
+        background-color: #0d6efd;
+        color: white;
+        margin-left: auto;
+        border-bottom-right-radius: 5px;
+    }
+    
+    .message.assistant {
+        background-color: #e9ecef;
+        color: #212529;
+        margin-right: auto;
+        border-bottom-left-radius: 5px;
+    }
+    
+    .message-time {
+        display: block;
+        font-size: 0.75rem;
+        text-align: right;
+        margin-top: 5px;
+        opacity: 0.7;
+    }
+    
+    .typing-indicator {
+        display: inline-block;
+        width: 60px;
+        height: 30px;
+        background-color: #e9ecef;
+        border-radius: 15px;
+        padding: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-right: auto;
+        margin-bottom: 15px;
+        position: relative;
+    }
+    
+    .typing-indicator span {
+        height: 8px;
+        width: 8px;
+        float: left;
+        margin: 0 1px;
+        background-color: #9E9EA1;
+        display: block;
+        border-radius: 50%;
+        opacity: 0.4;
+    }
+    
+    .typing-indicator span:nth-of-type(1) {
+        animation: typing 1s infinite;
+    }
+    .typing-indicator span:nth-of-type(2) {
+        animation: typing 1s 200ms infinite;
+    }
+    .typing-indicator span:nth-of-type(3) {
+        animation: typing 1s 400ms infinite;
+    }
+    
+    @keyframes typing {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-8px); }
+        100% { transform: translateY(0px); }
+    }
+    
+    .suggestions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 15px;
+    }
+    
+    .suggestion {
+        background-color: #e9ecef;
+        border: none;
+        border-radius: 20px;
+        padding: 8px 15px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    
+    .suggestion:hover {
+        background-color: #dee2e6;
+    }
+    
+    .divider {
+        display: flex;
+        align-items: center;
+        margin: 20px 0;
+        color: #6c757d;
+    }
+    
+    .divider::before, .divider::after {
+        content: "";
+        flex: 1;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .divider::before {
+        margin-right: 15px;
+    }
+    
+    .divider::after {
+        margin-left: 15px;
+    }
+    
+    @media (max-width: 768px) {
+        .message {
+            max-width: 90%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1>Assistant de Sécurité</h1>
+        <p class="lead">Posez vos questions sur la sécurité de votre réseau et obtenez des réponses personnalisées.</p>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-2"></i>Retour au tableau de bord
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-9">
+        <!-- Interface de chat principale -->
+        <div class="card shadow">
+            <div class="card-body p-0">
+                <div class="chat-container">
+                    <div class="chat-history" id="chat-history">
+                        <!-- Message de bienvenue -->
+                        <div class="message assistant">
+                            <p>Bonjour, je suis votre assistant de sécurité réseau. Comment puis-je vous aider aujourd'hui ?</p>
+                            <span class="message-time">{{ now|datetime }}</span>
+                        </div>
+                        
+                        <!-- Historique des messages -->
+                        {% if conversations %}
+                            {% for conv in conversations %}
+                                <div class="message user">
+                                    <p>{{ conv.user_input }}</p>
+                                    <span class="message-time">{{ conv.timestamp|datetime }}</span>
+                                </div>
+                                <div class="message assistant">
+                                    <p>{{ conv.response|safe }}</p>
+                                    <span class="message-time">{{ conv.timestamp|datetime }}</span>
+                                </div>
                             {% endfor %}
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </nav>
-
-        <div class="row">
-            <div class="col-lg-8 mx-auto">
-                <h1 class="display-5 mb-4 text-center">{{ t('assistant_title') }}</h1>
-
-                <div class="card bg-dark mb-4">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-4 mb-3 mb-md-0">
-                                <div class="list-group conversations-list" id="conversations-list">
-                                    <a href="{{ url_for('assistant_page') }}" class="list-group-item list-group-item-action {% if not conversation_id %}active{% endif %}">
-                                        <i class="fas fa-plus-circle me-2"></i> {{ t('new_conversation') }}
-                                    </a>
-
-                                    {% for conv in all_conversations %}
-                                    <a href="{{ url_for('assistant_page', conversation_id=conv.id) }}" 
-                                       class="list-group-item list-group-item-action {% if conversation_id == conv.id %}active{% endif %}">
-                                        <div class="d-flex w-100 justify-content-between">
-                                            <h6 class="mb-1 text-truncate">{{ conv.first_message }}</h6>
-                                        </div>
-                                        <small class="text-muted">
-                                            <i class="far fa-calendar-alt me-1"></i> {{ conv.date[:4] }}-{{ conv.date[4:6] }}-{{ conv.date[6:8] }}
-                                            <span class="ms-2"><i class="far fa-comment me-1"></i> {{ conv.message_count }}</span>
-                                        </small>
-                                    </a>
-                                    {% endfor %}
-                                </div>
-                            </div>
-
-                            <div class="col-md-8">
-                                <div class="chat-container">
-                                    <div class="chat-messages" id="chat-messages">
-                                        {% if conversation_history %}
-                                            {% for message in conversation_history %}
-                                                <div class="message user-message">
-                                                    <div class="message-content">{{ message.user_input }}</div>
-                                                    <small class="message-time">{{ message.timestamp.split('T')[1][:5] }}</small>
-                                                </div>
-                                                <div class="message assistant-message">
-                                                    <div class="message-content">{{ message.response }}</div>
-                                                    <small class="message-time">{{ message.timestamp.split('T')[1][:5] }}</small>
-                                                </div>
-                                            {% endfor %}
-                                        {% else %}
-                                            <div class="message assistant-message">
-                                                <div class="message-content">
-                                                    {{ t('greeting') }}
-                                                </div>
-                                                <small class="message-time">{{ t('now') }}</small>
-                                            </div>
-                                        {% endif %}
-                                    </div>
-
-                                    <div class="chat-input-container">
-                                        <div class="input-group">
-                                            <select class="form-select" id="network-selector" style="max-width: 180px;">
-                                                <option value="" selected>{{ t('select_network') }}</option>
-                                                {% for net in all_networks %}
-                                                <option value="{{ loop.index0 }}">{{ net.ssid }}</option>
-                                                {% endfor %}
-                                            </select>
-                                            <input type="text" class="form-control" id="chat-input" 
-                                                   placeholder="{{ t('ask_security') }}">
-                                            <button class="btn btn-primary" id="send-button">
-                                                <i class="fas fa-paper-plane"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                        {% endif %}
+                        
+                        <!-- Indicateur de saisie (caché par défaut) -->
+                        <div class="typing-indicator" id="typing-indicator" style="display: none;">
+                            <span></span>
+                            <span></span>
+                            <span></span>
                         </div>
                     </div>
-                </div>
-
-                <div class="card bg-info bg-opacity-25">
-                    <div class="card-body">
-                        <h5 class="card-title"><i class="fas fa-lightbulb me-2"></i> {{ t('suggestions') }}</h5>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <ul class="suggestion-list">
-                                    {% for question in translations.suggested_questions[:3] %}
-                                    <li><a href="#" class="suggestion">{{ question }}</a></li>
-                                    {% endfor %}
-                                </ul>
+                    
+                    <div class="chat-form">
+                        <form id="question-form">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="question-input" placeholder="Posez votre question ici..." required>
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
                             </div>
-                            <div class="col-md-6">
-                                <ul class="suggestion-list">
-                                    {% for question in translations.suggested_questions[3:] %}
-                                    <li><a href="#" class="suggestion">{{ question }}</a></li>
-                                    {% endfor %}
-                                </ul>
-                            </div>
+                        </form>
+                        
+                        <!-- Questions suggérées -->
+                        <div class="suggestions">
+                            <button class="suggestion" data-question="Comment améliorer la sécurité de mon réseau WiFi ?">
+                                Comment améliorer la sécurité de mon réseau WiFi ?
+                            </button>
+                            <button class="suggestion" data-question="Quels sont les appareils à risque sur mon réseau ?">
+                                Quels sont les appareils à risque sur mon réseau ?
+                            </button>
+                            <button class="suggestion" data-question="Qu'est-ce que le WPA3 ?">
+                                Qu'est-ce que le WPA3 ?
+                            </button>
+                            <button class="suggestion" data-question="Comment sécuriser mes objets connectés ?">
+                                Comment sécuriser mes objets connectés ?
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    
+    <div class="col-md-3">
+        <!-- Panneau d'informations -->
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>À propos</h5>
+            </div>
+            <div class="card-body">
+                <p>L'assistant de sécurité utilise les données de votre réseau pour vous fournir des conseils personnalisés et précis.</p>
+                <hr>
+                <p><strong>Avantages :</strong></p>
+                <ul>
+                    <li>Conseils adaptés à votre configuration</li>
+                    <li>Réponses en langage naturel</li>
+                    <li>Explication des termes techniques</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Sujets populaires -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-star me-2"></i>Sujets populaires</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    <a href="#" class="list-group-item list-group-item-action subject-link">
+                        Sécurisation des réseaux WiFi
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action subject-link">
+                        Protection des objets connectés
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action subject-link">
+                        Mots de passe et authentification
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action subject-link">
+                        Détection des intrusions
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action subject-link">
+                        VPN et chiffrement
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const chatMessages = document.getElementById('chat-messages');
-            const chatInput = document.getElementById('chat-input');
-            const sendButton = document.getElementById('send-button');
-            const networkSelector = document.getElementById('network-selector');
-            const suggestionLinks = document.querySelectorAll('.suggestion');
-
-            // ID de conversation actuel
-            let currentConversationId = "{{ conversation_id }}";
-
-            // Défiler vers le bas pour voir les derniers messages
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-
-            // Fonction pour ajouter un message au chat
-            function addMessage(content, isUser = false) {
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `message ${isUser ? 'user-message' : 'assistant-message'}`;
-
-                const messageContent = document.createElement('div');
-                messageContent.className = 'message-content';
-                messageContent.textContent = content;
-
-                const messageTime = document.createElement('small');
-                messageTime.className = 'message-time';
-                const now = new Date();
-                messageTime.textContent = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-
-                messageDiv.appendChild(messageContent);
-                messageDiv.appendChild(messageTime);
-
-                chatMessages.appendChild(messageDiv);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
-
-            // Fonction pour envoyer un message à l'assistant
-            function sendMessage(message) {
-                if (!message.trim()) return;
-
-                // Ajouter le message de l'utilisateur au chat
-                addMessage(message, true);
-
-                // Préparer les données pour l'API
-                const networkId = networkSelector.value;
-
-                // Appeler l'API
-                fetch('/api/assistant/message', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        message: message,
-                        conversation_id: currentConversationId,
-                        network_id: networkId ? parseInt(networkId) : null
-                    }),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    // Ajouter la réponse de l'assistant au chat
-                    addMessage(data.response);
-
-                    // Mettre à jour l'ID de conversation si c'est une nouvelle conversation
-                    if (!currentConversationId) {
-                        currentConversationId = data.conversation_id;
-
-                        // Mettre à jour l'URL avec le nouvel ID de conversation
-                        const newUrl = new URL(window.location);
-                        newUrl.searchParams.set('conversation_id', currentConversationId);
-                        window.history.pushState({}, '', newUrl);
-                    }
-                })
-                .catch(error => {
-                    console.error('Erreur:', error);
-                    addMessage("{{ t('error_message') }}");
-                });
-
-                // Vider le champ de saisie
-                chatInput.value = '';
-            }
-
-            // Gestionnaire d'événement pour le bouton d'envoi
-            sendButton.addEventListener('click', function() {
-                sendMessage(chatInput.value);
-            });
-
-            // Gestionnaire d'événement pour la touche Entrée
-            chatInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    sendMessage(chatInput.value);
-                }
-            });
-
-            // Gestionnaire d'événement pour les suggestions de questions
-            suggestionLinks.forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const question = this.textContent;
-                    chatInput.value = question;
-                    sendMessage(question);
-                });
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const chatHistory = document.getElementById('chat-history');
+        const questionForm = document.getElementById('question-form');
+        const questionInput = document.getElementById('question-input');
+        const typingIndicator = document.getElementById('typing-indicator');
+        const suggestions = document.querySelectorAll('.suggestion');
+        const subjectLinks = document.querySelectorAll('.subject-link');
+        
+        // Faire défiler l'historique jusqu'en bas
+        scrollToBottom();
+        
+        // Soumission du formulaire
+        questionForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const question = questionInput.value.trim();
+            if (!question) return;
+            
+            // Ajouter la question à l'historique
+            addUserMessage(question);
+            
+            // Vider le champ de saisie
+            questionInput.value = '';
+            
+            // Afficher l'indicateur de saisie
+            typingIndicator.style.display = 'flex';
+            scrollToBottom();
+            
+            // Envoyer la question à l'API
+            sendQuestion(question);
+        });
+        
+        // Suggestions de questions
+        suggestions.forEach(suggestion => {
+            suggestion.addEventListener('click', function() {
+                const question = this.dataset.question;
+                questionInput.value = question;
+                questionForm.dispatchEvent(new Event('submit'));
             });
         });
-    </script>
-</body>
-</html>
+        
+        // Sujets populaires
+        subjectLinks.forEach(link => {
+            link.addEventListener('click', function(event) {
+                event.preventDefault();
+                const subject = this.textContent.trim();
+                questionInput.value = `Parlez-moi de "${subject}"`;
+                questionForm.dispatchEvent(new Event('submit'));
+            });
+        });
+        
+        // Fonction pour ajouter un message utilisateur
+        function addUserMessage(message) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message user';
+            
+            const messageP = document.createElement('p');
+            messageP.textContent = message;
+            
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'message-time';
+            timeSpan.textContent = 'à l\'instant';
+            
+            messageDiv.appendChild(messageP);
+            messageDiv.appendChild(timeSpan);
+            
+            chatHistory.appendChild(messageDiv);
+            scrollToBottom();
+        }
+        
+        // Fonction pour ajouter un message de l'assistant
+        function addAssistantMessage(message) {
+            // Masquer l'indicateur de saisie
+            typingIndicator.style.display = 'none';
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message assistant';
+            
+            const messageP = document.createElement('p');
+            messageP.innerHTML = message; // Utiliser innerHTML pour gérer le HTML dans la réponse
+            
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'message-time';
+            timeSpan.textContent = 'à l\'instant';
+            
+            messageDiv.appendChild(messageP);
+            messageDiv.appendChild(timeSpan);
+            
+            chatHistory.appendChild(messageDiv);
+            scrollToBottom();
+        }
+        
+        // Fonction pour faire défiler l'historique jusqu'en bas
+        function scrollToBottom() {
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        
+        // Fonction pour envoyer la question à l'API
+        function sendQuestion(question) {
+            const formData = new FormData();
+            formData.append('question', question);
+            
+            fetch('/assistant', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Simuler un délai de réponse pour un effet plus naturel
+                    setTimeout(() => {
+                        addAssistantMessage(data.response);
+                    }, 1000);
+                } else {
+                    addAssistantMessage("Désolé, je n'ai pas pu traiter votre demande. Veuillez réessayer.");
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                addAssistantMessage("Une erreur s'est produite lors de la communication avec le serveur. Veuillez réessayer plus tard.");
+            });
+        }
+    });
+</script>
+{% endblock %}

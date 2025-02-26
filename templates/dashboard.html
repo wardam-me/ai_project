@@ -1,246 +1,223 @@
 {% extends "base.html" %}
 
-{% block title %}Tableau de bord{% endblock %}
+{% block title %}Tableau de Bord | NetSecure Pro{% endblock %}
 
 {% block content %}
 <div class="row mb-4">
+    <div class="col-md-6">
+        <h1>Tableau de Bord</h1>
+        <p class="lead">Bienvenue, {{ current_user.username }}! Voici l'état actuel de votre réseau.</p>
+    </div>
+    <div class="col-md-6 text-end">
+        <a href="{{ url_for('network_topology_view') }}" class="btn btn-primary">
+            <i class="fas fa-project-diagram me-2"></i>Voir la topologie réseau
+        </a>
+    </div>
+</div>
+
+<!-- Résumé de la sécurité -->
+<div class="row mb-4">
     <div class="col-md-12">
-        <h1 class="mb-4">Bienvenue, {{ current_user.username }}</h1>
-        <div class="alert alert-info">
-            <i class="fas fa-info-circle me-2"></i> Bienvenue sur votre tableau de bord personnel. Ici, vous pouvez surveiller l'état de sécurité de votre réseau et accéder à toutes les fonctionnalités de l'application.
+        <div class="card card-dark">
+            <div class="card-header card-header-dark">
+                <h5 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Résumé de la sécurité du réseau</h5>
+            </div>
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-3 text-center">
+                        <div class="d-inline-block position-relative mb-3">
+                            <div class="security-score rounded-circle d-flex align-items-center justify-content-center 
+                                {{ 'security-score-high' if network_stats.overall_score >= 80 else 'security-score-medium' if network_stats.overall_score >= 50 else 'security-score-low' }}"
+                                style="width: 120px; height: 120px; font-size: 2.5em;">
+                                {{ network_stats.overall_score }}
+                            </div>
+                        </div>
+                        <h4>Score global</h4>
+                        <p class="text-muted">Mis à jour {{ network_stats.last_updated|datetime }}</p>
+                    </div>
+                    <div class="col-md-9">
+                        <div class="row mb-4">
+                            <div class="col-md-4 text-center">
+                                <div class="h2">{{ network_stats.device_count }}</div>
+                                <div>Appareils détectés</div>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <div class="h2 text-success">{{ network_stats.low_risk_count }}</div>
+                                <div>Risque faible</div>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <div class="h2 text-warning">{{ network_stats.medium_risk_count }}</div>
+                                <div>Risque moyen</div>
+                            </div>
+                            <div class="col-md-4 text-center mt-4">
+                                <div class="h2 text-danger">{{ network_stats.high_risk_count }}</div>
+                                <div>Risque élevé</div>
+                            </div>
+                            <!-- Autres statistiques -->
+                        </div>
+                        
+                        <!-- Barres de progression pour les niveaux de sécurité -->
+                        <div class="mt-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Répartition des niveaux de sécurité</span>
+                            </div>
+                            <div class="progress" style="height: 25px;">
+                                {% set high_percent = (network_stats.low_risk_count / network_stats.device_count * 100) if network_stats.device_count > 0 else 0 %}
+                                {% set medium_percent = (network_stats.medium_risk_count / network_stats.device_count * 100) if network_stats.device_count > 0 else 0 %}
+                                {% set low_percent = (network_stats.high_risk_count / network_stats.device_count * 100) if network_stats.device_count > 0 else 0 %}
+                                
+                                <div class="progress-bar bg-success" role="progressbar" style="width: {{ high_percent }}%;" aria-valuenow="{{ high_percent }}" aria-valuemin="0" aria-valuemax="100">{{ network_stats.low_risk_count }}</div>
+                                <div class="progress-bar bg-warning" role="progressbar" style="width: {{ medium_percent }}%;" aria-valuenow="{{ medium_percent }}" aria-valuemin="0" aria-valuemax="100">{{ network_stats.medium_risk_count }}</div>
+                                <div class="progress-bar bg-danger" role="progressbar" style="width: {{ low_percent }}%;" aria-valuenow="{{ low_percent }}" aria-valuemin="0" aria-valuemax="100">{{ network_stats.high_risk_count }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Résumé des statistiques -->
+<!-- Appareils à risque -->
 <div class="row mb-4">
-    <div class="col-md-3 mb-4">
-        <div class="card bg-primary bg-gradient text-white h-100">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="text-uppercase">Réseaux détectés</h6>
-                        <h2 class="mb-0">5</h2>
-                    </div>
-                    <i class="fas fa-wifi fa-3x opacity-50"></i>
-                </div>
-            </div>
-            <div class="card-footer d-flex align-items-center justify-content-between">
-                <a href="#" class="text-white">Voir détails</a>
-                <i class="fas fa-angle-right text-white"></i>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 mb-4">
-        <div class="card bg-success bg-gradient text-white h-100">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="text-uppercase">Appareils connectés</h6>
-                        <h2 class="mb-0">12</h2>
-                    </div>
-                    <i class="fas fa-laptop fa-3x opacity-50"></i>
-                </div>
-            </div>
-            <div class="card-footer d-flex align-items-center justify-content-between">
-                <a href="{{ url_for('network_topology_view') }}" class="text-white">Voir topologie</a>
-                <i class="fas fa-angle-right text-white"></i>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 mb-4">
-        <div class="card bg-warning bg-gradient text-white h-100">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="text-uppercase">Score de sécurité</h6>
-                        <h2 class="mb-0">75%</h2>
-                    </div>
-                    <i class="fas fa-shield-alt fa-3x opacity-50"></i>
-                </div>
-            </div>
-            <div class="card-footer d-flex align-items-center justify-content-between">
-                <a href="#" class="text-white">Voir analyse</a>
-                <i class="fas fa-angle-right text-white"></i>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 mb-4">
-        <div class="card bg-danger bg-gradient text-white h-100">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="text-uppercase">Alertes</h6>
-                        <h2 class="mb-0">3</h2>
-                    </div>
-                    <i class="fas fa-exclamation-triangle fa-3x opacity-50"></i>
-                </div>
-            </div>
-            <div class="card-footer d-flex align-items-center justify-content-between">
-                <a href="#" class="text-white">Voir alertes</a>
-                <i class="fas fa-angle-right text-white"></i>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Graphique et recommandations -->
-<div class="row mb-4">
-    <div class="col-lg-8 mb-4">
-        <div class="card bg-dark text-light h-100">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Évolution du score de sécurité</h5>
-                <div class="dropdown">
-                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="timeRangeDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        7 derniers jours
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="timeRangeDropdown">
-                        <li><a class="dropdown-item" href="#">24 dernières heures</a></li>
-                        <li><a class="dropdown-item" href="#">7 derniers jours</a></li>
-                        <li><a class="dropdown-item" href="#">30 derniers jours</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="card-body" style="height: 300px;">
-                <!-- Graphique ici, à remplacer par une bibliothèque comme Chart.js -->
-                <div class="d-flex justify-content-center align-items-center h-100">
-                    <div class="text-center">
-                        <p>Le graphique sera affiché ici</p>
-                        <div class="loading-spinner"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-4 mb-4">
-        <div class="card bg-dark text-light h-100">
-            <div class="card-header">
-                <h5 class="mb-0">Recommandations</h5>
-            </div>
-            <div class="card-body">
-                <ul class="list-group list-group-flush bg-dark">
-                    <li class="list-group-item bg-dark text-light border-secondary">
-                        <div class="d-flex align-items-center">
-                            <div class="badge bg-danger me-3">Élevée</div>
-                            <div>Mettez à jour le firmware de votre routeur principal</div>
-                        </div>
-                    </li>
-                    <li class="list-group-item bg-dark text-light border-secondary">
-                        <div class="d-flex align-items-center">
-                            <div class="badge bg-warning me-3">Moyenne</div>
-                            <div>Activez l'authentification WPA3 sur votre réseau WiFi</div>
-                        </div>
-                    </li>
-                    <li class="list-group-item bg-dark text-light border-secondary">
-                        <div class="d-flex align-items-center">
-                            <div class="badge bg-warning me-3">Moyenne</div>
-                            <div>Changez le mot de passe par défaut de votre caméra IP</div>
-                        </div>
-                    </li>
-                    <li class="list-group-item bg-dark text-light border-secondary">
-                        <div class="d-flex align-items-center">
-                            <div class="badge bg-info me-3">Faible</div>
-                            <div>Créez un réseau invité séparé pour les appareils IoT</div>
-                        </div>
-                    </li>
-                </ul>
-            </div>
-            <div class="card-footer">
-                <a href="#" class="btn btn-outline-primary btn-sm w-100">Voir toutes les recommandations</a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Dernières activités et Assistant -->
-<div class="row">
-    <div class="col-lg-8 mb-4">
-        <div class="card bg-dark text-light h-100">
-            <div class="card-header">
-                <h5 class="mb-0">Dernières activités</h5>
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Appareils à risque élevé</h5>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-dark table-hover">
+                    <table class="table table-striped table-hover">
                         <thead>
                             <tr>
-                                <th>Date</th>
                                 <th>Appareil</th>
-                                <th>Action</th>
-                                <th>Détails</th>
+                                <th>Type</th>
+                                <th>Score de sécurité</th>
+                                <th>Dernière mise à jour</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>26/02/2025 17:42</td>
-                                <td>Smartphone (192.168.1.101)</td>
-                                <td><span class="badge bg-success">Connexion</span></td>
-                                <td>Appareil connecté au réseau principal</td>
-                            </tr>
-                            <tr>
-                                <td>26/02/2025 16:30</td>
-                                <td>Ordinateur portable (192.168.1.100)</td>
-                                <td><span class="badge bg-danger">Déconnexion</span></td>
-                                <td>Appareil déconnecté du réseau</td>
-                            </tr>
-                            <tr>
-                                <td>26/02/2025 15:15</td>
-                                <td>Caméra IP (192.168.1.102)</td>
-                                <td><span class="badge bg-warning">Alerte</span></td>
-                                <td>Tentative d'accès non autorisée détectée</td>
-                            </tr>
-                            <tr>
-                                <td>26/02/2025 14:22</td>
-                                <td>Réseau WiFi principal</td>
-                                <td><span class="badge bg-info">Analyse</span></td>
-                                <td>Analyse de sécurité complétée (Score: 75%)</td>
-                            </tr>
-                            <tr>
-                                <td>26/02/2025 12:10</td>
-                                <td>Routeur (192.168.1.1)</td>
-                                <td><span class="badge bg-primary">Mise à jour</span></td>
-                                <td>Nouvelle version de firmware disponible</td>
-                            </tr>
+                            {% set high_risk_devices = device_scores|selectattr('security_score', 'lt', 50)|list %}
+                            {% if high_risk_devices %}
+                                {% for device in high_risk_devices %}
+                                <tr>
+                                    <td>{{ device.name|default('Appareil inconnu') }}</td>
+                                    <td><span class="badge bg-secondary">{{ device.device_type|default('Inconnu')|capitalize }}</span></td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress flex-grow-1" style="height: 10px;">
+                                                <div class="progress-bar bg-danger" role="progressbar" style="width: {{ device.security_score }}%;" aria-valuenow="{{ device.security_score }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                            <span class="ms-2">{{ device.security_score }}</span>
+                                        </div>
+                                    </td>
+                                    <td>{{ device.last_updated|datetime }}</td>
+                                    <td>
+                                        <a href="{{ url_for('get_device_details', mac_address=device.mac_address) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-info-circle"></i> Détails
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center">Aucun appareil à risque élevé détecté. Votre réseau est bien sécurisé !</td>
+                                </tr>
+                            {% endif %}
                         </tbody>
                     </table>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Derniers événements de sécurité -->
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-bell me-2"></i>Derniers événements</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Nouvel appareil détecté</div>
+                            Un smartphone Samsung s'est connecté au réseau
+                        </div>
+                        <span class="badge bg-primary rounded-pill">il y a 10 min</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Mise à jour de sécurité</div>
+                            Le routeur principal a besoin d'une mise à jour de firmware
+                        </div>
+                        <span class="badge bg-warning rounded-pill">il y a 2h</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Amélioration de la sécurité</div>
+                            Le score de sécurité global de votre réseau a augmenté de 8 points
+                        </div>
+                        <span class="badge bg-success rounded-pill">il y a 1j</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Vulnérabilité détectée</div>
+                            La caméra IP utilise un mot de passe par défaut
+                        </div>
+                        <span class="badge bg-danger rounded-pill">il y a 2j</span>
+                    </li>
+                </ul>
+            </div>
             <div class="card-footer">
-                <a href="#" class="btn btn-outline-primary btn-sm">Voir toutes les activités</a>
+                <a href="#" class="btn btn-sm btn-outline-primary w-100">Voir tous les événements</a>
             </div>
         </div>
     </div>
-
-    <div class="col-lg-4 mb-4">
-        <div class="card bg-dark text-light h-100">
-            <div class="card-header">
-                <h5 class="mb-0">Assistant de sécurité</h5>
+    
+    <!-- Recommandations de sécurité -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Recommandations personnalisées</h5>
             </div>
-            <div class="card-body p-0">
-                <div class="chat-container d-flex flex-column">
-                    <div class="chat-message assistant">
-                        <div>Bonjour {{ current_user.username }}, comment puis-je vous aider avec la sécurité de votre réseau aujourd'hui ?</div>
-                    </div>
-                    <div class="chat-message user">
-                        <div>Comment améliorer mon score de sécurité ?</div>
-                    </div>
-                    <div class="chat-message assistant">
-                        <div>Pour améliorer votre score de sécurité (actuellement 75%), je vous recommande de :</div>
-                        <ol class="mt-2 mb-0">
-                            <li>Mettre à jour le firmware de votre routeur</li>
-                            <li>Activer l'authentification WPA3</li>
-                            <li>Changer les mots de passe par défaut de vos appareils IoT</li>
-                        </ol>
-                    </div>
+            <div class="card-body">
+                <div class="list-group">
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">Mettez à jour le firmware de votre routeur</h6>
+                            <small class="text-danger">Critique</small>
+                        </div>
+                        <p class="mb-1">Votre routeur Netgear utilise un firmware obsolète qui présente des vulnérabilités connues.</p>
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">Changez le mot de passe de votre caméra IP</h6>
+                            <small class="text-danger">Critique</small>
+                        </div>
+                        <p class="mb-1">Votre caméra IP utilise toujours le mot de passe par défaut, ce qui la rend vulnérable aux attaques.</p>
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">Activez le chiffrement WPA3 sur votre réseau WiFi</h6>
+                            <small class="text-warning">Important</small>
+                        </div>
+                        <p class="mb-1">Votre réseau WiFi utilise WPA2, passez à WPA3 pour une meilleure sécurité.</p>
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">Désactivez UPnP sur votre routeur</h6>
+                            <small class="text-info">Recommandé</small>
+                        </div>
+                        <p class="mb-1">UPnP peut exposer votre réseau à des risques de sécurité si un appareil est compromis.</p>
+                    </a>
                 </div>
-                <div class="p-3 border-top border-secondary">
-                    <div class="input-group">
-                        <input type="text" class="form-control bg-dark text-light border-secondary" placeholder="Poser une question...">
-                        <button class="btn btn-primary" type="button">
-                            <i class="fas fa-paper-plane"></i>
-                        </button>
-                    </div>
-                </div>
+            </div>
+            <div class="card-footer">
+                <a href="#" class="btn btn-sm btn-outline-info w-100">Voir toutes les recommandations</a>
             </div>
         </div>
     </div>
@@ -249,13 +226,15 @@
 
 {% block extra_js %}
 <script>
-    // Code pour initialiser Chart.js (à remplacer par l'implémentation réelle)
+    // Exemple de filtre personnalisé pour formater les dates
     document.addEventListener('DOMContentLoaded', function() {
-        // Simulation d'un délai de chargement pour le graphique
-        setTimeout(() => {
-            const chartContainer = document.querySelector('.loading-spinner').parentElement;
-            chartContainer.innerHTML = '<div class="text-center text-success"><i class="fas fa-chart-line fa-5x"></i><p class="mt-3">Graphique simulé pour la démonstration</p></div>';
-        }, 1500);
+        const dateElements = document.querySelectorAll('[data-datetime]');
+        dateElements.forEach(element => {
+            const timestamp = element.getAttribute('data-datetime');
+            if (timestamp) {
+                element.textContent = formatRelativeTime(timestamp);
+            }
+        });
     });
 </script>
 {% endblock %}
