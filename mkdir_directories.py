@@ -17,6 +17,8 @@ def create_directories():
         'static/js',
         'static/img',
         'static/fonts',
+        'static/exports',  # Dossier pour les infographies exportées
+        'static/templates', # Dossier pour les templates d'infographie
         'templates',
         'config'
     ]

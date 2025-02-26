@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+
+{% block title %}Infographie Générée | NetSecure Pro{% endblock %}
+
+{% block extra_css %}
+<style>
+    .export-actions {
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .infographic-container {
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+        border-radius: 5px;
+        padding: 10px;
+        background-color: #fff;
+        margin-bottom: 30px;
+    }
+    
+    .infographic-image {
+        width: 100%;
+        height: auto;
+        border-radius: 3px;
+    }
+    
+    .share-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    .share-option {
+        flex: 1;
+        min-width: 100px;
+        padding: 15px;
+        text-align: center;
+        border-radius: 5px;
+        background-color: #f8f9fa;
+        transition: all 0.3s ease;
+    }
+    
+    .share-option:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .share-option i {
+        font-size: 24px;
+        margin-bottom: 8px;
+    }
+    
+    .share-option.email {
+        color: #d44638;
+    }
+    
+    .share-option.pdf {
+        color: #db4437;
+    }
+    
+    .share-option.print {
+        color: #4285f4;
+    }
+    
+    .share-option.download {
+        color: #0f9d58;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1>Infographie Générée avec Succès</h1>
+            <p class="lead">Votre infographie de sécurité réseau a été générée et est prête à être utilisée.</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <div class="btn-group">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-tachometer-alt me-2"></i>Tableau de bord
+                </a>
+                <button type="button" class="btn btn-primary" id="downloadBtn">
+                    <i class="fas fa-download me-2"></i>Télécharger
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-12">
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle me-2"></i>
+                Votre infographie a été générée avec succès. Vous pouvez maintenant la télécharger, l'imprimer ou la partager.
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-12">
+            <div class="infographic-container">
+                <img src="{{ url_for('static', filename=image_path) }}" alt="Infographie de sécurité réseau" class="infographic-image" id="infographicImage">
+            </div>
+        </div>
+    </div>
+    
+    <div class="row export-actions">
+        <div class="col-md-12">
+            <h4>Options de partage et d'export</h4>
+            <div class="share-options">
+                <div class="share-option email" id="emailOption">
+                    <i class="fas fa-envelope"></i>
+                    <h5>Email</h5>
+                    <p class="small">Envoyer par email</p>
+                </div>
+                <div class="share-option pdf" id="pdfOption">
+                    <i class="fas fa-file-pdf"></i>
+                    <h5>PDF</h5>
+                    <p class="small">Exporter en PDF</p>
+                </div>
+                <div class="share-option print" id="printOption">
+                    <i class="fas fa-print"></i>
+                    <h5>Imprimer</h5>
+                    <p class="small">Imprimer l'infographie</p>
+                </div>
+                <div class="share-option download" id="downloadOption">
+                    <i class="fas fa-download"></i>
+                    <h5>Télécharger</h5>
+                    <p class="small">Enregistrer l'image</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Utilisation de l'infographie</h5>
+                </div>
+                <div class="card-body">
+                    <h5>Comment utiliser cette infographie ?</h5>
+                    <p>Cette infographie offre une présentation visuelle complète de la sécurité de votre réseau. Elle est idéale pour :</p>
+                    <ul>
+                        <li><strong>Présentations</strong> - Utilisez-la lors de réunions pour expliquer les problèmes de sécurité</li>
+                        <li><strong>Documentation</strong> - Intégrez-la dans vos rapports de sécurité</li>
+                        <li><strong>Archivage</strong> - Conservez un historique visuel de l'état de sécurité de votre réseau</li>
+                        <li><strong>Sensibilisation</strong> - Partagez-la avec les utilisateurs pour améliorer leur compréhension</li>
+                    </ul>
+                    <p>Vous pouvez générer de nouvelles infographies à tout moment pour suivre l'évolution de la sécurité de votre réseau.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Gestion du bouton de téléchargement principal
+        document.getElementById('downloadBtn').addEventListener('click', function() {
+            downloadInfographic();
+        });
+        
+        // Gestion des options de partage
+        document.getElementById('emailOption').addEventListener('click', function() {
+            sendEmail();
+        });
+        
+        document.getElementById('pdfOption').addEventListener('click', function() {
+            exportToPdf();
+        });
+        
+        document.getElementById('printOption').addEventListener('click', function() {
+            printInfographic();
+        });
+        
+        document.getElementById('downloadOption').addEventListener('click', function() {
+            downloadInfographic();
+        });
+        
+        // Fonction de téléchargement de l'infographie
+        function downloadInfographic() {
+            const link = document.createElement('a');
+            link.href = document.getElementById('infographicImage').src;
+            link.download = 'netsecure_infographic_' + new Date().toISOString().slice(0, 10) + '.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showNotification('Téléchargement démarré...', 'success');
+        }
+        
+        // Fonction d'envoi par email (simulation)
+        function sendEmail() {
+            // Dans une version réelle, cela ouvrirait une fenêtre de composition d'email
+            // ou enverrait une requête AJAX pour générer un email côté serveur
+            showNotification('Préparation de l\'email...', 'info');
+            setTimeout(() => {
+                showNotification('Fonctionnalité d\'email en cours de développement', 'warning');
+            }, 1500);
+        }
+        
+        // Fonction d'export en PDF (simulation)
+        function exportToPdf() {
+            showNotification('Génération du PDF...', 'info');
+            setTimeout(() => {
+                showNotification('Export PDF terminé', 'success');
+            }, 2000);
+        }
+        
+        // Fonction d'impression
+        function printInfographic() {
+            window.print();
+        }
+        
+        // Fonction pour afficher des notifications
+        function showNotification(message, type = 'info') {
+            // Créer l'élément de notification
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-white bg-${type} border-0`;
+            toast.setAttribute('role', 'alert');
+            toast.setAttribute('aria-live', 'assertive');
+            toast.setAttribute('aria-atomic', 'true');
+            
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            `;
+            
+            // Ajouter au conteneur de notifications
+            let toastContainer = document.querySelector('.toast-container');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+                document.body.appendChild(toastContainer);
+            }
+            
+            toastContainer.appendChild(toast);
+            
+            // Initialiser et afficher le toast
+            const bsToast = new bootstrap.Toast(toast, {
+                delay: 3000
+            });
+            bsToast.show();
+        }
+    });
+</script>
+{% endblock %}

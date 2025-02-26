@@ -417,6 +417,294 @@ def protocol_analysis():
         timeline=timeline
     )
 
+@app.route('/export-infographic/<report_type>')
+@login_required
+def export_infographic(report_type):
+    """Génère et exporte une infographie basée sur le type de rapport"""
+    from infographic_generator import InfographicGenerator
+    from protocol_analyzer import ProtocolAnalyzer
+    
+    # Initialiser le générateur d'infographies
+    generator = InfographicGenerator()
+    
+    # Chemin du fichier infographique généré
+    output_path = None
+    
+    # Selon le type de rapport, générer l'infographie appropriée
+    if report_type == 'network_security':
+        # Exemple de données de réseau pour la démonstration
+        network_data = {
+            'overall_score': 72,
+            'protocol_distribution': {
+                'WPA3': 1,
+                'WPA2': 3,
+                'WPA': 0,
+                'WEP': 1,
+                'OPEN': 1
+            },
+            'security_dimensions': {
+                'Authentification': 65,
+                'Chiffrement': 70,
+                'Mises à jour': 50,
+                'Pare-feu': 85,
+                'Segmentation': 90,
+                'Monitoring': 60
+            },
+            'devices': [
+                {'name': 'Caméra IP', 'security_score': 35},
+                {'name': 'Smart TV', 'security_score': 55},
+                {'name': 'Smartphone', 'security_score': 65},
+                {'name': 'Routeur WiFi', 'security_score': 75},
+                {'name': 'Ordinateur portable', 'security_score': 85}
+            ],
+            'security_trend': [
+                {'date': 'Jan', 'score': 54},
+                {'date': 'Fév', 'score': 58},
+                {'date': 'Mar', 'score': 60},
+                {'date': 'Avr', 'score': 65},
+                {'date': 'Mai', 'score': 68},
+                {'date': 'Juin', 'score': 72}
+            ]
+        }
+        
+        # Exemple de données de vulnérabilité
+        vulnerability_data = {
+            'vulnerability_types': {
+                'firmware_outdated': 8,
+                'weak_password': 6,
+                'open_ports': 5,
+                'protocol_weakness': 5,
+                'missing_updates': 4,
+                'default_credentials': 4
+            },
+            'recommendations': [
+                {
+                    'priority': 'critical',
+                    'description': 'Mettre à jour le firmware du routeur',
+                    'details': 'Votre routeur exécute un firmware obsolète contenant des vulnérabilités connues.'
+                },
+                {
+                    'priority': 'high',
+                    'description': 'Changer les mots de passe par défaut',
+                    'details': 'Plusieurs appareils IoT utilisent encore leurs mots de passe par défaut.'
+                },
+                {
+                    'priority': 'medium',
+                    'description': 'Activer WPA3 sur votre réseau WiFi',
+                    'details': 'Passer à WPA3 offre une meilleure protection contre les attaques.'
+                }
+            ]
+        }
+        
+        # Générer l'infographie
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"network_security_{timestamp}.png"
+        output_path = generator.generate_network_security_infographic(
+            network_data, vulnerability_data, output_filename=filename
+        )
+    
+    elif report_type == 'protocol_analysis':
+        # Initialiser l'analyseur de protocoles
+        analyzer = ProtocolAnalyzer()
+        
+        # Récupérer les données d'exemple
+        test_networks = [
+            {
+                "ssid": "Réseau_Domicile",
+                "bssid": "00:11:22:33:44:55",
+                "security": "WPA2",
+                "encryption": "AES",
+                "authentication": "PSK",
+                "strength": -65,
+                "frequency": "2.4GHz",
+                "channel": 6
+            },
+            {
+                "ssid": "Réseau_Ancien",
+                "bssid": "AA:BB:CC:DD:EE:FF",
+                "security": "WEP",
+                "encryption": None,
+                "authentication": None,
+                "strength": -70,
+                "frequency": "2.4GHz",
+                "channel": 11
+            },
+            {
+                "ssid": "Réseau_Moderne",
+                "bssid": "33:44:55:66:77:88",
+                "security": "WPA3",
+                "encryption": "GCMP",
+                "authentication": "SAE",
+                "strength": -50,
+                "frequency": "5GHz",
+                "channel": 48
+            }
+        ]
+        
+        # Analyser les réseaux
+        analyzer.analyze_all_networks(test_networks)
+        
+        # Préparer les données pour l'infographie
+        protocol_data = {
+            'average_score': analyzer.get_protocol_analysis_summary().get('average_score', 0),
+            'protocol_distribution': analyzer.get_protocol_analysis_summary().get('protocol_distribution', {}),
+            'protocols': analyzer.get_protocol_comparison().get('protocols', []),
+            'vulnerability_by_protocol': {
+                'WEP': {'critical': 5, 'high': 3, 'medium': 1, 'low': 0},
+                'WPA': {'critical': 2, 'high': 4, 'medium': 2, 'low': 1},
+                'WPA2': {'critical': 1, 'high': 2, 'medium': 3, 'low': 2},
+                'WPA3': {'critical': 0, 'high': 1, 'medium': 2, 'low': 3}
+            },
+            'protocol_strengths': {
+                'WEP': {'Chiffrement': 10, 'Authentification': 15, 'Intégrité': 20, 'Résistance aux attaques': 5, 'Gestion des clés': 10},
+                'WPA': {'Chiffrement': 40, 'Authentification': 45, 'Intégrité': 50, 'Résistance aux attaques': 35, 'Gestion des clés': 40},
+                'WPA2': {'Chiffrement': 75, 'Authentification': 70, 'Intégrité': 80, 'Résistance aux attaques': 65, 'Gestion des clés': 70},
+                'WPA3': {'Chiffrement': 90, 'Authentification': 95, 'Intégrité': 90, 'Résistance aux attaques': 85, 'Gestion des clés': 90}
+            },
+            'recommendations': analyzer.get_protocol_analysis_summary().get('recommendations', [])
+        }
+        
+        # Générer l'infographie
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"protocol_analysis_{timestamp}.png"
+        output_path = generator.generate_protocol_analysis_infographic(
+            protocol_data, output_filename=filename
+        )
+    
+    elif report_type == 'vulnerability_report':
+        # Exemple de données de vulnérabilité
+        vulnerability_data = {
+            'summary': {
+                'total': 32,
+                'critical': 3,
+                'high': 8,
+                'medium': 15,
+                'low': 6,
+                'cvss_avg': 7.8,
+                'risk_level': 'Élevé'
+            },
+            'critical_vulnerabilities': [
+                {
+                    'cve_id': 'CVE-2022-26928',
+                    'description': 'Vulnérabilité d\'exécution de code à distance dans le firmware',
+                    'severity': 'critical',
+                    'cvss_score': 9.8,
+                    'affected_device': 'Routeur WiFi Principal',
+                    'status': 'Non corrigé'
+                },
+                {
+                    'cve_id': 'CVE-2021-37714',
+                    'description': 'Identifiants par défaut exposés permettant un accès non autorisé',
+                    'severity': 'critical',
+                    'cvss_score': 9.6,
+                    'affected_device': 'Caméra IP',
+                    'status': 'Non corrigé'
+                },
+                {
+                    'cve_id': 'CVE-2023-12345',
+                    'description': 'Vulnérabilité de débordement de tampon dans le traitement des paquets réseau',
+                    'severity': 'critical',
+                    'cvss_score': 9.1,
+                    'affected_device': 'Smart TV',
+                    'status': 'Non corrigé'
+                }
+            ],
+            'severity_distribution': {
+                'critical': 3,
+                'high': 8,
+                'medium': 15,
+                'low': 6
+            },
+            'discovery_timeline': [
+                {'date': 'Jan', 'total': 2, 'critical': 0},
+                {'date': 'Fév', 'total': 5, 'critical': 1},
+                {'date': 'Mar', 'total': 3, 'critical': 0},
+                {'date': 'Avr', 'total': 8, 'critical': 2},
+                {'date': 'Mai', 'total': 6, 'critical': 0},
+                {'date': 'Juin', 'total': 8, 'critical': 1}
+            ],
+            'remediation_plan': [
+                {
+                    'action': 'Mettre à jour le firmware du routeur',
+                    'priority': 'critical',
+                    'estimated_time': '30 minutes',
+                    'difficulty': 'Facile',
+                    'impact': 'Élimine une vulnérabilité critique'
+                },
+                {
+                    'action': 'Changer les mots de passe par défaut',
+                    'priority': 'critical',
+                    'estimated_time': '20 minutes',
+                    'difficulty': 'Facile',
+                    'impact': 'Sécurise les appareils IoT vulnérables'
+                },
+                {
+                    'action': 'Activer WPA3',
+                    'priority': 'high',
+                    'estimated_time': '10 minutes',
+                    'difficulty': 'Facile',
+                    'impact': 'Renforce la sécurité du WiFi'
+                },
+                {
+                    'action': 'Configurer un réseau invité',
+                    'priority': 'medium',
+                    'estimated_time': '15 minutes',
+                    'difficulty': 'Moyenne',
+                    'impact': 'Isole les appareils IoT du réseau principal'
+                }
+            ]
+        }
+        
+        # Générer l'infographie
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"vulnerability_report_{timestamp}.png"
+        output_path = generator.generate_vulnerability_report_infographic(
+            vulnerability_data, output_filename=filename
+        )
+    
+    else:
+        # Type de rapport non pris en charge
+        flash('Type de rapport non pris en charge', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    # Vérifier si l'infographie a été générée
+    if not output_path or not os.path.exists(output_path):
+        flash('Erreur lors de la génération de l\'infographie', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    # Retourner le chemin relatif pour servir le fichier
+    relative_path = output_path.replace('static/', '')
+    
+    # Enregistrer le téléchargement dans l'historique de l'utilisateur
+    # Cette partie serait implémentée dans une version complète
+    
+    # Rediriger vers la page de visualisation avec un message de succès
+    flash('Infographie générée avec succès', 'success')
+    return render_template('export_success.html', image_path=relative_path)
+
+
+@app.route('/api/export-infographic/<report_type>', methods=['POST'])
+@login_required
+def api_export_infographic(report_type):
+    """API pour générer une infographie et retourner son URL"""
+    # Cette route est appelée par AJAX pour générer l'infographie en arrière-plan
+    
+    try:
+        # Rediriger vers la route normale qui génère l'infographie
+        response_url = url_for('export_infographic', report_type=report_type)
+        
+        return jsonify({
+            'success': True,
+            'message': 'Génération de l\'infographie en cours...',
+            'redirect_url': response_url
+        })
+    except Exception as e:
+        logger.error(f"Erreur lors de la génération de l'infographie: {e}")
+        return jsonify({
+            'success': False,
+            'message': f"Erreur lors de la génération: {str(e)}"
+        }), 500
+
 # Gestionnaires d'événements Socket.IO
 @socketio.on('connect')
 def handle_connect():
