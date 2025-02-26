@@ -10,6 +10,7 @@ from assistant_securite import AssistantSecurite
 from translation import get_user_language, get_translation, get_all_translations, get_direction, AVAILABLE_LANGUAGES
 from recommendations import recommendation_system
 from network_detector import NetworkDetector
+from network_topology import NetworkTopology
 
 # Configuration du logging
 logging.basicConfig(level=logging.DEBUG)
@@ -27,6 +28,9 @@ security_analyzer = NetworkSecurityAnalyzer()
 
 # Initialiser l'assistant de sécurité
 assistant = AssistantSecurite()
+
+# Initialiser le gestionnaire de topologie réseau
+topology_manager = NetworkTopology()
 
 # Configuration de l'analyseur WiFi
 CONFIG_DIR = os.path.expanduser("~/.network_detect")
@@ -291,6 +295,24 @@ def get_conversations():
     conversations = assistant.get_all_conversations()
     return jsonify(conversations)
 
+@app.route('/network-topology')
+def network_topology():
+    """Page de visualisation de la topologie du réseau"""
+    logger.info('Page de topologie du réseau visitée')
+    
+    # Récupérer les traductions et la direction du texte
+    lang = get_user_language()
+    translations = get_all_translations(lang)
+    text_direction = get_direction(lang)
+    
+    return render_template(
+        'network_topology.html',
+        translations=translations,
+        available_languages=AVAILABLE_LANGUAGES,
+        current_language=lang,
+        text_direction=text_direction
+    )
+
 @app.route('/device-security')
 def device_security():
     """Page de sécurité des appareils"""
@@ -373,6 +395,63 @@ def handle_analyze_network(data):
 
     emit('security_analysis_result', result)
 
+# Routes API et WebSocket pour la topologie réseau
+@app.route('/api/topology', methods=['GET'])
+def get_topology():
+    """API pour récupérer les données de topologie réseau"""
+    topology_data = topology_manager.get_topology_data()
+    return jsonify(topology_data)
+
+@app.route('/api/topology/layout', methods=['POST'])
+def update_topology_layout():
+    """API pour mettre à jour la disposition des appareils"""
+    layout_data = request.json
+    if not layout_data:
+        return jsonify({"error": "Données de disposition non fournies"}), 400
+    
+    try:
+        topology_manager.save_layout(layout_data)
+        return jsonify({"success": True})
+    except Exception as e:
+        logger.error(f"Erreur lors de la sauvegarde de la disposition: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/device/<mac_address>', methods=['GET'])
+def get_device_details(mac_address):
+    """API pour récupérer les détails d'un appareil spécifique"""
+    for device in topology_manager.devices:
+        if device['mac_address'] == mac_address:
+            return jsonify(device)
+    return jsonify({"error": "Appareil non trouvé"}), 404
+
+@app.route('/api/device/<mac_address>', methods=['PUT'])
+def update_device_security(mac_address):
+    """API pour mettre à jour les informations de sécurité d'un appareil"""
+    security_data = request.json
+    if not security_data:
+        return jsonify({"error": "Données de sécurité non fournies"}), 400
+    
+    success = topology_manager.update_device_security(mac_address, security_data)
+    if success:
+        return jsonify({"success": True})
+    return jsonify({"error": "Appareil non trouvé"}), 404
+
+@socketio.on('request_topology_data')
+def handle_topology_request():
+    """Gestionnaire de demande de données de topologie via WebSocket"""
+    topology_data = topology_manager.get_topology_data()
+    emit('topology_update', topology_data)
+
+@socketio.on('update_topology_layout')
+def handle_layout_update(data):
+    """Gestionnaire de mise à jour de la disposition via WebSocket"""
+    try:
+        topology_manager.save_layout(data)
+        emit('layout_saved', {"success": True})
+    except Exception as e:
+        logger.error(f"Erreur lors de la sauvegarde de la disposition via WebSocket: {e}")
+        emit('layout_saved', {"success": False, "error": str(e)})
+
 @app.errorhandler(404)
 def page_non_trouvee(error):
     logger.error(f'Page non trouvée: {error}')
@@ -424,4 +503,4 @@ os.makedirs(CONFIG_DIR, exist_ok=True)
 socketio.init_app(app)
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=5001, debug=True, allow_unsafe_werkzeug=True)
+    socketio.run(app, host='0.0.0.0', port=5000, debug=True, allow_unsafe_werkzeug=True)

@@ -38,6 +38,9 @@
                         <li class="nav-item">
                             <a class="nav-link {% if request.path == url_for('device_security') %}active{% endif %}" href="{{ url_for('device_security') }}">{{ t('nav_device_security') }}</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.path == url_for('network_topology') %}active{% endif %}" href="{{ url_for('network_topology') }}">{{ t('nav_network_topology') }}</a>
+                        </li>
                     </ul>
                     <!-- Language selector -->
                     <div class="dropdown">
