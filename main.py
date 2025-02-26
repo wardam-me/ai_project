@@ -298,7 +298,7 @@ def update_device_security(mac_address):
 @app.route('/assistant', methods=['GET', 'POST'])
 @login_required
 def assistant():
-    """Page de l'assistant de sécurité"""
+    """Page de l'assistant de sécurité (ancienne version)"""
     if request.method == 'POST':
         user_input = request.form.get('question', '')
         if user_input:
@@ -320,6 +320,54 @@ def assistant():
     conversations = assistant_securite.get_conversation_history(current_user.id)
     
     return render_template('assistant.html', conversations=conversations)
+
+@app.route('/chatbot')
+@login_required
+def chatbot():
+    """Page du chatbot de sécurité (nouvelle version)"""
+    return render_template('chatbot.html')
+
+@app.route('/api/chatbot', methods=['POST'])
+@login_required
+def api_chatbot():
+    """API pour l'interaction avec le chatbot"""
+    data = request.json
+    
+    if not data or 'message' not in data:
+        return jsonify({'success': False, 'error': 'Message manquant'}), 400
+    
+    user_input = data['message']
+    conversation_id = data.get('conversation_id', None)
+    
+    # Si aucun ID de conversation n'est fourni, en créer un nouveau basé sur l'ID utilisateur et l'horodatage
+    if not conversation_id:
+        conversation_id = f"{current_user.id}_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+    
+    # Récupérer les données de topologie pour le contexte
+    network_data = network_topology.get_topology_data()
+    
+    # Générer une réponse
+    result = assistant_securite.generate_response(
+        user_input, 
+        conversation_id=conversation_id,
+        network_data=network_data
+    )
+    
+    return jsonify(result)
+
+@app.route('/api/chatbot/history')
+@login_required
+def api_chatbot_history():
+    """API pour récupérer l'historique des conversations"""
+    conversations = assistant_securite.get_all_conversations()
+    return jsonify(conversations)
+
+@app.route('/api/chatbot/conversation/<conversation_id>')
+@login_required
+def api_chatbot_conversation(conversation_id):
+    """API pour récupérer une conversation spécifique"""
+    conversation = assistant_securite.get_conversation_history(conversation_id)
+    return jsonify(conversation)
 
 @app.route('/vulnerability-analysis')
 @login_required
