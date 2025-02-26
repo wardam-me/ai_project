@@ -8,13 +8,14 @@ translations = {
     "app_description": "Real-time analysis of available networks",
     "error_not_found": "Page not found. Return to home.",
     "error_server": "Server error. Please try again later.",
-    
+
     # Navigation
     "nav_home": "Home",
     "nav_security_report": "Security Reports",
     "nav_assistant": "Assistant",
     "nav_language": "Language",
-    
+    "nav_recommendations": "Recommendations",
+
     # Home page
     "best_network": "Best Recommended Network",
     "all_networks": "All Available Networks",
@@ -28,7 +29,7 @@ translations = {
     "auto_update": "Data is automatically updated every 10 seconds.",
     "ssid": "SSID",
     "signal_strength": "Signal strength",
-    
+
     # Security reports
     "security_reports": "Network Security Reports",
     "generate_report": "Generate a report",
@@ -51,7 +52,7 @@ translations = {
     "actions": "Actions",
     "view": "View",
     "no_reports": "No security reports generated.",
-    
+
     # Report details
     "report_summary": "Report summary",
     "networks_analyzed": "Networks analyzed",
@@ -66,7 +67,7 @@ translations = {
     "network_info": "Network information",
     "detailed_assessment": "Detailed assessment",
     "back_to_reports": "Back to reports",
-    
+
     # Assistant
     "assistant_title": "WiFi Security Assistant",
     "new_conversation": "New conversation",
@@ -84,5 +85,36 @@ translations = {
         "How to protect my network against hackers?",
         "What are the risks of an unsecured network?"
     ],
-    "error_message": "Sorry, an error occurred while communicating with the assistant."
+    "error_message": "Sorry, an error occurred while communicating with the assistant.",
+
+    # Personalized recommendations
+    "personalized_recommendations": "Personalized Recommendations",
+    "recommendations_subtitle": "Based on your WiFi network analysis history",
+    "last_updated": "Last updated",
+    "your_preferences": "Your preferences",
+    "security_focus": "Security focus",
+    "focus_encryption": "Encryption",
+    "focus_signal": "Signal strength",
+    "focus_frequency": "Frequency",
+    "focus_general": "General",
+    "preferred_security": "Preferred security",
+    "frequent_networks": "Frequent networks",
+    "no_frequent_networks": "No frequent networks detected",
+    "recommended_actions": "Recommended actions",
+    "high_priority": "High priority",
+    "medium_priority": "Medium priority",
+    "low_priority": "Low priority",
+    "generate": "Generate",
+    "improve": "Improve",
+    "consult": "Consult",
+    "scan": "Scan",
+    "check": "Check",
+    "details": "Details",
+    "no_recommendations": "No recommendations available at the moment",
+    "how_recommendations_work": "How recommendations work",
+    "recommendations_explanation": "The system analyzes your usage and analysis history to provide you with personalized recommendations to improve the security of your WiFi networks.",
+    "recommendation_factor_1": "The reports you have generated and the networks you have analyzed",
+    "recommendation_factor_2": "The security types you prefer and frequently use",
+    "recommendation_factor_3": "Recurring security issues in your analyzed networks",
+    "recommendations_privacy": "All your data is stored locally and is never shared."
 }
