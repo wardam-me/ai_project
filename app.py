@@ -3,7 +3,7 @@ import logging
 from flask import Flask, render_template, redirect, url_for, flash, request, session, jsonify
 from flask_socketio import SocketIO
 from flask_login import LoginManager, login_user, current_user, logout_user, login_required
-from werkzeug.urls import url_parse
+from urllib.parse import urlparse as url_parse_with_params as url_parse
 from models import db, User, UserReport, SavedTopology
 from forms import RegistrationForm, LoginForm, SaveTopologyForm
 from translation import get_user_language, get_translation, get_all_translations
