@@ -42,7 +42,7 @@
                     </div>
                 </div>
                 <div class="col-md-4 text-end">
-                    <button class="btn btn-primary btn-sm me-2" onclick="analyzeNetwork({{ loop.index0 }})">
+                    <button class="btn btn-primary btn-sm me-2" onclick="analyzeNetwork(0)">
                         <i class="fas fa-shield-alt me-1"></i> {{ t('analyze_security') }}
                     </button>
                     <a href="{{ url_for('assistant_page') }}" class="btn btn-outline-info btn-sm">
@@ -174,7 +174,7 @@
                                 </span>
                             </td>
                             <td class="text-end">
-                                <button class="btn btn-primary btn-sm" onclick="analyzeNetwork({{ loop.index0 }})">
+                                <button class="btn btn-primary btn-sm" onclick="analyzeNetwork({{loop.index}})">
                                     <i class="fas fa-shield-alt me-1"></i> {{ t('analyze_security') }}
                                 </button>
                             </td>
