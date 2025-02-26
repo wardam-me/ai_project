@@ -10,6 +10,7 @@ from assistant_securite import AssistantSecurite
 from translation import get_user_language, get_translation, get_all_translations, get_direction, AVAILABLE_LANGUAGES
 from recommendations import recommendation_system
 from network_detector import NetworkDetector
+from security_scoring import security_scoring
 
 # Configuration du logging
 logging.basicConfig(level=logging.DEBUG)
@@ -224,6 +225,31 @@ def personalized_recommendations():
         text_direction=text_direction
     )
 
+# Route pour la sécurité des appareils
+@app.route('/device-security')
+def device_security():
+    """Page de sécurité des appareils"""
+    logger.info('Page de sécurité des appareils visitée')
+
+    # Récupérer les traductions et la direction du texte
+    lang = get_user_language()
+    translations = get_all_translations(lang)
+    text_direction = get_direction(lang)
+
+    # Récupérer les données des appareils
+    devices = security_scoring.get_all_device_scores()
+    network_status = security_scoring.get_network_security_status()
+
+    return render_template(
+        'device_security.html',
+        devices=devices,
+        network_status=network_status,
+        translations=translations,
+        available_languages=AVAILABLE_LANGUAGES,
+        current_language=lang,
+        text_direction=text_direction
+    )
+
 # Routes pour l'assistant de sécurité conversationnel
 @app.route('/assistant')
 def assistant_page():
@@ -291,33 +317,6 @@ def get_conversations():
     conversations = assistant.get_all_conversations()
     return jsonify(conversations)
 
-@app.route('/device-security')
-def device_security():
-    """Page de sécurité des appareils"""
-    logger.info('Page de sécurité des appareils visitée')
-    
-    # Récupérer les traductions et la direction du texte
-    lang = get_user_language()
-    translations = get_all_translations(lang)
-    text_direction = get_direction(lang)
-    
-    # Initialisation du système de notation de sécurité
-    from security_scoring import security_scoring
-    
-    # Récupérer les données des appareils
-    devices = security_scoring.get_all_device_scores()
-    network_status = security_scoring.get_network_security_status()
-    
-    return render_template(
-        'device_security.html',
-        devices=devices,
-        network_status=network_status,
-        translations=translations,
-        available_languages=AVAILABLE_LANGUAGES,
-        current_language=lang,
-        text_direction=text_direction
-    )
-
 @app.route('/api/analyze-network', methods=['POST'])
 def api_analyze_network():
     """API pour analyser un réseau spécifique"""
@@ -373,6 +372,37 @@ def handle_analyze_network(data):
 
     emit('security_analysis_result', result)
 
+@socketio.on('request_device_security_update')
+def handle_device_security_update():
+    """Envoie les données de sécurité des appareils"""
+    # Détecter les appareils et calculer les scores
+    devices = security_scoring.detect_devices()
+    devices_with_scores = security_scoring.get_all_device_scores()
+    network_status = security_scoring.get_network_security_status()
+
+    # Envoyer les données mises à jour
+    emit('device_security_update', {
+        'devices': devices_with_scores,
+        'network_status': network_status
+    })
+
+@socketio.on('check_device_security')
+def handle_check_device_security(data):
+    """Recalcule le score de sécurité pour un appareil spécifique"""
+    mac_address = data.get('mac_address')
+    if mac_address:
+        # Recalculer le score de sécurité
+        security_scoring.calculate_device_score(mac_address)
+
+        # Envoyer les données mises à jour
+        devices_with_scores = security_scoring.get_all_device_scores()
+        network_status = security_scoring.get_network_security_status()
+
+        emit('device_security_update', {
+            'devices': devices_with_scores,
+            'network_status': network_status
+        })
+
 @app.errorhandler(404)
 def page_non_trouvee(error):
     logger.error(f'Page non trouvée: {error}')
@@ -424,4 +454,4 @@ os.makedirs(CONFIG_DIR, exist_ok=True)
 socketio.init_app(app)
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=5001, debug=True, allow_unsafe_werkzeug=True)
+    socketio.run(app, host='0.0.0.0', port=5000, debug=True, allow_unsafe_werkzeug=True)

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="{{ current_language }}" data-bs-theme="dark" dir="{{ text_direction }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ t('app_name') }}{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <div class="container py-5">
+        <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="{{ url_for('accueil') }}">
+                    <i class="fas fa-wifi me-2"></i> {{ t('app_name') }}
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.path == url_for('accueil') %}active{% endif %}" href="{{ url_for('accueil') }}">{{ t('nav_home') }}</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.path == url_for('security_report') %}active{% endif %}" href="{{ url_for('security_report') }}">{{ t('nav_security_report') }}</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.path == url_for('assistant_page') %}active{% endif %}" href="{{ url_for('assistant_page') }}">{{ t('nav_assistant') }}</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.path == url_for('personalized_recommendations') %}active{% endif %}" href="{{ url_for('personalized_recommendations') }}">{{ t('nav_recommendations') }}</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.path == url_for('device_security') %}active{% endif %}" href="{{ url_for('device_security') }}">{{ t('nav_device_security') }}</a>
+                        </li>
+                    </ul>
+                    <!-- Language selector -->
+                    <div class="dropdown">
+                        <button class="btn btn-dark dropdown-toggle" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-globe me-2"></i> {{ t('nav_language') }}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+                            {% for code, name in available_languages.items() %}
+                            <li>
+                                <a class="dropdown-item {% if current_language == code %}active{% endif %}" href="{{ url_for('set_language', language=code) }}">
+                                    {{ name }}
+                                </a>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
