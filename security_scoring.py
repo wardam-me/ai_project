@@ -9,7 +9,7 @@ import random
 from datetime import datetime
 
 # Configuration
-CONFIG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config')
+CONFIG_DIR = os.path.expanduser("~/.network_detect")
 DEVICE_DATA_FILE = os.path.join(CONFIG_DIR, 'devices.json')
 
 # Logging
