@@ -291,6 +291,33 @@ def get_conversations():
     conversations = assistant.get_all_conversations()
     return jsonify(conversations)
 
+@app.route('/device-security')
+def device_security():
+    """Page de sécurité des appareils"""
+    logger.info('Page de sécurité des appareils visitée')
+    
+    # Récupérer les traductions et la direction du texte
+    lang = get_user_language()
+    translations = get_all_translations(lang)
+    text_direction = get_direction(lang)
+    
+    # Initialisation du système de notation de sécurité
+    from security_scoring import security_scoring
+    
+    # Récupérer les données des appareils
+    devices = security_scoring.get_all_device_scores()
+    network_status = security_scoring.get_network_security_status()
+    
+    return render_template(
+        'device_security.html',
+        devices=devices,
+        network_status=network_status,
+        translations=translations,
+        available_languages=AVAILABLE_LANGUAGES,
+        current_language=lang,
+        text_direction=text_direction
+    )
+
 @app.route('/api/analyze-network', methods=['POST'])
 def api_analyze_network():
     """API pour analyser un réseau spécifique"""
