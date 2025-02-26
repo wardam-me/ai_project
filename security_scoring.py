@@ -3,16 +3,10 @@ Module de notation de sécurité des appareils en temps réel
 """
 import os
 import json
-import logging
-import time
 import random
+import logging
 from datetime import datetime
 
-# Configuration
-CONFIG_DIR = os.path.expanduser("~/.network_detect")
-DEVICE_DATA_FILE = os.path.join(CONFIG_DIR, 'devices.json')
-
-# Logging
 logger = logging.getLogger(__name__)
 
 class DeviceSecurityScoring:
@@ -20,30 +14,36 @@ class DeviceSecurityScoring:
     
     def __init__(self):
         """Initialise le système de notation de sécurité"""
-        os.makedirs(CONFIG_DIR, exist_ok=True)
-        self.devices = {}
+        self.devices = []
+        
+        # Créer le dossier de données si nécessaire
+        os.makedirs('instance', exist_ok=True)
+        
+        # Charger les données des appareils
         self.load_devices()
+        
+        # Si aucune donnée n'est disponible, générer des exemples
+        if not self.devices:
+            self._generate_sample_devices()
     
     def load_devices(self):
         """Charge les données des appareils"""
-        if os.path.exists(DEVICE_DATA_FILE):
-            try:
-                with open(DEVICE_DATA_FILE, 'r') as file:
-                    self.devices = json.load(file)
-                logger.info(f"Données de {len(self.devices)} appareils chargées")
-            except Exception as e:
-                logger.error(f"Erreur lors du chargement des données d'appareils: {e}")
-                self.devices = {}
-        else:
-            logger.info("Aucun fichier de données d'appareils existant")
-            self.devices = {}
+        try:
+            if os.path.exists('instance/devices_security.json'):
+                with open('instance/devices_security.json', 'r') as f:
+                    self.devices = json.load(f)
+                logger.info("Données de sécurité des appareils chargées")
+            else:
+                logger.info("Aucun fichier de données d'appareils existant")
+        except Exception as e:
+            logger.error(f"Erreur lors du chargement des données d'appareils: {e}")
     
     def save_devices(self):
         """Sauvegarde les données des appareils"""
         try:
-            with open(DEVICE_DATA_FILE, 'w') as file:
-                json.dump(self.devices, file, indent=2)
-            logger.info(f"Données de {len(self.devices)} appareils sauvegardées")
+            with open('instance/devices_security.json', 'w') as f:
+                json.dump(self.devices, f, indent=2)
+            logger.info("Données de sécurité des appareils sauvegardées")
         except Exception as e:
             logger.error(f"Erreur lors de la sauvegarde des données d'appareils: {e}")
     
@@ -53,83 +53,182 @@ class DeviceSecurityScoring:
         Dans une version réelle, cela utiliserait des outils comme ARP, nmap, etc.
         Pour cette démonstration, nous générons des données d'exemple
         """
-        # Pour la démonstration, créons quelques appareils simulés si aucun n'existe
-        if not self.devices:
-            self._generate_sample_devices()
-        else:
-            # Simuler la détection de nouveaux appareils (1 chance sur 5)
-            if random.random() < 0.2:
-                self._add_random_device()
-            
-            # Simuler la mise à jour des appareils existants
-            for mac_address in list(self.devices.keys()):
-                device = self.devices[mac_address]
-                device['last_seen'] = datetime.now().isoformat()
-                
-                # Simuler des changements aléatoires de statut pour certains appareils
-                if random.random() < 0.3:
-                    self._update_device_status(mac_address)
+        # Simulation: 10% de chance de détecter un nouvel appareil
+        if random.random() < 0.1:
+            self._add_random_device()
         
-        self.save_devices()
-        return list(self.devices.values())
+        # Mise à jour aléatoire du statut des appareils existants
+        for device in self.devices:
+            self._update_device_status(device['mac_address'])
     
     def _generate_sample_devices(self):
         """Génère des exemples d'appareils pour la démonstration"""
-        device_types = ["Smartphone", "Laptop", "Smart TV", "IoT Device", "Router", "Tablet"]
-        manufacturers = ["Samsung", "Apple", "Huawei", "Sony", "LG", "TP-Link", "Xiaomi"]
+        # Les données de base sont déjà générées dans network_topology.py
+        # Ici nous ajoutons seulement des informations de sécurité supplémentaires
         
-        for i in range(5):
-            mac_address = self._generate_random_mac()
-            device_type = random.choice(device_types)
-            manufacturer = random.choice(manufacturers)
-            
-            self.devices[mac_address] = {
-                'mac_address': mac_address,
-                'ip_address': f"192.168.1.{random.randint(10, 250)}",
-                'device_type': device_type,
-                'manufacturer': manufacturer,
-                'hostname': f"{manufacturer.lower()}-{device_type.lower()}-{random.randint(1, 999)}",
-                'first_seen': datetime.now().isoformat(),
-                'last_seen': datetime.now().isoformat(),
-                'security_score': random.randint(30, 95),
-                'security_issues': self._generate_random_security_issues(device_type),
-                'recommendations': []
-            }
-            
-            # Ajouter des recommandations basées sur les problèmes de sécurité
-            self._update_device_recommendations(mac_address)
+        # Routeur principal
+        router = {
+            'mac_address': '00:11:22:33:44:55',
+            'security_score': 85,
+            'security_issues': [
+                {
+                    'id': 'ISSUE-001',
+                    'description': 'Firmware obsolète',
+                    'severity': 'medium',
+                    'solution': 'Mettre à jour le firmware vers la dernière version disponible'
+                },
+                {
+                    'id': 'ISSUE-002',
+                    'description': 'UPnP activé',
+                    'severity': 'low',
+                    'solution': 'Désactiver UPnP dans les paramètres du routeur'
+                }
+            ],
+            'recommendations': [
+                'Mettre à jour le firmware du routeur',
+                'Désactiver UPnP pour une meilleure sécurité',
+                'Activer le pare-feu intégré'
+            ],
+            'last_updated': datetime.now().isoformat()
+        }
+        
+        # Ordinateur portable
+        laptop = {
+            'mac_address': '66:77:88:99:AA:BB',
+            'security_score': 75,
+            'security_issues': [
+                {
+                    'id': 'ISSUE-003',
+                    'description': 'Antivirus non à jour',
+                    'severity': 'medium',
+                    'solution': 'Mettre à jour l\'antivirus'
+                }
+            ],
+            'recommendations': [
+                'Mettre à jour les logiciels de sécurité',
+                'Activer le pare-feu Windows',
+                'Utiliser un VPN pour les connexions publiques'
+            ],
+            'last_updated': datetime.now().isoformat()
+        }
+        
+        # Smartphone
+        phone = {
+            'mac_address': 'CC:DD:EE:FF:00:11',
+            'security_score': 65,
+            'security_issues': [
+                {
+                    'id': 'ISSUE-004',
+                    'description': 'Applications non mises à jour',
+                    'severity': 'medium',
+                    'solution': 'Mettre à jour toutes les applications'
+                },
+                {
+                    'id': 'ISSUE-005',
+                    'description': 'Connexion à des réseaux publics fréquente',
+                    'severity': 'medium',
+                    'solution': 'Utiliser un VPN sur les réseaux publics'
+                }
+            ],
+            'recommendations': [
+                'Activer les mises à jour automatiques',
+                'Installer un gestionnaire de mots de passe',
+                'Utiliser un VPN sur les réseaux publics'
+            ],
+            'last_updated': datetime.now().isoformat()
+        }
+        
+        # Caméra IP
+        camera = {
+            'mac_address': '22:33:44:55:66:77',
+            'security_score': 35,
+            'security_issues': [
+                {
+                    'id': 'ISSUE-006',
+                    'description': 'Mot de passe par défaut non modifié',
+                    'severity': 'high',
+                    'solution': 'Changer le mot de passe par défaut'
+                },
+                {
+                    'id': 'ISSUE-007',
+                    'description': 'Firmware obsolète',
+                    'severity': 'high',
+                    'solution': 'Mettre à jour le firmware'
+                },
+                {
+                    'id': 'ISSUE-008',
+                    'description': 'Connexion non chiffrée',
+                    'severity': 'high',
+                    'solution': 'Activer HTTPS/TLS pour l\'accès à la caméra'
+                }
+            ],
+            'recommendations': [
+                'Changer immédiatement le mot de passe par défaut',
+                'Mettre à jour le firmware',
+                'Placer la caméra dans un réseau isolé',
+                'Désactiver l\'accès à distance si non nécessaire'
+            ],
+            'last_updated': datetime.now().isoformat()
+        }
+        
+        # Télévision intelligente
+        tv = {
+            'mac_address': '88:99:AA:BB:CC:DD',
+            'security_score': 55,
+            'security_issues': [
+                {
+                    'id': 'ISSUE-009',
+                    'description': 'Firmware non mis à jour',
+                    'severity': 'medium',
+                    'solution': 'Mettre à jour le firmware de la télévision'
+                },
+                {
+                    'id': 'ISSUE-010',
+                    'description': 'Suivi publicitaire activé',
+                    'severity': 'low',
+                    'solution': 'Désactiver le suivi publicitaire dans les paramètres'
+                }
+            ],
+            'recommendations': [
+                'Mettre à jour le firmware de la télévision',
+                'Désactiver les fonctionnalités de suivi et de collecte de données',
+                'Considérer l\'utilisation d\'un boîtier multimédia externe plus sécurisé'
+            ],
+            'last_updated': datetime.now().isoformat()
+        }
+        
+        # Ajouter les appareils à la liste
+        self.devices = [router, laptop, phone, camera, tv]
+        
+        # Sauvegarder les données
+        self.save_devices()
     
     def _add_random_device(self):
         """Ajoute un appareil aléatoire pour simuler une nouvelle détection"""
-        device_types = ["Smartphone", "Laptop", "Smart TV", "IoT Device", "Router", "Tablet"]
-        manufacturers = ["Samsung", "Apple", "Huawei", "Sony", "LG", "TP-Link", "Xiaomi"]
+        device_types = ['printer', 'tablet', 'laptop', 'desktop', 'smartphone', 'iot']
+        device_type = random.choice(device_types)
         
         mac_address = self._generate_random_mac()
         
-        # Ne pas ajouter si ce MAC existe déjà
-        if mac_address in self.devices:
+        # Vérifier si l'appareil existe déjà
+        if any(d['mac_address'] == mac_address for d in self.devices):
             return
         
-        device_type = random.choice(device_types)
-        manufacturer = random.choice(manufacturers)
-        
-        self.devices[mac_address] = {
+        device = {
             'mac_address': mac_address,
-            'ip_address': f"192.168.1.{random.randint(10, 250)}",
-            'device_type': device_type,
-            'manufacturer': manufacturer,
-            'hostname': f"{manufacturer.lower()}-{device_type.lower()}-{random.randint(1, 999)}",
-            'first_seen': datetime.now().isoformat(),
-            'last_seen': datetime.now().isoformat(),
-            'security_score': random.randint(30, 95),
+            'security_score': random.randint(30, 90),
             'security_issues': self._generate_random_security_issues(device_type),
-            'recommendations': []
+            'recommendations': [
+                'Mettre à jour le système d\'exploitation',
+                'Vérifier les paramètres de sécurité',
+                'Installer un antivirus'
+            ],
+            'last_updated': datetime.now().isoformat()
         }
         
-        # Ajouter des recommandations basées sur les problèmes de sécurité
-        self._update_device_recommendations(mac_address)
-        
-        logger.info(f"Nouvel appareil détecté: {manufacturer} {device_type}")
+        self.devices.append(device)
+        self.save_devices()
+        logger.info(f"Nouvel appareil détecté et ajouté: {mac_address}")
     
     def _generate_random_mac(self):
         """Génère une adresse MAC aléatoire"""
@@ -138,303 +237,161 @@ class DeviceSecurityScoring:
     def _generate_random_security_issues(self, device_type):
         """Génère des problèmes de sécurité aléatoires basés sur le type d'appareil"""
         issues = []
+        severities = ['low', 'medium', 'high']
         
-        # Problèmes potentiels basés sur le type d'appareil
-        potential_issues = {
-            'firmware_version': {
-                'status': random.choice(['up_to_date', 'outdated', 'very_outdated', 'unknown']),
-                'impact': random.choice(['low', 'medium', 'high'])
-            },
-            'update_status': {
-                'status': random.choice(['enabled', 'disabled', 'unknown']),
-                'impact': random.choice(['low', 'medium', 'high'])
-            },
-            'vulnerabilities': {
-                'status': random.choice(['none', 'some', 'many', 'unknown']),
-                'impact': random.choice(['low', 'medium', 'high'])
-            }
-        }
+        # Nombre de problèmes basé sur le type d'appareil
+        if device_type == 'iot':
+            num_issues = random.randint(2, 4)  # Les appareils IoT ont souvent plus de problèmes
+        else:
+            num_issues = random.randint(0, 2)
         
-        # Ajouter des problèmes spécifiques au type d'appareil
-        if device_type == "Router":
-            potential_issues['open_ports'] = {
-                'status': random.choice(['few', 'many', 'too_many']),
-                'impact': random.choice(['medium', 'high'])
-            }
-            potential_issues['encryption'] = {
-                'status': random.choice(['strong', 'medium', 'weak', 'none']),
-                'impact': 'high'
-            }
-        
-        elif device_type in ["Smartphone", "Tablet", "Laptop"]:
-            potential_issues['password_protection'] = {
-                'status': random.choice(['enabled', 'disabled', 'weak', 'unknown']),
-                'impact': random.choice(['medium', 'high'])
-            }
-            potential_issues['encryption'] = {
-                'status': random.choice(['enabled', 'partial', 'disabled']),
-                'impact': random.choice(['medium', 'high'])
-            }
-        
-        elif device_type == "IoT Device":
-            potential_issues['default_password'] = {
-                'status': random.choice(['changed', 'not_changed', 'unknown']),
-                'impact': 'high'
-            }
-            potential_issues['firmware_version'] = {
-                'status': 'very_outdated',  # Les IoT ont souvent un firmware obsolète
-                'impact': 'high'
-            }
-        
-        # Ajouter des problèmes génériques
-        potential_issues['firewall'] = {
-            'status': random.choice(['enabled', 'disabled', 'partial', 'unknown']),
-            'impact': random.choice(['medium', 'high'])
-        }
-        
-        potential_issues['suspicious_activity'] = {
-            'status': random.choice(['none', 'detected', 'unknown']),
-            'impact': random.choice(['medium', 'high'])
-        }
-        
-        # Convertir le dictionnaire en liste d'objets pour l'API
-        for issue_type, details in potential_issues.items():
+        for i in range(num_issues):
+            issue_id = f"ISSUE-{random.randint(100, 999)}"
+            severity = random.choice(severities)
+            
+            if device_type == 'iot':
+                descriptions = [
+                    'Mot de passe par défaut non modifié',
+                    'Firmware obsolète',
+                    'Connexion non chiffrée',
+                    'Ports inutiles ouverts',
+                    'Communications non sécurisées'
+                ]
+            elif device_type in ['laptop', 'desktop']:
+                descriptions = [
+                    'Système d\'exploitation non mis à jour',
+                    'Antivirus non à jour',
+                    'Pare-feu désactivé',
+                    'Vulnérabilités logicielles détectées'
+                ]
+            else:
+                descriptions = [
+                    'Applications non mises à jour',
+                    'Connexion à des réseaux publics fréquente',
+                    'Suivi de localisation activé',
+                    'Bluetooth toujours activé'
+                ]
+            
+            description = random.choice(descriptions)
+            solution = f"Résoudre le problème: {description}"
+            
             issues.append({
-                'type': issue_type,
-                'status': details['status'],
-                'impact': details['impact']
+                'id': issue_id,
+                'description': description,
+                'severity': severity,
+                'solution': solution
             })
         
         return issues
     
     def _update_device_status(self, mac_address):
         """Met à jour aléatoirement le statut d'un appareil pour simuler des changements"""
-        if mac_address not in self.devices:
-            return
-        
-        device = self.devices[mac_address]
-        
-        # Chance de changer un problème de sécurité existant
-        if device['security_issues'] and random.random() < 0.5:
-            issue_index = random.randint(0, len(device['security_issues']) - 1)
-            issue = device['security_issues'][issue_index]
-            
-            # Possibilité d'amélioration ou de dégradation
-            if issue['type'] == 'firmware_version':
-                issue['status'] = random.choice(['up_to_date', 'outdated', 'very_outdated'])
-            elif issue['type'] == 'update_status':
-                issue['status'] = random.choice(['enabled', 'disabled'])
-            elif issue['type'] == 'encryption':
-                issue['status'] = random.choice(['strong', 'medium', 'weak', 'none'])
-            elif issue['type'] == 'password_protection':
-                issue['status'] = random.choice(['enabled', 'disabled', 'weak'])
-            elif issue['type'] == 'suspicious_activity':
-                issue['status'] = random.choice(['none', 'detected'])
-        
-        # Recalculer le score de sécurité
-        self.calculate_device_score(mac_address)
-        
-        # Mettre à jour les recommandations
-        self._update_device_recommendations(mac_address)
+        for device in self.devices:
+            if device['mac_address'] == mac_address:
+                # 5% de chance de changer le score de sécurité
+                if random.random() < 0.05:
+                    variation = random.randint(-5, 5)
+                    device['security_score'] = max(0, min(100, device['security_score'] + variation))
+                    device['last_updated'] = datetime.now().isoformat()
+                    
+                    # Si le score a changé, mettre à jour les recommandations
+                    self._update_device_recommendations(mac_address)
+                    
+                    self.save_devices()
+                    logger.info(f"Score de sécurité mis à jour pour {mac_address}: {device['security_score']}")
+                return
     
     def calculate_device_score(self, mac_address):
         """Calcule le score de sécurité pour un appareil spécifique"""
-        if mac_address not in self.devices:
-            return
+        device = self.get_device(mac_address)
+        if not device:
+            return None
         
-        device = self.devices[mac_address]
-        base_score = 100
+        # Dans une implémentation réelle, ce calcul serait basé sur de nombreux facteurs
+        # Pour cette démo, nous utilisons simplement le score existant avec une légère variation
+        score = device.get('security_score', 50)
+        variation = random.randint(-3, 3)
+        new_score = max(0, min(100, score + variation))
         
-        # Réduire le score en fonction des problèmes de sécurité
-        for issue in device['security_issues']:
-            penalty = 0
-            
-            # Pénalité en fonction du type et du statut du problème
-            if issue['type'] == 'firmware_version':
-                if issue['status'] == 'outdated':
-                    penalty = 10
-                elif issue['status'] == 'very_outdated':
-                    penalty = 20
-                elif issue['status'] == 'unknown':
-                    penalty = 5
-            
-            elif issue['type'] == 'update_status':
-                if issue['status'] == 'disabled':
-                    penalty = 15
-                elif issue['status'] == 'unknown':
-                    penalty = 5
-            
-            elif issue['type'] == 'vulnerabilities':
-                if issue['status'] == 'some':
-                    penalty = 15
-                elif issue['status'] == 'many':
-                    penalty = 30
-                elif issue['status'] == 'unknown':
-                    penalty = 10
-            
-            elif issue['type'] == 'open_ports':
-                if issue['status'] == 'many':
-                    penalty = 15
-                elif issue['status'] == 'too_many':
-                    penalty = 25
-            
-            elif issue['type'] == 'encryption':
-                if issue['status'] == 'medium':
-                    penalty = 15
-                elif issue['status'] == 'weak':
-                    penalty = 25
-                elif issue['status'] == 'none':
-                    penalty = 40
-                elif issue['status'] == 'partial':
-                    penalty = 20
-            
-            elif issue['type'] == 'password_protection':
-                if issue['status'] == 'disabled':
-                    penalty = 30
-                elif issue['status'] == 'weak':
-                    penalty = 20
-                elif issue['status'] == 'unknown':
-                    penalty = 15
-            
-            elif issue['type'] == 'default_password':
-                if issue['status'] == 'not_changed':
-                    penalty = 40
-                elif issue['status'] == 'unknown':
-                    penalty = 20
-            
-            elif issue['type'] == 'firewall':
-                if issue['status'] == 'disabled':
-                    penalty = 25
-                elif issue['status'] == 'partial':
-                    penalty = 10
-                elif issue['status'] == 'unknown':
-                    penalty = 15
-            
-            elif issue['type'] == 'suspicious_activity':
-                if issue['status'] == 'detected':
-                    penalty = 35
-                elif issue['status'] == 'unknown':
-                    penalty = 10
-            
-            # Ajuster la pénalité en fonction de l'impact
-            if issue['impact'] == 'low':
-                penalty = max(1, int(penalty * 0.7))
-            elif issue['impact'] == 'high':
-                penalty = int(penalty * 1.3)
-            
-            base_score -= penalty
+        # Mise à jour du score
+        device['security_score'] = new_score
+        device['last_updated'] = datetime.now().isoformat()
+        self.save_devices()
         
-        # S'assurer que le score est dans la plage [0, 100]
-        device['security_score'] = max(0, min(100, base_score))
-        
-        logger.debug(f"Score de sécurité calculé pour {mac_address}: {device['security_score']}")
-        return device['security_score']
+        return new_score
     
     def _update_device_recommendations(self, mac_address):
         """Met à jour les recommandations de sécurité basées sur les problèmes détectés"""
-        if mac_address not in self.devices:
+        device = self.get_device(mac_address)
+        if not device:
             return
         
-        device = self.devices[mac_address]
         recommendations = []
+        issues = device.get('security_issues', [])
         
         # Générer des recommandations basées sur les problèmes
-        for issue in device['security_issues']:
-            if issue['type'] == 'firmware_version' and issue['status'] in ['outdated', 'very_outdated']:
-                recommendations.append('rec_update_firmware')
-            
-            elif issue['type'] == 'update_status' and issue['status'] == 'disabled':
-                recommendations.append('rec_install_updates')
-            
-            elif issue['type'] == 'vulnerabilities' and issue['status'] in ['some', 'many']:
-                recommendations.append('rec_address_vulnerabilities')
-            
-            elif issue['type'] == 'open_ports' and issue['status'] in ['many', 'too_many']:
-                recommendations.append('rec_close_ports')
-            
-            elif issue['type'] == 'encryption' and issue['status'] in ['medium', 'weak', 'none', 'partial']:
-                recommendations.append('rec_improve_encryption')
-            
-            elif issue['type'] == 'password_protection' and issue['status'] in ['disabled', 'weak']:
-                recommendations.append('rec_enable_password')
-            
-            elif issue['type'] == 'default_password' and issue['status'] == 'not_changed':
-                recommendations.append('rec_enable_password')
-            
-            elif issue['type'] == 'firewall' and issue['status'] in ['disabled', 'partial']:
-                recommendations.append('rec_enable_firewall')
-            
-            elif issue['type'] == 'suspicious_activity' and issue['status'] == 'detected':
-                recommendations.append('rec_check_suspicious')
+        for issue in issues:
+            if issue['severity'] == 'high':
+                recommendations.append(f"URGENT: {issue['solution']}")
+            else:
+                recommendations.append(issue['solution'])
         
-        # Si aucun problème grave n'est détecté, ajouter une recommandation positive
-        if device['security_score'] >= 80:
-            recommendations.append('rec_device_secure')
+        # Ajouter quelques recommandations générales
+        general_recommendations = [
+            'Effectuer régulièrement des mises à jour de sécurité',
+            'Utiliser des mots de passe forts et uniques',
+            'Activer l\'authentification à deux facteurs lorsque disponible',
+            'Surveiller régulièrement l\'activité réseau'
+        ]
         
-        # Éliminer les doublons
-        device['recommendations'] = list(set(recommendations))
+        # Ajouter 1-2 recommandations générales aléatoires
+        for _ in range(random.randint(1, 2)):
+            rec = random.choice(general_recommendations)
+            if rec not in recommendations:
+                recommendations.append(rec)
+        
+        device['recommendations'] = recommendations
     
     def get_device(self, mac_address):
         """Récupère les détails d'un appareil spécifique"""
-        return self.devices.get(mac_address)
+        for device in self.devices:
+            if device['mac_address'] == mac_address:
+                return device
+        return None
     
     def get_all_device_scores(self):
         """Récupère tous les appareils avec leurs scores de sécurité"""
-        # Mettre à jour les appareils avant de les retourner
-        self.detect_devices()
-        
-        return [
-            {
-                'mac_address': device['mac_address'],
-                'hostname': device['hostname'],
-                'device_type': device['device_type'],
-                'manufacturer': device['manufacturer'],
-                'ip_address': device['ip_address'],
-                'security_score': device['security_score'],
-                'last_seen': device['last_seen']
-            }
-            for mac_address, device in self.devices.items()
-        ]
+        return [{
+            'mac_address': device['mac_address'],
+            'security_score': device['security_score'],
+            'last_updated': device['last_updated']
+        } for device in self.devices]
     
     def get_network_security_status(self):
         """Récupère un résumé du statut de sécurité du réseau"""
-        devices = list(self.devices.values())
-        
-        if not devices:
+        if not self.devices:
             return {
-                'global_score': 0,
-                'critical_devices': 0,
-                'warning_devices': 0,
-                'secure_devices': 0,
-                'security_distribution': {
-                    'critical': 0,
-                    'warning': 0,
-                    'secure': 0
-                }
+                'overall_score': 0,
+                'device_count': 0,
+                'high_risk_count': 0,
+                'medium_risk_count': 0,
+                'low_risk_count': 0,
+                'last_updated': datetime.now().isoformat()
             }
         
-        # Compter les appareils par catégorie de score
-        critical = sum(1 for d in devices if d['security_score'] < 50)
-        warning = sum(1 for d in devices if 50 <= d['security_score'] < 80)
-        secure = sum(1 for d in devices if d['security_score'] >= 80)
+        # Calcul des statistiques
+        scores = [device['security_score'] for device in self.devices]
+        overall_score = sum(scores) / len(scores) if scores else 0
         
-        # Calculer le score global du réseau
-        if devices:
-            global_score = sum(d['security_score'] for d in devices) / len(devices)
-        else:
-            global_score = 0
+        high_risk = sum(1 for score in scores if score < 50)
+        medium_risk = sum(1 for score in scores if 50 <= score < 80)
+        low_risk = sum(1 for score in scores if score >= 80)
         
         return {
-            'global_score': round(global_score),
-            'critical_devices': critical,
-            'warning_devices': warning,
-            'secure_devices': secure,
-            'security_distribution': {
-                'critical': critical,
-                'warning': warning,
-                'secure': secure
-            }
+            'overall_score': round(overall_score, 1),
+            'device_count': len(self.devices),
+            'high_risk_count': high_risk,
+            'medium_risk_count': medium_risk,
+            'low_risk_count': low_risk,
+            'last_updated': datetime.now().isoformat()
         }
-
-# Instance globale du système de notation de sécurité
-security_scoring = DeviceSecurityScoring()

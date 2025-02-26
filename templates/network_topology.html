@@ -1,91 +1,357 @@
 {% extends "base.html" %}
 
-{% block title %}{{ t('topology_title') }}{% endblock %}
+{% block title %}Topologie Réseau | NetSecure Pro{% endblock %}
 
-{% block styles %}
-<link rel="stylesheet" href="{{ url_for('static', filename='topology.css') }}">
+{% block extra_css %}
+<style>
+    .network-container {
+        background-color: #1a1a2e;
+        border-radius: 8px;
+        position: relative;
+        height: 600px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+    
+    .controls {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 100;
+        background-color: rgba(0, 0, 0, 0.7);
+        padding: 10px;
+        border-radius: 4px;
+        color: white;
+    }
+    
+    .tooltip {
+        position: absolute;
+        padding: 10px;
+        background-color: rgba(0, 0, 0, 0.8);
+        color: white;
+        border-radius: 4px;
+        pointer-events: none;
+        font-size: 0.9em;
+        z-index: 1000;
+    }
+    
+    .node {
+        cursor: pointer;
+    }
+    
+    .node-router { fill: #ff6b6b; }
+    .node-laptop { fill: #48dbfb; }
+    .node-phone { fill: #1dd1a1; }
+    .node-iot { fill: #feca57; }
+    .node-tv { fill: #c8d6e5; }
+    .node-printer { fill: #5f27cd; }
+    .node-tablet { fill: #54a0ff; }
+    .node-desktop { fill: #576574; }
+    
+    .node.offline { opacity: 0.5; }
+    
+    .link {
+        stroke: rgba(255, 255, 255, 0.5);
+        stroke-width: 1.5px;
+    }
+    
+    .link.wifi { stroke-dasharray: 5, 3; }
+    .link.ethernet { stroke-width: 2.5px; }
+    
+    .device-info-panel {
+        position: absolute;
+        left: 15px;
+        bottom: 15px;
+        width: 300px;
+        background-color: rgba(0, 0, 0, 0.8);
+        color: white;
+        border-radius: 8px;
+        padding: 15px;
+        z-index: 10;
+        display: none;
+    }
+    
+    .score-badge {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.2em;
+    }
+    
+    .security-score-high { background-color: #1dd1a1; color: white; }
+    .security-score-medium { background-color: #feca57; color: black; }
+    .security-score-low { background-color: #ff6b6b; color: white; }
+    
+    .stats-panel {
+        position: absolute;
+        right: 15px;
+        bottom: 15px;
+        width: 200px;
+        background-color: rgba(0, 0, 0, 0.8);
+        color: white;
+        border-radius: 8px;
+        padding: 15px;
+        z-index: 10;
+    }
+    
+    .modal-dark {
+        background-color: #192a56;
+        color: white;
+    }
+    
+    .modal-dark .modal-header {
+        border-bottom: 1px solid #2c3e50;
+    }
+    
+    .modal-dark .modal-footer {
+        border-top: 1px solid #2c3e50;
+    }
+    
+    .device-icon {
+        font-size: 1.5em;
+        margin-right: 10px;
+    }
+    
+    .security-risk {
+        padding: 8px;
+        margin-bottom: 8px;
+        border-radius: 4px;
+    }
+    
+    .risk-low { background-color: rgba(29, 209, 161, 0.3); }
+    .risk-medium { background-color: rgba(254, 202, 87, 0.3); }
+    .risk-high { background-color: rgba(255, 107, 107, 0.3); }
+    
+    .device-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    
+    .signal-indicator {
+        width: 25px;
+        height: 25px;
+        display: inline-block;
+        margin-right: 5px;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="container my-4">
-    <h1>{{ t('topology_title') }}</h1>
-    <p class="lead">{{ t('topology_description') }}</p>
-
-    <div class="network-stats">
-        <div class="stat-item">
-            <div class="stat-value" id="total-devices">0</div>
-            <div class="stat-label">{{ t('topology_total_devices') }}</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-value" id="online-devices">0</div>
-            <div class="stat-label">{{ t('topology_online_devices') }}</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-value" id="secure-devices">0</div>
-            <div class="stat-label">{{ t('topology_secure_devices') }}</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-value" id="vulnerable-devices">0</div>
-            <div class="stat-label">{{ t('topology_vulnerable_devices') }}</div>
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h1>Topologie du Réseau</h1>
+        <p class="lead">Visualisez et analysez tous les appareils connectés à votre réseau.</p>
+    </div>
+    <div class="col-md-6 text-end">
+        <button class="btn btn-secondary me-2" id="resetLayoutBtn">
+            <i class="fas fa-undo"></i> Réinitialiser
+        </button>
+        <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#saveLayoutModal">
+            <i class="fas fa-save"></i> Enregistrer
+        </button>
+        <div class="btn-group">
+            <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-cog"></i> Options
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="#" id="toggleLabelsBtn"><i class="fas fa-tags me-2"></i>Afficher/Masquer les étiquettes</a></li>
+                <li><a class="dropdown-item" href="#" id="toggleStatsBtn"><i class="fas fa-chart-bar me-2"></i>Afficher/Masquer les statistiques</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="#" id="exportTopologyBtn"><i class="fas fa-file-export me-2"></i>Exporter les données</a></li>
+            </ul>
         </div>
     </div>
+</div>
 
-    <div class="topology-container">
-        <div class="topology-controls">
-            <button id="refresh-topology">{{ t('topology_refresh_button') }}</button>
-            <button id="reset-layout">{{ t('topology_reset_layout_button') }}</button>
+<!-- Conteneur de visualisation de la topologie réseau -->
+<div class="network-container mb-4">
+    <div class="controls">
+        <div class="form-check form-switch mb-2">
+            <input class="form-check-input" type="checkbox" id="showOfflineDevices" checked>
+            <label class="form-check-label" for="showOfflineDevices">Appareils hors ligne</label>
         </div>
-        
-        <div class="legend">
-            <div class="legend-item">
-                <div class="legend-icon device-high"></div>
-                <span>{{ t('topology_high_security') }}</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-icon device-medium"></div>
-                <span>{{ t('topology_medium_security') }}</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-icon device-low"></div>
-                <span>{{ t('topology_low_security') }}</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-icon device-offline"></div>
-                <span>{{ t('topology_offline_device') }}</span>
-            </div>
-        </div>
-        
-        <div id="topology-canvas">
-            <!-- La visualisation sera rendue ici par D3.js -->
-            <div id="device-info-panel" class="device-info-panel">
-                <!-- Les détails de l'appareil sélectionné seront affichés ici -->
-            </div>
+        <div class="form-check form-switch mb-2">
+            <input class="form-check-input" type="checkbox" id="colorBySecurityScore" checked>
+            <label class="form-check-label" for="colorBySecurityScore">Colorer par score</label>
         </div>
     </div>
     
-    <div class="card my-4">
-        <div class="card-header">
-            <h2>{{ t('topology_explanation_title') }}</h2>
+    <!-- Panneau d'informations sur l'appareil sélectionné -->
+    <div class="device-info-panel">
+        <h5 class="device-name">Nom de l'appareil</h5>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <span class="badge bg-secondary device-type">Type</span>
+                <span class="badge bg-info device-ip">IP</span>
+            </div>
+            <div class="score-badge security-score-medium">75</div>
         </div>
-        <div class="card-body">
-            <h3>{{ t('topology_how_to_use') }}</h3>
-            <ul>
-                <li>{{ t('topology_drag_devices') }}</li>
-                <li>{{ t('topology_click_details') }}</li>
-                <li>{{ t('topology_save_layout') }}</li>
-            </ul>
-            
-            <h3>{{ t('topology_security_colors') }}</h3>
-            <p>{{ t('topology_color_explanation') }}</p>
-            
-            <h3>{{ t('topology_signal_strength') }}</h3>
-            <p>{{ t('topology_signal_explanation') }}</p>
+        <div class="device-details small">
+            <div><strong>Fabricant:</strong> <span class="device-manufacturer"></span></div>
+            <div><strong>Modèle:</strong> <span class="device-model"></span></div>
+            <div><strong>OS:</strong> <span class="device-os"></span></div>
+            <div><strong>Signal:</strong> <div class="signal-meter mt-1 mb-2"></div></div>
+        </div>
+        <button class="btn btn-sm btn-primary w-100 mt-2 device-details-btn">
+            <i class="fas fa-info-circle me-1"></i> Détails complets
+        </button>
+    </div>
+    
+    <!-- Panneau de statistiques du réseau -->
+    <div class="stats-panel">
+        <h6 class="mb-3">Statistiques Réseau</h6>
+        <div class="mb-2">Appareils: <span id="deviceCount">0</span></div>
+        <div class="mb-2">En ligne: <span id="onlineCount">0</span></div>
+        <div class="mb-2">Score moyen: <span id="avgScore">0</span></div>
+        <div class="small text-muted mt-2">Dernière mise à jour: <span id="lastUpdate">-</span></div>
+    </div>
+</div>
+
+<!-- Modal de détails de l'appareil -->
+<div class="modal fade" id="deviceDetailsModal" tabindex="-1" aria-labelledby="deviceDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content modal-dark">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deviceDetailsModalLabel">Détails de l'appareil</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="device-header">
+                            <i class="fas fa-laptop device-icon" id="modal-device-icon"></i>
+                            <div>
+                                <h5 id="modal-device-name">Nom de l'appareil</h5>
+                                <div class="text-muted small" id="modal-device-type">Type d'appareil</div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-center mb-4">
+                            <div class="score-badge security-score-medium" id="modal-security-score">75</div>
+                        </div>
+                        
+                        <div class="info-section mb-4">
+                            <h6><i class="fas fa-info-circle me-2"></i>Informations générales</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-dark">
+                                    <tbody>
+                                        <tr>
+                                            <td>MAC</td>
+                                            <td id="modal-mac-address">00:11:22:33:44:55</td>
+                                        </tr>
+                                        <tr>
+                                            <td>IP</td>
+                                            <td id="modal-ip-address">192.168.1.100</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Fabricant</td>
+                                            <td id="modal-manufacturer">Dell</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Modèle</td>
+                                            <td id="modal-model">XPS 15</td>
+                                        </tr>
+                                        <tr>
+                                            <td>OS</td>
+                                            <td id="modal-os">Windows 11</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Connexion</td>
+                                            <td id="modal-connection">WiFi (5 GHz)</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Dernière vue</td>
+                                            <td id="modal-last-seen">il y a 2 minutes</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-8">
+                        <div class="mb-4">
+                            <h6><i class="fas fa-exclamation-triangle me-2"></i>Problèmes de sécurité détectés</h6>
+                            <div id="security-issues-container">
+                                <!-- Les problèmes de sécurité seront ajoutés ici dynamiquement -->
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h6><i class="fas fa-lightbulb me-2"></i>Recommandations</h6>
+                            <ul class="list-group list-group-flush bg-transparent" id="recommendations-container">
+                                <!-- Les recommandations seront ajoutées ici dynamiquement -->
+                            </ul>
+                        </div>
+                        
+                        <div>
+                            <h6><i class="fas fa-chart-line me-2"></i>Activité réseau</h6>
+                            <div class="small text-muted mb-2">Données transmises (dernières 24h)</div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="card bg-dark mb-2">
+                                        <div class="card-body p-2">
+                                            <div class="small text-muted">Téléchargées</div>
+                                            <div class="h5" id="modal-data-downloaded">1.2 GB</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="card bg-dark mb-2">
+                                        <div class="card-body p-2">
+                                            <div class="small text-muted">Téléversées</div>
+                                            <div class="h5" id="modal-data-uploaded">350 MB</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="small text-muted mb-2">Bande passante estimée</div>
+                            <div class="progress" style="height: 25px;">
+                                <div class="progress-bar bg-primary" id="modal-bandwidth" role="progressbar" style="width: 65%;" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100">65 Mbps</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                <button type="button" class="btn btn-primary" id="update-security-btn">Mettre à jour les informations</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de sauvegarde de la disposition -->
+<div class="modal fade" id="saveLayoutModal" tabindex="-1" aria-labelledby="saveLayoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content modal-dark">
+            <div class="modal-header">
+                <h5 class="modal-title" id="saveLayoutModalLabel">Enregistrer la disposition</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="saveLayoutForm">
+                    <div class="mb-3">
+                        <label for="layoutName" class="form-label">Nom de la disposition</label>
+                        <input type="text" class="form-control" id="layoutName" required>
+                        <div class="form-text text-light-emphasis">Choisissez un nom descriptif pour retrouver facilement cette disposition.</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" class="btn btn-primary" form="saveLayoutForm">Enregistrer</button>
+            </div>
         </div>
     </div>
 </div>
 {% endblock %}
 
-{% block scripts %}
-<script src="https://d3js.org/d3.v7.min.js"></script>
-<script src="{{ url_for('static', filename='topology.js') }}"></script>
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/topology.js') }}"></script>
 {% endblock %}
