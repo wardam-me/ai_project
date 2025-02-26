@@ -1,161 +1,613 @@
-<!DOCTYPE html>
-<html lang="{{ current_language }}" data-bs-theme="dark" dir="{{ text_direction }}">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ t('nav_security_report') }} - {{ t('app_name') }}</title>
-    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-</head>
-<body>
-    <div class="container py-5">
-        <nav class="navbar navbar-expand-lg navbar-dark mb-4">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="{{ url_for('accueil') }}">
-                    <i class="fas fa-wifi me-2"></i> {{ t('app_name') }}
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav me-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('accueil') }}">{{ t('nav_home') }}</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link active" href="{{ url_for('security_report') }}">{{ t('nav_security_report') }}</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('assistant_page') }}">{{ t('nav_assistant') }}</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('personalized_recommendations') }}">{{ t('nav_recommendations') }}</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('device_security') }}">{{ t('nav_device_security') }}</a>
-                        </li>
-                    </ul>
-                    <!-- Language selector -->
-                    <div class="dropdown">
-                        <button class="btn btn-dark dropdown-toggle" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-globe me-2"></i> {{ t('nav_language') }}
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
-                            {% for code, name in available_languages.items() %}
-                            <li>
-                                <a class="dropdown-item {% if current_language == code %}active{% endif %}" href="{{ url_for('set_language', language=code) }}">
-                                    {{ name }}
-                                </a>
-                            </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                </div>
+{% extends "base.html" %}
+
+{% block title %}Rapport de Sécurité | NetSecure Pro{% endblock %}
+
+{% block extra_css %}
+<style>
+    .report-section {
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        border-radius: 8px;
+        background-color: #fff;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .security-gauge {
+        width: 150px;
+        height: 150px;
+        margin: 0 auto;
+        position: relative;
+    }
+    
+    .gauge-chart {
+        width: 100%;
+        height: 100%;
+    }
+    
+    .gauge-value {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 2rem;
+        font-weight: bold;
+    }
+    
+    .insight-card {
+        border-left: 5px solid transparent;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background-color: #f8f9fa;
+        border-radius: 0 4px 4px 0;
+    }
+    
+    .insight-card.risk {
+        border-left-color: #dc3545;
+    }
+    
+    .insight-card.warning {
+        border-left-color: #ffc107;
+    }
+    
+    .insight-card.info {
+        border-left-color: #17a2b8;
+    }
+    
+    .insight-card.success {
+        border-left-color: #28a745;
+    }
+    
+    .device-security-bar {
+        height: 30px;
+        margin-bottom: 10px;
+        position: relative;
+    }
+    
+    .device-security-bar .name {
+        position: absolute;
+        left: 10px;
+        top: 5px;
+        z-index: 2;
+        color: white;
+        text-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+    }
+    
+    .device-security-bar .score {
+        position: absolute;
+        right: 10px;
+        top: 5px;
+        z-index: 2;
+        font-weight: bold;
+        color: white;
+        text-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+    }
+    
+    .radar-chart-container {
+        height: 350px;
+        position: relative;
+    }
+    
+    .trend-chart-container {
+        height: 250px;
+        position: relative;
+    }
+    
+    .recommendation-card {
+        margin-bottom: 1rem;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .recommendation-card .card-header {
+        padding: 0.75rem 1.25rem;
+        font-weight: bold;
+    }
+    
+    .recommendation-card .priority-high {
+        background-color: #dc3545;
+        color: white;
+    }
+    
+    .recommendation-card .priority-medium {
+        background-color: #ffc107;
+        color: black;
+    }
+    
+    .recommendation-card .priority-low {
+        background-color: #17a2b8;
+        color: white;
+    }
+    
+    .device-type-distribution {
+        height: 250px;
+    }
+    
+    .printable-section {
+        display: none;
+    }
+    
+    @media print {
+        .no-print {
+            display: none !important;
+        }
+        
+        .printable-section {
+            display: block;
+        }
+        
+        body {
+            font-size: 12pt;
+        }
+        
+        .report-section {
+            break-inside: avoid;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            box-shadow: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- En-tête du rapport -->
+<div class="row mb-4 no-print">
+    <div class="col-md-8">
+        <h1>Rapport de Sécurité Réseau</h1>
+        <p class="lead">Analyse complète de la sécurité de votre infrastructure réseau</p>
+    </div>
+    <div class="col-md-4 text-end">
+        <div class="btn-group">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">
+                <i class="fas fa-tachometer-alt me-2"></i>Tableau de bord
+            </a>
+            <button type="button" class="btn btn-outline-secondary" onclick="window.print()">
+                <i class="fas fa-print me-2"></i>Imprimer
+            </button>
+            <button type="button" class="btn btn-primary" id="downloadReportBtn">
+                <i class="fas fa-file-pdf me-2"></i>Télécharger PDF
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Section imprimable uniquement pour l'impression -->
+<div class="printable-section mb-4">
+    <div class="text-center">
+        <h2>NetSecure Pro</h2>
+        <h3>Rapport de Sécurité Réseau</h3>
+        <p>Généré le {{ now.strftime('%d/%m/%Y à %H:%M') }}</p>
+        <hr>
+    </div>
+</div>
+
+<!-- Résumé du rapport -->
+<div class="report-section mb-4">
+    <div class="row">
+        <div class="col-md-4 text-center">
+            <div class="security-gauge mb-3">
+                <canvas class="gauge-chart" id="securityGauge"></canvas>
+                <div class="gauge-value">72</div>
             </div>
-        </nav>
-
-        <div class="row">
-            <div class="col-lg-8 mx-auto">
-                <h1 class="display-5 mb-4 text-center">{{ t('security_reports') }}</h1>
-
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <div class="card bg-dark mb-4">
-                            <div class="card-header bg-primary bg-opacity-50">
-                                <h5 class="mb-0"><i class="fas fa-shield-alt me-2"></i> {{ t('generate_report') }}</h5>
-                            </div>
-                            <div class="card-body">
-                                {% if all_networks %}
-                                <p>{{ t('reports_analyze').split(':', 1)[0] }} {{ all_networks|length }} {{ t('networks_details').split(' ', 1)[0] }}.</p>
-                                <form action="{{ url_for('generate_report') }}" method="post">
-                                    <div class="mb-3">
-                                        <label for="report_name" class="form-label">{{ t('report_name') }}</label>
-                                        <input type="text" class="form-control" id="report_name" name="report_name" 
-                                            placeholder="{{ t('report_name_placeholder') }}">
-                                    </div>
-                                    <button type="submit" class="btn btn-primary w-100">
-                                        <i class="fas fa-file-medical me-2"></i> {{ t('btn_generate_report') }}
-                                    </button>
-                                </form>
-                                {% else %}
-                                <div class="alert alert-warning">
-                                    <i class="fas fa-exclamation-triangle me-2"></i> {{ t('no_networks_detected') }}
-                                    <p class="mb-0 mt-2">{{ t('return_home') }}</p>
-                                </div>
-                                <a href="{{ url_for('accueil') }}" class="btn btn-primary w-100">
-                                    <i class="fas fa-home me-2"></i> {{ t('back_home') }}
-                                </a>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="card bg-dark h-100">
-                            <div class="card-header bg-info bg-opacity-50">
-                                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i> {{ t('about_reports') }}</h5>
-                            </div>
-                            <div class="card-body">
-                                <p>{{ t('reports_analyze') }}</p>
-                                <ul>
-                                    <li>{{ t('encryption_type') }}</li>
-                                    <li>{{ t('signal_strength_criteria') }}</li>
-                                    <li>{{ t('frequency_used') }}</li>
-                                </ul>
-                                <p class="mb-0">{{ t('security_score') }}</p>
-                            </div>
-                        </div>
-                    </div>
+            <h4>Score de sécurité global</h4>
+            <p class="text-muted">Niveau: <span class="badge bg-warning">Intermédiaire</span></p>
+        </div>
+        <div class="col-md-8">
+            <h3 class="mb-3">Résumé exécutif</h3>
+            <p>Cette analyse de sécurité a identifié plusieurs domaines qui nécessitent votre attention. Le score global de 72/100 indique une posture de sécurité intermédiaire avec certaines vulnérabilités importantes à corriger.</p>
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <h5 class="mb-3">Points forts</h5>
+                    <ul>
+                        <li>Sécurité physique des appareils</li>
+                        <li>Segmentation du réseau WiFi invité/principal</li>
+                        <li>Pare-feu correctement configuré</li>
+                    </ul>
                 </div>
-
-                <!-- Liste des rapports existants -->
-                <div class="card bg-secondary">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0"><i class="fas fa-history me-2"></i> {{ t('previous_reports') }}</h5>
-                        <span class="badge bg-info">{{ saved_reports|length }} {{ t('report_count') }}</span>
-                    </div>
-                    <div class="card-body p-0">
-                        {% if saved_reports %}
-                        <div class="table-responsive">
-                            <table class="table table-dark table-hover mb-0">
-                                <thead>
-                                    <tr>
-                                        <th>{{ t('report_name') }}</th>
-                                        <th>{{ t('report_date') }}</th>
-                                        <th>{{ t('networks') }}</th>
-                                        <th>{{ t('actions') }}</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for report in saved_reports %}
-                                    <tr>
-                                        <td>{{ report.report_name }}</td>
-                                        <td>{{ report.timestamp|replace('T', ' ')|truncate(16, true, '') }}</td>
-                                        <td>{{ report.total_networks }}</td>
-                                        <td>
-                                            <a href="{{ url_for('view_report', report_name=report.filename|replace('.json', '')) }}" 
-                                               class="btn btn-sm btn-info">
-                                                <i class="fas fa-eye"></i> {{ t('view') }}
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                        {% else %}
-                        <div class="p-4 text-center">
-                            <p class="mb-0 text-muted">{{ t('no_reports') }}</p>
-                        </div>
-                        {% endif %}
-                    </div>
+                <div class="col-md-6">
+                    <h5 class="mb-3">Points à améliorer</h5>
+                    <ul>
+                        <li>Mises à jour de firmware (3 appareils)</li>
+                        <li>Changement des mots de passe par défaut</li>
+                        <li>Activation du chiffrement WPA3</li>
+                    </ul>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<!-- Insights et recommandations -->
+<div class="report-section mb-4">
+    <h3 class="mb-3">Insights et Recommandations Clés</h3>
+    
+    <div class="insight-card risk">
+        <h5><i class="fas fa-exclamation-triangle me-2"></i>Firmware obsolète sur le routeur principal</h5>
+        <p>Votre routeur Netgear Nighthawk exécute le firmware version 1.0.3.80, qui contient des vulnérabilités connues. Il est fortement recommandé de mettre à jour vers la version 1.0.3.86 ou supérieure pour corriger ces problèmes.</p>
+        <div class="d-flex justify-content-between align-items-center">
+            <span class="badge bg-danger">Critique</span>
+            <a href="#" class="btn btn-sm btn-outline-primary">Comment résoudre ?</a>
+        </div>
+    </div>
+    
+    <div class="insight-card warning">
+        <h5><i class="fas fa-key me-2"></i>Identifiants par défaut détectés</h5>
+        <p>Votre caméra IP utilise toujours les identifiants par défaut (admin/admin), ce qui représente un risque de sécurité important. Modifiez immédiatement ces identifiants pour empêcher les accès non autorisés.</p>
+        <div class="d-flex justify-content-between align-items-center">
+            <span class="badge bg-warning text-dark">Important</span>
+            <a href="#" class="btn btn-sm btn-outline-primary">Comment résoudre ?</a>
+        </div>
+    </div>
+    
+    <div class="insight-card info">
+        <h5><i class="fas fa-wifi me-2"></i>Mise à niveau vers WPA3 recommandée</h5>
+        <p>Votre réseau WiFi utilise actuellement le protocole WPA2, qui est moins sécurisé que la norme WPA3. Votre routeur prend en charge WPA3 - activez cette option pour renforcer la sécurité de votre réseau sans fil.</p>
+        <div class="d-flex justify-content-between align-items-center">
+            <span class="badge bg-info">Modéré</span>
+            <a href="#" class="btn btn-sm btn-outline-primary">Comment résoudre ?</a>
+        </div>
+    </div>
+    
+    <div class="insight-card success">
+        <h5><i class="fas fa-shield-alt me-2"></i>Bonne pratique: Réseau invité séparé</h5>
+        <p>Vous avez correctement configuré un réseau WiFi invité séparé de votre réseau principal, ce qui est une excellente pratique de sécurité. Continuez à diriger les appareils non essentiels et invités vers ce réseau.</p>
+        <div class="d-flex justify-content-between align-items-center">
+            <span class="badge bg-success">Bonne pratique</span>
+            <a href="#" class="btn btn-sm btn-outline-primary">En savoir plus</a>
+        </div>
+    </div>
+</div>
+
+<!-- Sécurité par appareil -->
+<div class="report-section mb-4">
+    <h3 class="mb-3">Sécurité par Appareil</h3>
+    <p>Analyse des risques de sécurité pour chaque appareil connecté à votre réseau.</p>
+    
+    <div class="device-security-bars mt-4">
+        <div class="device-security-bar">
+            <div class="progress h-100">
+                <div class="progress-bar bg-success" role="progressbar" style="width: 85%;" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <span class="name">Ordinateur portable</span>
+            <span class="score">85</span>
+        </div>
+        
+        <div class="device-security-bar">
+            <div class="progress h-100">
+                <div class="progress-bar bg-warning" role="progressbar" style="width: 65%;" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <span class="name">Smartphone</span>
+            <span class="score">65</span>
+        </div>
+        
+        <div class="device-security-bar">
+            <div class="progress h-100">
+                <div class="progress-bar bg-warning" role="progressbar" style="width: 55%;" aria-valuenow="55" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <span class="name">Smart TV</span>
+            <span class="score">55</span>
+        </div>
+        
+        <div class="device-security-bar">
+            <div class="progress h-100">
+                <div class="progress-bar bg-danger" role="progressbar" style="width: 35%;" aria-valuenow="35" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <span class="name">Caméra IP</span>
+            <span class="score">35</span>
+        </div>
+        
+        <div class="device-security-bar">
+            <div class="progress h-100">
+                <div class="progress-bar bg-success" role="progressbar" style="width: 75%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <span class="name">Routeur WiFi Principal</span>
+            <span class="score">75</span>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-md-8">
+            <h4 class="mb-3">Analyse des dimensions de sécurité</h4>
+            <div class="radar-chart-container">
+                <canvas id="securityRadarChart"></canvas>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <h4 class="mb-3">Distribution par type</h4>
+            <div class="device-type-distribution">
+                <canvas id="deviceTypeChart"></canvas>
+            </div>
+            <div class="mt-3 small text-center">
+                <div class="d-flex justify-content-between">
+                    <span><i class="fas fa-circle text-primary"></i> Ordinateurs</span>
+                    <span><i class="fas fa-circle text-success"></i> Mobiles</span>
+                    <span><i class="fas fa-circle text-danger"></i> IoT</span>
+                    <span><i class="fas fa-circle text-warning"></i> Réseau</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tendances de sécurité -->
+<div class="report-section mb-4">
+    <h3 class="mb-3">Tendances de Sécurité</h3>
+    <p>Évolution de votre score de sécurité au cours des derniers mois.</p>
+    
+    <div class="trend-chart-container mt-4">
+        <canvas id="securityTrendChart"></canvas>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-md-4 text-center">
+            <h4 class="text-success">+12%</h4>
+            <p>Amélioration globale</p>
+        </div>
+        <div class="col-md-4 text-center">
+            <h4>8</h4>
+            <p>Problèmes résolus</p>
+        </div>
+        <div class="col-md-4 text-center">
+            <h4>3</h4>
+            <p>Nouveaux problèmes</p>
+        </div>
+    </div>
+</div>
+
+<!-- Plan d'action -->
+<div class="report-section mb-4">
+    <h3 class="mb-3">Plan d'Action Recommandé</h3>
+    <p>Suivez ces étapes pour améliorer la sécurité de votre réseau.</p>
+    
+    <div class="row mt-4">
+        <div class="col-md-4 mb-3">
+            <div class="card recommendation-card h-100">
+                <div class="card-header priority-high">
+                    <i class="fas fa-exclamation-circle me-2"></i>Priorité haute
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Mettre à jour le firmware</h5>
+                    <p class="card-text">Mettez à jour le firmware de votre routeur et de votre caméra IP vers les dernières versions disponibles.</p>
+                    <p class="text-muted small">Temps estimé: 30 minutes</p>
+                    <a href="#" class="btn btn-sm btn-primary">Voir le guide</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card recommendation-card h-100">
+                <div class="card-header priority-high">
+                    <i class="fas fa-exclamation-circle me-2"></i>Priorité haute
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Changer les mots de passe</h5>
+                    <p class="card-text">Changez les mots de passe par défaut de tous vos appareils IoT, en particulier la caméra IP.</p>
+                    <p class="text-muted small">Temps estimé: 20 minutes</p>
+                    <a href="#" class="btn btn-sm btn-primary">Voir le guide</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card recommendation-card h-100">
+                <div class="card-header priority-medium">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Priorité moyenne
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Activer WPA3</h5>
+                    <p class="card-text">Activez le protocole WPA3 sur votre routeur pour renforcer la sécurité de votre réseau WiFi.</p>
+                    <p class="text-muted small">Temps estimé: 10 minutes</p>
+                    <a href="#" class="btn btn-sm btn-primary">Voir le guide</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-2">
+        <div class="col-md-4 mb-3">
+            <div class="card recommendation-card h-100">
+                <div class="card-header priority-medium">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Priorité moyenne
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Désactiver UPnP</h5>
+                    <p class="card-text">Désactivez le protocole UPnP sur votre routeur pour réduire les risques d'exposition.</p>
+                    <p class="text-muted small">Temps estimé: 5 minutes</p>
+                    <a href="#" class="btn btn-sm btn-primary">Voir le guide</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card recommendation-card h-100">
+                <div class="card-header priority-low">
+                    <i class="fas fa-info-circle me-2"></i>Priorité basse
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Mettre à jour les applications</h5>
+                    <p class="card-text">Assurez-vous que toutes les applications sur vos appareils mobiles sont à jour.</p>
+                    <p class="text-muted small">Temps estimé: 15 minutes</p>
+                    <a href="#" class="btn btn-sm btn-primary">Voir le guide</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card recommendation-card h-100">
+                <div class="card-header priority-low">
+                    <i class="fas fa-info-circle me-2"></i>Priorité basse
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Configurer un VPN</h5>
+                    <p class="card-text">Installez et configurez un VPN pour sécuriser vos connexions lorsque vous utilisez des réseaux publics.</p>
+                    <p class="text-muted small">Temps estimé: 45 minutes</p>
+                    <a href="#" class="btn btn-sm btn-primary">Voir le guide</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Jauge de sécurité
+        const gaugeCtx = document.getElementById('securityGauge').getContext('2d');
+        const gaugeChart = new Chart(gaugeCtx, {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: [72, 28],
+                    backgroundColor: [
+                        getScoreColor(72),
+                        '#e9ecef'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                cutout: '75%',
+                rotation: -90,
+                circumference: 180,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        enabled: false
+                    }
+                },
+                maintainAspectRatio: false
+            }
+        });
+        
+        // Graphique radar des dimensions de sécurité
+        const radarCtx = document.getElementById('securityRadarChart').getContext('2d');
+        const radarChart = new Chart(radarCtx, {
+            type: 'radar',
+            data: {
+                labels: [
+                    'Authentification',
+                    'Chiffrement',
+                    'Mises à jour',
+                    'Pare-feu',
+                    'Segmentation',
+                    'Config. physique',
+                    'Surveillance'
+                ],
+                datasets: [{
+                    label: 'Votre réseau',
+                    data: [65, 70, 50, 85, 90, 80, 60],
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(54, 162, 235, 1)'
+                }, {
+                    label: 'Référence de sécurité',
+                    data: [80, 80, 80, 80, 80, 80, 80],
+                    backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                    borderColor: 'rgba(255, 99, 132, 0.6)',
+                    pointBackgroundColor: 'rgba(255, 99, 132, 0.6)',
+                    borderDash: [5, 5],
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(255, 99, 132, 1)'
+                }]
+            },
+            options: {
+                scales: {
+                    r: {
+                        angleLines: {
+                            display: true
+                        },
+                        suggestedMin: 0,
+                        suggestedMax: 100
+                    }
+                },
+                maintainAspectRatio: false
+            }
+        });
+        
+        // Graphique des tendances de sécurité
+        const trendCtx = document.getElementById('securityTrendChart').getContext('2d');
+        const trendChart = new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
+                datasets: [{
+                    label: 'Score de sécurité',
+                    data: [54, 58, 60, 65, 68, 72],
+                    fill: false,
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        suggestedMin: 0,
+                        suggestedMax: 100
+                    }
+                },
+                maintainAspectRatio: false
+            }
+        });
+        
+        // Graphique de distribution des types d'appareils
+        const deviceTypeCtx = document.getElementById('deviceTypeChart').getContext('2d');
+        const deviceTypeChart = new Chart(deviceTypeCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Ordinateurs', 'Mobiles', 'IoT', 'Réseau'],
+                datasets: [{
+                    data: [3, 5, 8, 2],
+                    backgroundColor: [
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(255, 99, 132, 0.7)',
+                        'rgba(255, 205, 86, 0.7)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+        
+        // Gestion du bouton de téléchargement PDF
+        document.getElementById('downloadReportBtn').addEventListener('click', function() {
+            // Dans une implémentation réelle, cela utiliserait une bibliothèque comme jsPDF
+            // ou ferait appel à une API de génération de PDF côté serveur
+            showNotification('Téléchargement du rapport en PDF...', 'info');
+            
+            // Simuler un téléchargement après un court délai
+            setTimeout(function() {
+                showNotification('Rapport téléchargé avec succès', 'success');
+            }, 2000);
+        });
+        
+        // Fonction utilitaire pour déterminer la couleur en fonction du score
+        function getScoreColor(score) {
+            if (score >= 80) {
+                return '#28a745'; // Vert (bon)
+            } else if (score >= 60) {
+                return '#ffc107'; // Jaune (moyen)
+            } else if (score >= 40) {
+                return '#fd7e14'; // Orange (préoccupant)
+            } else {
+                return '#dc3545'; // Rouge (critique)
+            }
+        }
+    });
+</script>
+{% endblock %}

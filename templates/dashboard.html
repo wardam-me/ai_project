@@ -9,9 +9,23 @@
         <p class="lead">Bienvenue, {{ current_user.username }}! Voici l'état actuel de votre réseau.</p>
     </div>
     <div class="col-md-6 text-end">
-        <a href="{{ url_for('network_topology_view') }}" class="btn btn-primary">
-            <i class="fas fa-project-diagram me-2"></i>Voir la topologie réseau
-        </a>
+        <div class="btn-group">
+            <a href="{{ url_for('network_topology_view') }}" class="btn btn-primary">
+                <i class="fas fa-project-diagram me-2"></i>Topologie réseau
+            </a>
+            <a href="{{ url_for('vulnerability_analysis') }}" class="btn btn-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>Vulnérabilités
+            </a>
+            <a href="{{ url_for('security_report') }}" class="btn btn-info">
+                <i class="fas fa-file-alt me-2"></i>Rapport complet
+            </a>
+            <a href="{{ url_for('protocol_analysis') }}" class="btn btn-dark">
+                <i class="fas fa-shield-alt me-2"></i>Analyse protocoles
+            </a>
+            <a href="{{ url_for('assistant') }}" class="btn btn-success">
+                <i class="fas fa-comment-dots me-2"></i>Assistant
+            </a>
+        </div>
     </div>
 </div>
 
