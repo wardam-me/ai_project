@@ -1,9 +1,10 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 from flask_socketio import SocketIO, emit
 import logging
 import json
 import os
 import subprocess
+from network_security import NetworkSecurityAnalyzer
 
 # Configuration du logging
 logging.basicConfig(level=logging.DEBUG)
@@ -11,6 +12,9 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 socketio = SocketIO(app)
+
+# Initialiser l'analyseur de sécurité
+security_analyzer = NetworkSecurityAnalyzer()
 
 # Configuration de l'analyseur WiFi
 CONFIG_DIR = os.path.expanduser("~/.network_detect")
@@ -71,11 +75,78 @@ def accueil():
     all_networks = load_wifi_data()
     return render_template('index.html', network=best_network, all_networks=all_networks)
 
+@app.route('/security-report')
+def security_report():
+    """Page principale des rapports de sécurité"""
+    logger.info('Page des rapports de sécurité visitée')
+    all_networks = load_wifi_data()
+
+    # Récupérer les rapports existants
+    saved_reports = security_analyzer.get_saved_reports()
+
+    return render_template(
+        'security_report.html', 
+        all_networks=all_networks,
+        saved_reports=saved_reports
+    )
+
+@app.route('/generate-report', methods=['POST'])
+def generate_report():
+    """Génère un nouveau rapport de sécurité"""
+    report_name = request.form.get('report_name', '')
+    all_networks = load_wifi_data()
+
+    if not all_networks:
+        return redirect(url_for('security_report'))
+
+    report = security_analyzer.generate_report(all_networks, report_name)
+
+    if report:
+        return redirect(url_for('view_report', report_name=report['report_name']))
+    else:
+        return redirect(url_for('security_report'))
+
+@app.route('/view-report/<report_name>')
+def view_report(report_name):
+    """Affiche un rapport spécifique"""
+    report = security_analyzer.get_report_by_name(report_name)
+
+    if not report:
+        return redirect(url_for('security_report'))
+
+    return render_template('view_report.html', report=report)
+
+@app.route('/api/analyze-network', methods=['POST'])
+def api_analyze_network():
+    """API pour analyser un réseau spécifique"""
+    data = request.get_json()
+    network = data.get('network')
+
+    if not network:
+        return jsonify({"error": "Réseau non spécifié"}), 400
+
+    result = security_analyzer.analyze_network(network)
+    return jsonify(result)
+
 @socketio.on('request_network_update')
 def handle_network_update():
     best_network = get_best_network()
     all_networks = load_wifi_data()
     emit('network_update', {'best': best_network, 'all': all_networks})
+
+@socketio.on('analyze_network_security')
+def handle_analyze_network(data):
+    """Analyser la sécurité d'un réseau spécifique via WebSocket"""
+    network_id = data.get('network_id')
+    all_networks = load_wifi_data()
+
+    if not all_networks or network_id is None or network_id >= len(all_networks):
+        emit('security_analysis_result', {'error': 'Réseau non trouvé'})
+        return
+
+    network = all_networks[network_id]
+    result = security_analyzer.analyze_network(network)
+    emit('security_analysis_result', result)
 
 @app.errorhandler(404)
 def page_non_trouvee(error):
