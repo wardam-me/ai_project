@@ -96,3 +96,41 @@ body {
 .highlight {
     animation: highlight 1s ease-in-out;
 }
+
+/* Styles pour les rapports de sécurité */
+.security-badge {
+    border-radius: 50px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.chart-container {
+    position: relative;
+    height: 180px;
+    width: 100%;
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: rgba(var(--bs-info-rgb), 0.1);
+    color: var(--bs-light);
+}
+
+.accordion-button:focus {
+    box-shadow: none;
+    border-color: rgba(0,0,0,.125);
+}
+
+.accordion-item {
+    border-bottom: 1px solid rgba(255,255,255,.05) !important;
+}
+
+.accordion-item:last-child {
+    border-bottom: none !important;
+}
+
+/* Styles pour les cartes de niveaux de sécurité */
+.card .display-4 {
+    font-size: 2.5rem;
+    font-weight: 400;
+}
