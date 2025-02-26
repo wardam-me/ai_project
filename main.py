@@ -7,6 +7,7 @@ import subprocess
 from network_security import NetworkSecurityAnalyzer
 from assistant_securite import AssistantSecurite
 from translation import get_user_language, get_translation, get_all_translations, get_direction, AVAILABLE_LANGUAGES
+from recommendations import recommendation_system
 
 # Configuration du logging
 logging.basicConfig(level=logging.DEBUG)
@@ -140,6 +141,18 @@ def generate_report():
 
     report = security_analyzer.generate_report(all_networks, report_name)
 
+    # Enregistrer l'action pour les recommandations personnalisées
+    if report:
+        security_levels = {
+            level: count 
+            for level, count in report['statistics']['security_distribution'].items()
+        }
+        recommendation_system.add_report_generation(
+            report_name=report['report_name'],
+            networks_count=report['statistics']['total_networks'],
+            security_levels=security_levels
+        )
+
     if report:
         return redirect(url_for('view_report', report_name=report['report_name']))
     else:
@@ -164,6 +177,43 @@ def view_report(report_name):
                           available_languages=AVAILABLE_LANGUAGES,
                           current_language=lang,
                           text_direction=text_direction)
+
+# Route pour les recommandations personnalisées
+@app.route('/recommendations')
+def personalized_recommendations():
+    """Page de recommandations personnalisées"""
+    logger.info('Page des recommandations personnalisées visitée')
+
+    # Obtenir les recommandations personnalisées
+    recommendations = recommendation_system.get_recommendations()
+
+    # Récupérer les traductions et la direction du texte
+    lang = get_user_language()
+    translations = get_all_translations(lang)
+    text_direction = get_direction(lang)
+
+    # Formater la date pour l'affichage
+    last_updated = recommendations.get('last_updated', '')
+    if last_updated:
+        try:
+            from datetime import datetime
+            dt = datetime.fromisoformat(last_updated)
+            last_updated = dt.strftime('%d/%m/%Y %H:%M')
+        except Exception as e:
+            logger.error(f"Erreur lors du formatage de la date: {e}")
+
+    return render_template(
+        'recommendations.html',
+        security_focus=recommendations.get('security_focus', 'general'),
+        preferred_security=recommendations.get('network_preferences', {}).get('preferred_security', 'WPA2'),
+        frequently_accessed=recommendations.get('network_preferences', {}).get('frequently_accessed', []),
+        actions=recommendations.get('recommended_actions', []),
+        last_updated=last_updated,
+        translations=translations,
+        available_languages=AVAILABLE_LANGUAGES,
+        current_language=lang,
+        text_direction=text_direction
+    )
 
 # Routes pour l'assistant de sécurité conversationnel
 @app.route('/assistant')
@@ -242,6 +292,15 @@ def api_analyze_network():
         return jsonify({"error": "Réseau non spécifié"}), 400
 
     result = security_analyzer.analyze_network(network)
+
+    # Enregistrer l'analyse pour les recommandations personnalisées
+    if result and 'overall_recommendation' in result:
+        recommendation_system.add_network_analysis(
+            network_ssid=network.get('ssid', ''),
+            security_level=result.get('security_level', ''),
+            recommendations=result.get('overall_recommendation', [])
+        )
+
     return jsonify(result)
 
 @socketio.on('request_network_update')
@@ -262,6 +321,15 @@ def handle_analyze_network(data):
 
     network = all_networks[network_id]
     result = security_analyzer.analyze_network(network)
+
+    # Enregistrer l'analyse pour les recommandations personnalisées
+    if result and 'overall_recommendation' in result:
+        recommendation_system.add_network_analysis(
+            network_ssid=network.get('ssid', ''),
+            security_level=result.get('security_level', ''),
+            recommendations=result.get('overall_recommendation', [])
+        )
+
     emit('security_analysis_result', result)
 
 @app.errorhandler(404)
