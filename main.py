@@ -5,6 +5,7 @@ import json
 import os
 import subprocess
 from network_security import NetworkSecurityAnalyzer
+from assistant_securite import AssistantSecurite
 
 # Configuration du logging
 logging.basicConfig(level=logging.DEBUG)
@@ -15,6 +16,9 @@ socketio = SocketIO(app)
 
 # Initialiser l'analyseur de sécurité
 security_analyzer = NetworkSecurityAnalyzer()
+
+# Initialiser l'assistant de sécurité
+assistant = AssistantSecurite()
 
 # Configuration de l'analyseur WiFi
 CONFIG_DIR = os.path.expanduser("~/.network_detect")
@@ -115,6 +119,64 @@ def view_report(report_name):
         return redirect(url_for('security_report'))
 
     return render_template('view_report.html', report=report)
+
+# Routes pour l'assistant de sécurité conversationnel
+@app.route('/assistant')
+def assistant_page():
+    """Page principale de l'assistant de sécurité"""
+    logger.info('Page de l\'assistant de sécurité visitée')
+    all_networks = load_wifi_data()
+    conversation_id = request.args.get('conversation_id')
+
+    # Récupérer l'historique de conversation si un ID est fourni
+    conversation_history = []
+    if conversation_id:
+        conversation_history = assistant.get_conversation_history(conversation_id)
+
+    # Récupérer la liste des conversations
+    all_conversations = assistant.get_all_conversations()
+
+    return render_template(
+        'assistant.html', 
+        all_networks=all_networks,
+        conversation_history=conversation_history,
+        conversation_id=conversation_id,
+        all_conversations=all_conversations
+    )
+
+@app.route('/api/assistant/message', methods=['POST'])
+def assistant_message():
+    """API pour interagir avec l'assistant de sécurité"""
+    data = request.get_json()
+
+    if not data:
+        return jsonify({"error": "Données non fournies"}), 400
+
+    user_input = data.get('message', '')
+    conversation_id = data.get('conversation_id')
+    network_id = data.get('network_id')
+
+    # Récupérer les données du réseau si un ID est fourni
+    network_data = None
+    if network_id is not None:
+        all_networks = load_wifi_data()
+        try:
+            network_id = int(network_id)
+            if 0 <= network_id < len(all_networks):
+                network_data = all_networks[network_id]
+        except (ValueError, TypeError):
+            pass
+
+    # Générer une réponse
+    response = assistant.generate_response(user_input, conversation_id, network_data)
+
+    return jsonify(response)
+
+@app.route('/api/assistant/conversations')
+def get_conversations():
+    """API pour récupérer la liste des conversations"""
+    conversations = assistant.get_all_conversations()
+    return jsonify(conversations)
 
 @app.route('/api/analyze-network', methods=['POST'])
 def api_analyze_network():

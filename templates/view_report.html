@@ -27,6 +27,9 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('security_report') }}">Rapports de Sécurité</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('assistant_page') }}">Assistant</a>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -250,11 +253,11 @@
         // Initialisation du graphique de distribution de sécurité
         document.addEventListener('DOMContentLoaded', function() {
             const ctx = document.getElementById('securityChart').getContext('2d');
-            
+
             // Données du graphique
             const securityLabels = Object.keys({{ report.statistics.security_distribution|tojson }});
             const securityData = Object.values({{ report.statistics.security_distribution|tojson }});
-            
+
             // Couleurs pour chaque niveau de sécurité
             const colors = {
                 'TRÈS ÉLEVÉ': '#198754',  // success
@@ -263,7 +266,7 @@
                 'FAIBLE': '#dc3545',      // danger
                 'TRÈS FAIBLE': '#6c757d'  // secondary
             };
-            
+
             // Création du graphique
             new Chart(ctx, {
                 type: 'pie',

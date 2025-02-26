@@ -134,3 +134,87 @@ body {
     font-size: 2.5rem;
     font-weight: 400;
 }
+
+/* Styles pour l'assistant de sécurité conversationnel */
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 500px;
+    background-color: var(--bs-dark);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.chat-input-container {
+    padding: 1rem;
+    background-color: rgba(var(--bs-dark-rgb), 0.7);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.message {
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.message-content {
+    padding: 0.75rem 1rem;
+    border-radius: 15px;
+    max-width: 80%;
+    word-wrap: break-word;
+}
+
+.message-time {
+    margin-top: 0.25rem;
+    color: var(--bs-secondary);
+    font-size: 0.7rem;
+}
+
+.user-message {
+    align-items: flex-end;
+}
+
+.user-message .message-content {
+    background-color: var(--bs-info);
+    color: var(--bs-dark);
+}
+
+.assistant-message {
+    align-items: flex-start;
+}
+
+.assistant-message .message-content {
+    background-color: var(--bs-secondary);
+}
+
+.conversations-list {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.suggestion-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.suggestion-list li {
+    margin-bottom: 0.5rem;
+}
+
+.suggestion {
+    display: inline-block;
+    color: var(--bs-info);
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.suggestion:hover {
+    text-decoration: underline;
+    color: var(--bs-primary);
+}
