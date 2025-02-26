@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de bord - Analyse de Sécurité WiFi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="bg-dark text-white">
+    <!-- Barre de navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('accueil') }}">
+                <i class="bi bi-wifi me-2"></i>Analyse Sécurité WiFi
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('dashboard') }}">
+                            <i class="bi bi-speedometer2 me-1"></i>Tableau de bord
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('network_topology_view') }}">
+                            <i class="bi bi-diagram-3 me-1"></i>Topologie Réseau
+                        </a>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                    <span class="navbar-text me-3">
+                        Bienvenue, {{ current_user.username }}
+                    </span>
+                    <a href="{{ url_for('logout') }}" class="btn btn-outline-light">
+                        <i class="bi bi-box-arrow-right me-1"></i>Déconnexion
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenu principal -->
+    <div class="container py-4">
+        <div class="row mb-4">
+            <div class="col">
+                <h1 class="display-5"><i class="bi bi-shield-lock me-2"></i>Tableau de bord sécurité</h1>
+                <p class="lead">Surveillez l'état de sécurité de votre réseau en temps réel</p>
+            </div>
+        </div>
+
+        <!-- Cartes statistiques -->
+        <div class="row mb-4">
+            <div class="col-md-4 mb-3">
+                <div class="card bg-secondary text-white h-100">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-wifi me-2"></i>État du réseau</h5>
+                        <p class="display-4 text-center text-success">Actif</p>
+                        <p class="card-text">Votre réseau WiFi est opérationnel et sécurisé</p>
+                    </div>
+                    <div class="card-footer bg-dark">
+                        <small class="text-muted">Dernière vérification: il y a 2 minutes</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card bg-secondary text-white h-100">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-pc-display me-2"></i>Appareils connectés</h5>
+                        <p class="display-4 text-center">7</p>
+                        <p class="card-text">Sept appareils sont actuellement connectés à votre réseau</p>
+                    </div>
+                    <div class="card-footer bg-dark">
+                        <small class="text-muted">Dernière détection: il y a 5 minutes</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card bg-secondary text-white h-100">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-shield-check me-2"></i>Score de sécurité</h5>
+                        <p class="display-4 text-center text-warning">78%</p>
+                        <p class="card-text">Votre score de sécurité est bon, mais quelques améliorations sont possibles</p>
+                    </div>
+                    <div class="card-footer bg-dark">
+                        <small class="text-muted">Mis à jour aujourd'hui</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Graphiques et analyses -->
+        <div class="row mb-4">
+            <div class="col-lg-8 mb-3">
+                <div class="card bg-secondary text-white">
+                    <div class="card-header bg-primary">
+                        <h5 class="card-title mb-0"><i class="bi bi-graph-up me-2"></i>Activité réseau</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center p-5">
+                            <p class="lead">Graphique d'activité réseau (simulation)</p>
+                            <div class="bg-dark p-3 rounded">
+                                <div class="progress mb-2" style="height: 30px;">
+                                    <div class="progress-bar bg-info" style="width: 60%;">Trafic normal</div>
+                                </div>
+                                <div class="progress mb-2" style="height: 30px;">
+                                    <div class="progress-bar bg-warning" style="width: 15%;">Trafic suspect</div>
+                                </div>
+                                <div class="progress" style="height: 30px;">
+                                    <div class="progress-bar bg-danger" style="width: 5%;">Tentatives bloquées</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-3">
+                <div class="card bg-secondary text-white h-100">
+                    <div class="card-header bg-primary">
+                        <h5 class="card-title mb-0"><i class="bi bi-clipboard-check me-2"></i>Recommandations</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush bg-transparent">
+                            <li class="list-group-item bg-transparent text-white border-secondary">
+                                <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>Mettez à jour le firmware de votre routeur
+                            </li>
+                            <li class="list-group-item bg-transparent text-white border-secondary">
+                                <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>Activez l'authentification à deux facteurs
+                            </li>
+                            <li class="list-group-item bg-transparent text-white border-secondary">
+                                <i class="bi bi-check2-circle text-success me-2"></i>Votre réseau utilise WPA3 (sécurisé)
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-footer bg-dark">
+                        <a href="#" class="btn btn-sm btn-primary w-100">Voir toutes les recommandations</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Liste des appareils -->
+        <div class="row">
+            <div class="col">
+                <div class="card bg-secondary text-white">
+                    <div class="card-header bg-primary">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0"><i class="bi bi-devices me-2"></i>Appareils connectés</h5>
+                            <a href="{{ url_for('network_topology_view') }}" class="btn btn-sm btn-info">
+                                <i class="bi bi-diagram-3 me-1"></i>Voir la topologie
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Appareil</th>
+                                        <th>Type</th>
+                                        <th>Adresse IP</th>
+                                        <th>Statut</th>
+                                        <th>Sécurité</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Routeur principal</td>
+                                        <td>Infrastructure</td>
+                                        <td>192.168.1.1</td>
+                                        <td><span class="badge bg-success">En ligne</span></td>
+                                        <td><span class="badge bg-success">95%</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Ordinateur bureau</td>
+                                        <td>PC</td>
+                                        <td>192.168.1.5</td>
+                                        <td><span class="badge bg-success">En ligne</span></td>
+                                        <td><span class="badge bg-warning">78%</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Smartphone</td>
+                                        <td>Mobile</td>
+                                        <td>192.168.1.12</td>
+                                        <td><span class="badge bg-success">En ligne</span></td>
+                                        <td><span class="badge bg-warning">70%</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Smart TV</td>
+                                        <td>IoT</td>
+                                        <td>192.168.1.25</td>
+                                        <td><span class="badge bg-success">En ligne</span></td>
+                                        <td><span class="badge bg-danger">50%</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Caméra sécurité</td>
+                                        <td>IoT</td>
+                                        <td>192.168.1.27</td>
+                                        <td><span class="badge bg-secondary">Inactif</span></td>
+                                        <td><span class="badge bg-danger">45%</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-dark">
+                        <button class="btn btn-sm btn-success me-2">
+                            <i class="bi bi-arrow-repeat me-1"></i>Actualiser
+                        </button>
+                        <button class="btn btn-sm btn-info me-2">
+                            <i class="bi bi-shield-check me-1"></i>Analyser
+                        </button>
+                        <button class="btn btn-sm btn-warning">
+                            <i class="bi bi-exclamation-triangle me-1"></i>Bloquer suspicieux
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-primary text-white text-center py-3 mt-4">
+        <div class="container">
+            <p class="mb-0">&copy; 2025 Analyse Sécurité WiFi | Version 1.0.2</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
