@@ -8,14 +8,13 @@ translations = {
     "app_description": "Analyse en temps réel des réseaux disponibles",
     "error_not_found": "Page non trouvée. Retournez à l'accueil.",
     "error_server": "Erreur serveur. Veuillez réessayer plus tard.",
-
+    
     # Navigation
     "nav_home": "Accueil",
     "nav_security_report": "Rapports de Sécurité",
     "nav_assistant": "Assistant",
     "nav_language": "Langue",
-    "nav_recommendations": "Recommandations",
-
+    
     # Page d'accueil
     "best_network": "Meilleur Réseau Recommandé",
     "all_networks": "Tous les Réseaux Disponibles",
@@ -29,7 +28,7 @@ translations = {
     "auto_update": "Les données sont mises à jour automatiquement toutes les 10 secondes.",
     "ssid": "SSID",
     "signal_strength": "Force du signal",
-
+    
     # Rapports de sécurité
     "security_reports": "Rapports de Sécurité Réseau",
     "generate_report": "Générer un rapport",
@@ -52,7 +51,7 @@ translations = {
     "actions": "Actions",
     "view": "Voir",
     "no_reports": "Aucun rapport de sécurité généré.",
-
+    
     # Détails du rapport
     "report_summary": "Synthèse du rapport",
     "networks_analyzed": "Réseaux analysés",
@@ -67,7 +66,7 @@ translations = {
     "network_info": "Informations réseau",
     "detailed_assessment": "Évaluation détaillée",
     "back_to_reports": "Retour aux rapports",
-
+    
     # Assistant
     "assistant_title": "Assistant de Sécurité WiFi",
     "new_conversation": "Nouvelle conversation",
@@ -85,36 +84,5 @@ translations = {
         "Comment protéger mon réseau contre les pirates ?",
         "Quels sont les risques d'un réseau non sécurisé ?"
     ],
-    "error_message": "Désolé, une erreur s'est produite lors de la communication avec l'assistant.",
-
-    # Recommandations personnalisées
-    "personalized_recommendations": "Recommandations Personnalisées",
-    "recommendations_subtitle": "Basées sur votre historique d'analyse de réseaux WiFi",
-    "last_updated": "Dernière mise à jour",
-    "your_preferences": "Vos préférences",
-    "security_focus": "Focus de sécurité",
-    "focus_encryption": "Chiffrement",
-    "focus_signal": "Force du signal",
-    "focus_frequency": "Fréquence",
-    "focus_general": "Général",
-    "preferred_security": "Sécurité préférée",
-    "frequent_networks": "Réseaux fréquents",
-    "no_frequent_networks": "Aucun réseau fréquent détecté",
-    "recommended_actions": "Actions recommandées",
-    "high_priority": "Haute priorité",
-    "medium_priority": "Priorité moyenne",
-    "low_priority": "Priorité faible",
-    "generate": "Générer",
-    "improve": "Améliorer",
-    "consult": "Consulter",
-    "scan": "Scanner",
-    "check": "Vérifier",
-    "details": "Détails",
-    "no_recommendations": "Aucune recommandation disponible pour le moment",
-    "how_recommendations_work": "Comment fonctionnent les recommandations",
-    "recommendations_explanation": "Le système analyse votre historique d'utilisation et d'analyse pour vous fournir des recommandations personnalisées pour améliorer la sécurité de vos réseaux WiFi.",
-    "recommendation_factor_1": "Les rapports que vous avez générés et les réseaux que vous avez analysés",
-    "recommendation_factor_2": "Les types de sécurité que vous préférez et utilisez fréquemment",
-    "recommendation_factor_3": "Les problèmes de sécurité récurrents dans vos réseaux analysés",
-    "recommendations_privacy": "Toutes vos données sont stockées localement et ne sont jamais partagées."
+    "error_message": "Désolé, une erreur s'est produite lors de la communication avec l'assistant."
 }

@@ -8,14 +8,13 @@ translations = {
     "app_description": "تحليل في الوقت الحقيقي للشبكات المتاحة",
     "error_not_found": "الصفحة غير موجودة. العودة إلى الصفحة الرئيسية.",
     "error_server": "خطأ في الخادم. يرجى المحاولة مرة أخرى لاحقًا.",
-
+    
     # Navigation
     "nav_home": "الرئيسية",
     "nav_security_report": "تقارير الأمان",
     "nav_assistant": "المساعد",
     "nav_language": "اللغة",
-    "nav_recommendations": "التوصيات",
-
+    
     # Home page
     "best_network": "أفضل شبكة موصى بها",
     "all_networks": "جميع الشبكات المتاحة",
@@ -29,7 +28,7 @@ translations = {
     "auto_update": "يتم تحديث البيانات تلقائيًا كل 10 ثوانٍ.",
     "ssid": "اسم الشبكة",
     "signal_strength": "قوة الإشارة",
-
+    
     # Security reports
     "security_reports": "تقارير أمان الشبكة",
     "generate_report": "إنشاء تقرير",
@@ -52,7 +51,7 @@ translations = {
     "actions": "الإجراءات",
     "view": "عرض",
     "no_reports": "لم يتم إنشاء تقارير أمان.",
-
+    
     # Report details
     "report_summary": "ملخص التقرير",
     "networks_analyzed": "الشبكات التي تم تحليلها",
@@ -67,7 +66,7 @@ translations = {
     "network_info": "معلومات الشبكة",
     "detailed_assessment": "تقييم مفصل",
     "back_to_reports": "العودة إلى التقارير",
-
+    
     # Assistant
     "assistant_title": "مساعد أمان الواي فاي",
     "new_conversation": "محادثة جديدة",
@@ -85,36 +84,5 @@ translations = {
         "كيفية حماية شبكتي من المخترقين؟",
         "ما هي مخاطر الشبكة غير المؤمنة؟"
     ],
-    "error_message": "عذراً، حدث خطأ أثناء التواصل مع المساعد.",
-
-    # Personalized recommendations
-    "personalized_recommendations": "توصيات مخصصة",
-    "recommendations_subtitle": "بناءً على تاريخ تحليل شبكات الواي فاي الخاصة بك",
-    "last_updated": "آخر تحديث",
-    "your_preferences": "تفضيلاتك",
-    "security_focus": "تركيز الأمان",
-    "focus_encryption": "التشفير",
-    "focus_signal": "قوة الإشارة",
-    "focus_frequency": "التردد",
-    "focus_general": "عام",
-    "preferred_security": "الأمان المفضل",
-    "frequent_networks": "الشبكات المتكررة",
-    "no_frequent_networks": "لم يتم اكتشاف شبكات متكررة",
-    "recommended_actions": "الإجراءات الموصى بها",
-    "high_priority": "أولوية عالية",
-    "medium_priority": "أولوية متوسطة",
-    "low_priority": "أولوية منخفضة",
-    "generate": "إنشاء",
-    "improve": "تحسين",
-    "consult": "استشارة",
-    "scan": "فحص",
-    "check": "تحقق",
-    "details": "تفاصيل",
-    "no_recommendations": "لا توجد توصيات متاحة في الوقت الحالي",
-    "how_recommendations_work": "كيف تعمل التوصيات",
-    "recommendations_explanation": "يحلل النظام تاريخ استخدامك وتحليلك لتزويدك بتوصيات مخصصة لتحسين أمان شبكات الواي فاي الخاصة بك.",
-    "recommendation_factor_1": "التقارير التي أنشأتها والشبكات التي حللتها",
-    "recommendation_factor_2": "أنواع الأمان التي تفضلها وتستخدمها بشكل متكرر",
-    "recommendation_factor_3": "مشاكل الأمان المتكررة في شبكاتك المحللة",
-    "recommendations_privacy": "يتم تخزين جميع بياناتك محليًا ولا تتم مشاركتها أبدًا."
+    "error_message": "عذراً، حدث خطأ أثناء التواصل مع المساعد."
 }
