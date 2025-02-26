@@ -30,6 +30,9 @@
                         <li class="nav-item">
                             <a class="nav-link active" href="{{ url_for('assistant_page') }}">{{ t('nav_assistant') }}</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('personalized_recommendations') }}">{{ t('nav_recommendations') }}</a>
+                        </li>
                     </ul>
                     <!-- Language selector -->
                     <div class="dropdown">
@@ -106,8 +109,8 @@
                                         <div class="input-group">
                                             <select class="form-select" id="network-selector" style="max-width: 180px;">
                                                 <option value="" selected>{{ t('select_network') }}</option>
-                                                {% for i, net in enumerate(all_networks) %}
-                                                <option value="{{ i }}">{{ net.ssid }}</option>
+                                                {% for net in all_networks %}
+                                                <option value="{{ loop.index0 }}">{{ net.ssid }}</option>
                                                 {% endfor %}
                                             </select>
                                             <input type="text" class="form-control" id="chat-input" 

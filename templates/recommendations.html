@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="{{ current_language }}" data-bs-theme="dark" dir="{{ text_direction }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ t('nav_recommendations') }} - {{ t('app_name') }}</title>
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container py-5">
+        <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="{{ url_for('accueil') }}">
+                    <i class="fas fa-wifi me-2"></i> {{ t('app_name') }}
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('accueil') }}">{{ t('nav_home') }}</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('security_report') }}">{{ t('nav_security_report') }}</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('assistant_page') }}">{{ t('nav_assistant') }}</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{{ url_for('personalized_recommendations') }}">{{ t('nav_recommendations') }}</a>
+                        </li>
+                    </ul>
+                    <!-- Language selector -->
+                    <div class="dropdown">
+                        <button class="btn btn-dark dropdown-toggle" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-globe me-2"></i> {{ t('nav_language') }}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+                            {% for code, name in available_languages.items() %}
+                            <li>
+                                <a class="dropdown-item {% if current_language == code %}active{% endif %}" href="{{ url_for('set_language', language=code) }}">
+                                    {{ name }}
+                                </a>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="d-flex align-items-center mb-4">
+                    <div>
+                        <h1 class="display-5 mb-0">{{ t('personalized_recommendations') }}</h1>
+                        <p class="text-muted">{{ t('recommendations_subtitle') }}</p>
+                    </div>
+                    <div class="ms-auto">
+                        <span class="badge bg-info p-2">
+                            <i class="fas fa-sync-alt me-1"></i> {{ t('last_updated') }}: {{ last_updated }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Résumé des préférences -->
+                <div class="card bg-dark mb-4">
+                    <div class="card-header bg-primary bg-opacity-25">
+                        <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i> {{ t('your_preferences') }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-3 mb-md-0">
+                                <div class="card bg-secondary text-center h-100">
+                                    <div class="card-body">
+                                        <i class="fas fa-shield-alt fa-2x mb-3 text-info"></i>
+                                        <h5>{{ t('security_focus') }}</h5>
+                                        <p class="mb-0 text-light">
+                                            {% if security_focus == 'encryption' %}
+                                                {{ t('focus_encryption') }}
+                                            {% elif security_focus == 'signal_strength' %}
+                                                {{ t('focus_signal') }}
+                                            {% elif security_focus == 'frequency' %}
+                                                {{ t('focus_frequency') }}
+                                            {% else %}
+                                                {{ t('focus_general') }}
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3 mb-md-0">
+                                <div class="card bg-secondary text-center h-100">
+                                    <div class="card-body">
+                                        <i class="fas fa-lock fa-2x mb-3 text-warning"></i>
+                                        <h5>{{ t('preferred_security') }}</h5>
+                                        <p class="mb-0 text-light">{{ preferred_security }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-secondary text-center h-100">
+                                    <div class="card-body">
+                                        <i class="fas fa-wifi fa-2x mb-3 text-success"></i>
+                                        <h5>{{ t('frequent_networks') }}</h5>
+                                        {% if frequently_accessed %}
+                                            <ul class="list-unstyled mb-0">
+                                                {% for network in frequently_accessed %}
+                                                    <li>{{ network }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% else %}
+                                            <p class="mb-0 text-muted">{{ t('no_frequent_networks') }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions recommandées -->
+                <div class="card bg-dark mb-4">
+                    <div class="card-header bg-success bg-opacity-25">
+                        <h5 class="mb-0"><i class="fas fa-tasks me-2"></i> {{ t('recommended_actions') }}</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if actions %}
+                            <div class="list-group">
+                                {% for action in actions %}
+                                    <div class="list-group-item bg-dark border-secondary">
+                                        <div class="d-flex w-100 justify-content-between align-items-center">
+                                            <div>
+                                                {% if action.priority == 'high' %}
+                                                    <span class="badge bg-danger mb-2">{{ t('high_priority') }}</span>
+                                                {% elif action.priority == 'medium' %}
+                                                    <span class="badge bg-warning text-dark mb-2">{{ t('medium_priority') }}</span>
+                                                {% else %}
+                                                    <span class="badge bg-info mb-2">{{ t('low_priority') }}</span>
+                                                {% endif %}
+                                                <h5 class="mb-1">{{ action.description[current_language] }}</h5>
+                                            </div>
+                                            <div>
+                                                {% if action.type == 'report_generation' %}
+                                                    <a href="{{ url_for('security_report') }}" class="btn btn-sm btn-outline-success">
+                                                        <i class="fas fa-file-medical me-1"></i> {{ t('generate') }}
+                                                    </a>
+                                                {% elif action.type == 'improve_security' %}
+                                                    <a href="{{ url_for('assistant_page') }}" class="btn btn-sm btn-outline-warning">
+                                                        <i class="fas fa-shield-alt me-1"></i> {{ t('improve') }}
+                                                    </a>
+                                                {% elif action.type == 'explore_assistant' %}
+                                                    <a href="{{ url_for('assistant_page') }}" class="btn btn-sm btn-outline-info">
+                                                        <i class="fas fa-robot me-1"></i> {{ t('consult') }}
+                                                    </a>
+                                                {% elif action.type == 'update_scan' %}
+                                                    <a href="{{ url_for('accueil') }}" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-sync-alt me-1"></i> {{ t('scan') }}
+                                                    </a>
+                                                {% elif action.type == 'security_check' %}
+                                                    <a href="{{ url_for('security_report') }}" class="btn btn-sm btn-outline-danger">
+                                                        <i class="fas fa-search-plus me-1"></i> {{ t('check') }}
+                                                    </a>
+                                                {% else %}
+                                                    <a href="#" class="btn btn-sm btn-outline-secondary">
+                                                        <i class="fas fa-arrow-right me-1"></i> {{ t('details') }}
+                                                    </a>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i> {{ t('no_recommendations') }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Informations sur le système de recommandations -->
+                <div class="card bg-info bg-opacity-10">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-lightbulb me-2"></i> {{ t('how_recommendations_work') }}</h5>
+                        <p>{{ t('recommendations_explanation') }}</p>
+                        <ul>
+                            <li>{{ t('recommendation_factor_1') }}</li>
+                            <li>{{ t('recommendation_factor_2') }}</li>
+                            <li>{{ t('recommendation_factor_3') }}</li>
+                        </ul>
+                        <p class="mb-0 fst-italic">{{ t('recommendations_privacy') }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
