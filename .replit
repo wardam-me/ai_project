@@ -5,10 +5,10 @@ channel = "stable-24_05"
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["gunicorn", "--bind", "0.0.0.0:5000", "main:app"]
+run = ["sh", "-c", "flask run --host=0.0.0.0 --port=5000 --debug"]
 
 [workflows]
-runButton = "Flask Server"
+runButton = "Project"
 
 [[workflows.workflow]]
 name = "Project"
@@ -31,7 +31,7 @@ task = "packager.installForAll"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "flask run --host=0.0.0.0 --port=5001 --debug"
+args = "flask run --host=0.0.0.0 --port=5000 --debug"
 waitForPort = 5000
 
 [[ports]]

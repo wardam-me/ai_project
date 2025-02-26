@@ -14,6 +14,8 @@ translations = {
     "nav_security_report": "Rapports de Sécurité",
     "nav_assistant": "Assistant",
     "nav_language": "Langue",
+    "nav_recommendations": "Recommandations",
+    "nav_device_security": "Sécurité Appareils",
     
     # Page d'accueil
     "best_network": "Meilleur Réseau Recommandé",
@@ -84,5 +86,30 @@ translations = {
         "Comment protéger mon réseau contre les pirates ?",
         "Quels sont les risques d'un réseau non sécurisé ?"
     ],
-    "error_message": "Désolé, une erreur s'est produite lors de la communication avec l'assistant."
+    "error_message": "Désolé, une erreur s'est produite lors de la communication avec l'assistant.",
+    
+    # Sécurité des appareils
+    "device_security_title": "Sécurité des Appareils",
+    "device_security_subtitle": "Analysez et surveillez la sécurité de tous les appareils connectés à votre réseau",
+    "network_security_overview": "Aperçu de la Sécurité Réseau",
+    "global_security_score": "Score de Sécurité Global",
+    "critical_devices": "Appareils Critiques",
+    "warning_devices": "Appareils à Risque",
+    "secure_devices": "Appareils Sécurisés",
+    "devices_list": "Liste des Appareils",
+    "device_type": "Type d'Appareil",
+    "manufacturer": "Fabricant",
+    "security_score": "Score de Sécurité",
+    "last_seen": "Dernière Activité",
+    "refresh_devices": "Rafraîchir la Liste",
+    "check_security": "Vérifier",
+    "rec_device_secure": "Cet appareil est correctement sécurisé",
+    "rec_update_firmware": "Mettre à jour le firmware de l'appareil",
+    "rec_install_updates": "Installer les mises à jour de sécurité",
+    "rec_address_vulnerabilities": "Corriger les vulnérabilités connues",
+    "rec_close_ports": "Fermer les ports inutiles",
+    "rec_improve_encryption": "Renforcer le chiffrement",
+    "rec_enable_password": "Activer ou renforcer la protection par mot de passe",
+    "rec_enable_firewall": "Activer ou configurer le pare-feu",
+    "rec_check_suspicious": "Vérifier l'activité suspecte détectée"
 }
