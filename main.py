@@ -13,9 +13,12 @@ from recommendations import recommendation_system
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+# Création de l'application Flask
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "default_secret_key")
-socketio = SocketIO(app)
+
+# Configuration de Socket.IO - 'message_queue' est nécessaire pour Flask run
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Initialiser l'analyseur de sécurité
 security_analyzer = NetworkSecurityAnalyzer()
@@ -376,6 +379,11 @@ def inject_translations():
         'text_direction': get_direction(lang)
     }
 
+# S'assurer que le répertoire de configuration existe
+os.makedirs(CONFIG_DIR, exist_ok=True)
+
+# Cette ligne permet à flask run de fonctionner avec socketio
+socketio.init_app(app)
+
 if __name__ == '__main__':
-    os.makedirs(CONFIG_DIR, exist_ok=True)
     socketio.run(app, host='0.0.0.0', port=5000, debug=True, allow_unsafe_werkzeug=True)
