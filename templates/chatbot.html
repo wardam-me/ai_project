@@ -196,6 +196,12 @@
 
 {% block scripts %}
 <script>
+    // Fonction globale pour envoyer une question suggérée
+    function sendSuggestedQuestion(question) {
+        document.getElementById('userMessage').value = question;
+        document.getElementById('chatForm').dispatchEvent(new Event('submit'));
+    }
+    
     document.addEventListener('DOMContentLoaded', function() {
         const chatForm = document.getElementById('chatForm');
         const userMessageInput = document.getElementById('userMessage');
@@ -390,11 +396,5 @@
             });
         }
     });
-    
-    // Fonction pour envoyer une question suggérée
-    function sendSuggestedQuestion(question) {
-        document.getElementById('userMessage').value = question;
-        document.getElementById('chatForm').dispatchEvent(new Event('submit'));
-    }
 </script>
 {% endblock %}
