@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="fr" data-bs-theme="dark">
+<html lang="{{ current_language }}" data-bs-theme="dark" dir="{{ text_direction }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analyseur WiFi - Bienvenue</title>
+    <title>{{ t('app_name') }} - {{ t('nav_home') }}</title>
     <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
@@ -14,23 +14,38 @@
         <nav class="navbar navbar-expand-lg navbar-dark mb-4">
             <div class="container-fluid">
                 <a class="navbar-brand" href="{{ url_for('accueil') }}">
-                    <i class="fas fa-wifi me-2"></i> Analyseur WiFi
+                    <i class="fas fa-wifi me-2"></i> {{ t('app_name') }}
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav">
+                    <ul class="navbar-nav me-auto">
                         <li class="nav-item">
-                            <a class="nav-link active" href="{{ url_for('accueil') }}">Accueil</a>
+                            <a class="nav-link active" href="{{ url_for('accueil') }}">{{ t('nav_home') }}</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('security_report') }}">Rapports de Sécurité</a>
+                            <a class="nav-link" href="{{ url_for('security_report') }}">{{ t('nav_security_report') }}</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('assistant_page') }}">Assistant</a>
+                            <a class="nav-link" href="{{ url_for('assistant_page') }}">{{ t('nav_assistant') }}</a>
                         </li>
                     </ul>
+                    <!-- Language selector -->
+                    <div class="dropdown">
+                        <button class="btn btn-dark dropdown-toggle" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-globe me-2"></i> {{ t('nav_language') }}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+                            {% for code, name in available_languages.items() %}
+                            <li>
+                                <a class="dropdown-item {% if current_language == code %}active{% endif %}" href="{{ url_for('set_language', language=code) }}">
+                                    {{ name }}
+                                </a>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
                 </div>
             </div>
         </nav>
@@ -41,11 +56,11 @@
                 {{ error }}
             </div>
             {% else %}
-            <h1 class="display-4 mb-4">Analyseur de Réseaux WiFi</h1>
-            <p class="lead mb-4">Analyse en temps réel des réseaux disponibles</p>
+            <h1 class="display-4 mb-4">{{ t('app_name') }}</h1>
+            <p class="lead mb-4">{{ t('app_description') }}</p>
 
             <div class="card bg-secondary p-4 mb-4">
-                <h2 class="h4 mb-3">Meilleur Réseau Recommandé</h2>
+                <h2 class="h4 mb-3">{{ t('best_network') }}</h2>
                 {% if network %}
                 <div id="best-network-info" class="text-center mb-3">
                     <div class="network-icon mb-3">
@@ -57,41 +72,41 @@
                     <h3 id="ssid" class="h5 mb-3">{{ network.ssid }}</h3>
                     <div class="row">
                         <div class="col">
-                            <p class="mb-2"><strong>Signal:</strong> <span id="rssi">{{ network.rssi }}</span> dBm</p>
+                            <p class="mb-2"><strong>{{ t('signal') }}:</strong> <span id="rssi">{{ network.rssi }}</span> dBm</p>
                         </div>
                         <div class="col">
-                            <p class="mb-2"><strong>Fréquence:</strong> <span id="frequency">{{ network.frequency_mhz }}</span> MHz</p>
+                            <p class="mb-2"><strong>{{ t('frequency') }}:</strong> <span id="frequency">{{ network.frequency_mhz }}</span> MHz</p>
                         </div>
                         <div class="col">
-                            <p class="mb-2"><strong>Sécurité:</strong> <span id="security">{{ network.security if network.security else 'Inconnue' }}</span></p>
+                            <p class="mb-2"><strong>{{ t('security') }}:</strong> <span id="security">{{ network.security if network.security else t('security_unknown') }}</span></p>
                         </div>
                     </div>
                     <div class="mt-3">
                         <a href="{{ url_for('security_report') }}" class="btn btn-info me-2">
-                            <i class="fas fa-shield-alt me-2"></i> Analyser la sécurité
+                            <i class="fas fa-shield-alt me-2"></i> {{ t('analyze_security') }}
                         </a>
                         <a href="{{ url_for('assistant_page') }}" class="btn btn-outline-light">
-                            <i class="fas fa-robot me-2"></i> Consulter l'assistant
+                            <i class="fas fa-robot me-2"></i> {{ t('consult_assistant') }}
                         </a>
                     </div>
                 </div>
                 {% else %}
-                <p class="mb-0">Aucun réseau détecté pour le moment...</p>
+                <p class="mb-0">{{ t('no_networks') }}</p>
                 {% endif %}
             </div>
 
             <div class="card bg-dark p-4 mb-4">
-                <h2 class="h4 mb-3">Tous les Réseaux Disponibles</h2>
+                <h2 class="h4 mb-3">{{ t('all_networks') }}</h2>
                 <div id="all-networks">
                     {% if all_networks %}
                     <div class="table-responsive">
                         <table class="table table-dark table-hover">
                             <thead>
                                 <tr>
-                                    <th>SSID</th>
-                                    <th>Force du signal</th>
-                                    <th>Fréquence</th>
-                                    <th>Sécurité</th>
+                                    <th>{{ t('ssid') }}</th>
+                                    <th>{{ t('signal_strength') }}</th>
+                                    <th>{{ t('frequency') }}</th>
+                                    <th>{{ t('security') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -105,14 +120,14 @@
                                         </div>
                                     </td>
                                     <td>{{ net.frequency_mhz }} MHz</td>
-                                    <td>{{ net.security if net.security else 'Inconnue' }}</td>
+                                    <td>{{ net.security if net.security else t('security_unknown') }}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                     </div>
                     {% else %}
-                    <p class="mb-0">Aucun réseau disponible...</p>
+                    <p class="mb-0">{{ t('no_networks') }}</p>
                     {% endif %}
                 </div>
             </div>
@@ -120,7 +135,7 @@
             <div class="card bg-info bg-opacity-25 p-4">
                 <p class="mb-0">
                     <i class="fas fa-info-circle"></i>
-                    Les données sont mises à jour automatiquement toutes les 10 secondes.
+                    {{ t('auto_update') }}
                 </p>
             </div>
             {% endif %}
@@ -142,7 +157,7 @@
                 document.getElementById('ssid').textContent = data.best.ssid;
                 document.getElementById('rssi').textContent = data.best.rssi;
                 document.getElementById('frequency').textContent = data.best.frequency_mhz;
-                document.getElementById('security').textContent = data.best.security || 'Inconnue';
+                document.getElementById('security').textContent = data.best.security || '{{ t('security_unknown') }}';
 
                 // Mettre à jour la force du signal
                 const signalStrength = document.querySelector('.signal-strength');
@@ -166,7 +181,7 @@
                                 </div>
                             </td>
                             <td>${net.frequency_mhz} MHz</td>
-                            <td>${net.security || 'Inconnue'}</td>
+                            <td>${net.security || '{{ t('security_unknown') }}'}</td>
                         `;
                         allNetworksTable.appendChild(row);
                     });

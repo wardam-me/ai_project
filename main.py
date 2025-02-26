@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session
 from flask_socketio import SocketIO, emit
 import logging
 import json
@@ -6,12 +6,14 @@ import os
 import subprocess
 from network_security import NetworkSecurityAnalyzer
 from assistant_securite import AssistantSecurite
+from translation import get_user_language, get_translation, get_all_translations, get_direction, AVAILABLE_LANGUAGES
 
 # Configuration du logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+app.secret_key = os.environ.get("SESSION_SECRET", "default_secret_key")
 socketio = SocketIO(app)
 
 # Initialiser l'analyseur de sécurité
@@ -72,12 +74,36 @@ def get_best_network():
     # Le meilleur réseau a le score le plus bas
     return min(wifi_data, key=score_network)
 
+# Route pour changer la langue
+@app.route('/set-language/<language>')
+def set_language(language):
+    if language in AVAILABLE_LANGUAGES:
+        session['language'] = language
+
+    # Rediriger vers la page précédente ou l'accueil
+    referer = request.headers.get('Referer')
+    if referer:
+        return redirect(referer)
+    return redirect(url_for('accueil'))
+
 @app.route('/')
 def accueil():
     logger.info('Page d\'accueil visitée')
     best_network = get_best_network()
     all_networks = load_wifi_data()
-    return render_template('index.html', network=best_network, all_networks=all_networks)
+
+    # Récupérer les traductions et la direction du texte
+    lang = get_user_language()
+    translations = get_all_translations(lang)
+    text_direction = get_direction(lang)
+
+    return render_template('index.html', 
+                           network=best_network, 
+                           all_networks=all_networks,
+                           translations=translations,
+                           available_languages=AVAILABLE_LANGUAGES,
+                           current_language=lang,
+                           text_direction=text_direction)
 
 @app.route('/security-report')
 def security_report():
@@ -88,10 +114,19 @@ def security_report():
     # Récupérer les rapports existants
     saved_reports = security_analyzer.get_saved_reports()
 
+    # Récupérer les traductions et la direction du texte
+    lang = get_user_language()
+    translations = get_all_translations(lang)
+    text_direction = get_direction(lang)
+
     return render_template(
         'security_report.html', 
         all_networks=all_networks,
-        saved_reports=saved_reports
+        saved_reports=saved_reports,
+        translations=translations,
+        available_languages=AVAILABLE_LANGUAGES,
+        current_language=lang,
+        text_direction=text_direction
     )
 
 @app.route('/generate-report', methods=['POST'])
@@ -118,7 +153,17 @@ def view_report(report_name):
     if not report:
         return redirect(url_for('security_report'))
 
-    return render_template('view_report.html', report=report)
+    # Récupérer les traductions et la direction du texte
+    lang = get_user_language()
+    translations = get_all_translations(lang)
+    text_direction = get_direction(lang)
+
+    return render_template('view_report.html', 
+                          report=report,
+                          translations=translations,
+                          available_languages=AVAILABLE_LANGUAGES,
+                          current_language=lang,
+                          text_direction=text_direction)
 
 # Routes pour l'assistant de sécurité conversationnel
 @app.route('/assistant')
@@ -136,12 +181,21 @@ def assistant_page():
     # Récupérer la liste des conversations
     all_conversations = assistant.get_all_conversations()
 
+    # Récupérer les traductions et la direction du texte
+    lang = get_user_language()
+    translations = get_all_translations(lang)
+    text_direction = get_direction(lang)
+
     return render_template(
         'assistant.html', 
         all_networks=all_networks,
         conversation_history=conversation_history,
         conversation_id=conversation_id,
-        all_conversations=all_conversations
+        all_conversations=all_conversations,
+        translations=translations,
+        available_languages=AVAILABLE_LANGUAGES,
+        current_language=lang,
+        text_direction=text_direction
     )
 
 @app.route('/api/assistant/message', methods=['POST'])
@@ -213,14 +267,46 @@ def handle_analyze_network(data):
 @app.errorhandler(404)
 def page_non_trouvee(error):
     logger.error(f'Page non trouvée: {error}')
+
+    # Récupérer les traductions et la direction du texte
+    lang = get_user_language()
+    translations = get_all_translations(lang)
+    text_direction = get_direction(lang)
+
     return render_template('index.html', 
-                         error="Page non trouvée. Retournez à l'accueil."), 404
+                          error=get_translation("error_not_found", lang),
+                          translations=translations,
+                          available_languages=AVAILABLE_LANGUAGES,
+                          current_language=lang,
+                          text_direction=text_direction), 404
 
 @app.errorhandler(500)
 def erreur_serveur(error):
     logger.error(f'Erreur serveur: {error}')
+
+    # Récupérer les traductions et la direction du texte
+    lang = get_user_language()
+    translations = get_all_translations(lang)
+    text_direction = get_direction(lang)
+
     return render_template('index.html', 
-                         error="Erreur serveur. Veuillez réessayer plus tard."), 500
+                          error=get_translation("error_server", lang),
+                          translations=translations,
+                          available_languages=AVAILABLE_LANGUAGES,
+                          current_language=lang,
+                          text_direction=text_direction), 500
+
+# Ajouter les traductions et la direction du texte à tous les templates
+@app.context_processor
+def inject_translations():
+    lang = get_user_language()
+    return {
+        't': lambda key: get_translation(key, lang),
+        'translations': get_all_translations(lang),
+        'available_languages': AVAILABLE_LANGUAGES,
+        'current_language': lang,
+        'text_direction': get_direction(lang)
+    }
 
 if __name__ == '__main__':
     os.makedirs(CONFIG_DIR, exist_ok=True)
