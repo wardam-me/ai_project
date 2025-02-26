@@ -4,10 +4,12 @@ import logging
 import json
 import os
 import subprocess
+import asyncio
 from network_security import NetworkSecurityAnalyzer
 from assistant_securite import AssistantSecurite
 from translation import get_user_language, get_translation, get_all_translations, get_direction, AVAILABLE_LANGUAGES
 from recommendations import recommendation_system
+from network_detector import NetworkDetector
 
 # Configuration du logging
 logging.basicConfig(level=logging.DEBUG)
@@ -101,9 +103,13 @@ def accueil():
     translations = get_all_translations(lang)
     text_direction = get_direction(lang)
 
+    # Récupérer le statut des technologies réseau
+    network_status = NetworkDetector.get_saved_status()
+
     return render_template('index.html', 
                            network=best_network, 
                            all_networks=all_networks,
+                           network_status=network_status,
                            translations=translations,
                            available_languages=AVAILABLE_LANGUAGES,
                            current_language=lang,
@@ -311,6 +317,11 @@ def handle_network_update():
     best_network = get_best_network()
     all_networks = load_wifi_data()
     emit('network_update', {'best': best_network, 'all': all_networks})
+
+@socketio.on('request_technology_status')
+async def handle_technology_status():
+    status = await NetworkDetector.save_network_status()
+    emit('technology_status_update', status)
 
 @socketio.on('analyze_network_security')
 def handle_analyze_network(data):
