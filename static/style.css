@@ -7,6 +7,7 @@ body {
 .card {
     border-radius: 15px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5rem;
 }
 
 .display-4 {
@@ -20,4 +21,78 @@ body {
 
 .alert {
     border-radius: 10px;
+}
+
+/* Styles pour l'indicateur de signal WiFi */
+.network-icon {
+    position: relative;
+    display: inline-block;
+}
+
+.signal-strength {
+    position: absolute;
+    bottom: 0;
+    right: -10px;
+    font-size: 1.5rem;
+    color: var(--bs-success);
+}
+
+.signal-strength[data-strength="1"], 
+.signal-strength[data-strength="2"] {
+    color: var(--bs-danger);
+}
+
+.signal-strength[data-strength="3"], 
+.signal-strength[data-strength="4"] {
+    color: var(--bs-warning);
+}
+
+.signal-strength[data-strength="5"], 
+.signal-strength[data-strength="6"] {
+    color: var(--bs-info);
+}
+
+.signal-strength[data-strength="7"], 
+.signal-strength[data-strength="8"],
+.signal-strength[data-strength="9"],
+.signal-strength[data-strength="10"] {
+    color: var(--bs-success);
+}
+
+/* Indicateur de signal dans le tableau */
+.signal-indicator {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.signal-bar {
+    position: absolute;
+    height: 5px;
+    background: linear-gradient(90deg, var(--bs-danger) 0%, var(--bs-warning) 50%, var(--bs-success) 100%);
+    border-radius: 2px;
+    z-index: 0;
+    opacity: 0.7;
+}
+
+/* Ajustements pour la table */
+.table {
+    margin-bottom: 0;
+}
+
+.table-responsive {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* Animation pour les mises à jour */
+@keyframes highlight {
+    0% { background-color: transparent; }
+    50% { background-color: rgba(var(--bs-info-rgb), 0.2); }
+    100% { background-color: transparent; }
+}
+
+.highlight {
+    animation: highlight 1s ease-in-out;
 }

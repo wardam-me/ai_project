@@ -7,10 +7,11 @@
     <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <div class="container min-vh-100 d-flex align-items-center justify-content-center">
-        <div class="text-center">
+    <div class="container py-5">
+        <div class="text-center mb-5">
             {% if error %}
             <div class="alert alert-danger" role="alert">
                 {{ error }}
@@ -20,16 +21,68 @@
             <p class="lead mb-4">Analyse en temps réel des réseaux disponibles</p>
 
             <div class="card bg-secondary p-4 mb-4">
-                <h2 class="h4 mb-3">Meilleur Réseau Disponible</h2>
+                <h2 class="h4 mb-3">Meilleur Réseau Recommandé</h2>
                 {% if network %}
-                <div id="network-info">
-                    <p class="mb-2"><strong>SSID:</strong> <span id="ssid">{{ network.ssid }}</span></p>
-                    <p class="mb-2"><strong>Force du signal:</strong> <span id="rssi">{{ network.rssi }}</span> dBm</p>
-                    <p class="mb-0"><strong>Fréquence:</strong> <span id="frequency">{{ network.frequency_mhz }}</span> MHz</p>
+                <div id="best-network-info" class="text-center mb-3">
+                    <div class="network-icon mb-3">
+                        <i class="fas fa-wifi fa-3x"></i>
+                        <div class="signal-strength" data-strength="{{ (network.rssi+100)//10 }}">
+                            <i class="fas fa-signal"></i>
+                        </div>
+                    </div>
+                    <h3 id="ssid" class="h5 mb-3">{{ network.ssid }}</h3>
+                    <div class="row">
+                        <div class="col">
+                            <p class="mb-2"><strong>Signal:</strong> <span id="rssi">{{ network.rssi }}</span> dBm</p>
+                        </div>
+                        <div class="col">
+                            <p class="mb-2"><strong>Fréquence:</strong> <span id="frequency">{{ network.frequency_mhz }}</span> MHz</p>
+                        </div>
+                        <div class="col">
+                            <p class="mb-2"><strong>Sécurité:</strong> <span id="security">{{ network.security if network.security else 'Inconnue' }}</span></p>
+                        </div>
+                    </div>
                 </div>
                 {% else %}
                 <p class="mb-0">Aucun réseau détecté pour le moment...</p>
                 {% endif %}
+            </div>
+
+            <div class="card bg-dark p-4 mb-4">
+                <h2 class="h4 mb-3">Tous les Réseaux Disponibles</h2>
+                <div id="all-networks">
+                    {% if all_networks %}
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover">
+                            <thead>
+                                <tr>
+                                    <th>SSID</th>
+                                    <th>Force du signal</th>
+                                    <th>Fréquence</th>
+                                    <th>Sécurité</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for net in all_networks %}
+                                <tr>
+                                    <td>{{ net.ssid }}</td>
+                                    <td>
+                                        <div class="signal-indicator">
+                                            <div class="signal-bar" style="width: {{ ((net.rssi+100)//10)*10 }}%;"></div>
+                                            {{ net.rssi }} dBm
+                                        </div>
+                                    </td>
+                                    <td>{{ net.frequency_mhz }} MHz</td>
+                                    <td>{{ net.security if net.security else 'Inconnue' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="mb-0">Aucun réseau disponible...</p>
+                    {% endif %}
+                </div>
             </div>
 
             <div class="card bg-info bg-opacity-25 p-4">
@@ -50,11 +103,41 @@
             socket.emit('request_network_update');
         });
 
-        socket.on('network_update', (network) => {
-            if (network) {
-                document.getElementById('ssid').textContent = network.ssid;
-                document.getElementById('rssi').textContent = network.rssi;
-                document.getElementById('frequency').textContent = network.frequency_mhz;
+        socket.on('network_update', (data) => {
+            if (data.best) {
+                // Mettre à jour le meilleur réseau
+                document.getElementById('ssid').textContent = data.best.ssid;
+                document.getElementById('rssi').textContent = data.best.rssi;
+                document.getElementById('frequency').textContent = data.best.frequency_mhz;
+                document.getElementById('security').textContent = data.best.security || 'Inconnue';
+
+                // Mettre à jour la force du signal
+                const signalStrength = document.querySelector('.signal-strength');
+                signalStrength.setAttribute('data-strength', Math.floor((data.best.rssi + 100) / 10));
+            }
+
+            // Mettre à jour tous les réseaux
+            if (data.all && data.all.length > 0) {
+                const allNetworksTable = document.querySelector('#all-networks .table tbody');
+                if (allNetworksTable) {
+                    allNetworksTable.innerHTML = '';
+
+                    data.all.forEach(net => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${net.ssid}</td>
+                            <td>
+                                <div class="signal-indicator">
+                                    <div class="signal-bar" style="width: ${((net.rssi + 100) / 10) * 10}%;"></div>
+                                    ${net.rssi} dBm
+                                </div>
+                            </td>
+                            <td>${net.frequency_mhz} MHz</td>
+                            <td>${net.security || 'Inconnue'}</td>
+                        `;
+                        allNetworksTable.appendChild(row);
+                    });
+                }
             }
         });
 
@@ -62,7 +145,5 @@
             socket.emit('request_network_update');
         }, 10000);
     </script>
-
-    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
 </body>
 </html>
