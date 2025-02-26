@@ -1,191 +1,226 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analyse de Sécurité WiFi - Accueil</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body class="bg-dark text-white">
-    <!-- Barre de navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="{{ url_for('accueil') }}">
-                <i class="bi bi-wifi me-2"></i>Analyse Sécurité WiFi
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="{{ url_for('accueil') }}">Accueil</a>
-                    </li>
-                </ul>
-                <div class="d-flex">
-                    {% if current_user.is_authenticated %}
-                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-light me-2">
-                            <i class="bi bi-speedometer2 me-1"></i>Tableau de bord
-                        </a>
-                        <a href="{{ url_for('logout') }}" class="btn btn-outline-light">
-                            <i class="bi bi-box-arrow-right me-1"></i>Déconnexion
-                        </a>
-                    {% else %}
-                        <a href="{{ url_for('login') }}" class="btn btn-outline-light me-2">
-                            <i class="bi bi-box-arrow-in-right me-1"></i>Connexion
-                        </a>
-                        <a href="{{ url_for('register') }}" class="btn btn-info">
-                            <i class="bi bi-person-plus me-1"></i>Inscription
-                        </a>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </nav>
+{% extends "base.html" %}
 
-    <!-- Hero Section -->
-    <header class="py-5 bg-gradient">
-        <div class="container text-center">
-            <h1 class="display-4 mb-3">Sécurisez votre réseau WiFi</h1>
-            <p class="lead mb-4">Analyse approfondie, détection des vulnérabilités et recommandations personnalisées</p>
+{% block title %}NetSecure Pro - Analyse de Sécurité Réseau{% endblock %}
+
+{% block content %}
+<!-- Section Hero -->
+<section class="hero">
+    <div class="container text-center">
+        <h1 class="display-4 mb-4">Sécurisez votre réseau avec NetSecure Pro</h1>
+        <p class="lead mb-5">Une solution complète pour analyser, visualiser et sécuriser tous les appareils connectés à votre réseau.</p>
+        <div class="d-flex justify-content-center">
             {% if current_user.is_authenticated %}
-                <a href="{{ url_for('dashboard') }}" class="btn btn-lg btn-primary">
-                    <i class="bi bi-speedometer2 me-2"></i>Accéder au tableau de bord
+                <a href="{{ url_for('dashboard') }}" class="btn btn-light btn-lg me-3">
+                    <i class="fas fa-tachometer-alt me-2"></i>Accéder au tableau de bord
                 </a>
             {% else %}
-                <a href="{{ url_for('register') }}" class="btn btn-lg btn-primary me-2">
-                    <i class="bi bi-shield-lock me-2"></i>Commencer l'analyse
+                <a href="{{ url_for('register') }}" class="btn btn-light btn-lg me-3">
+                    <i class="fas fa-user-plus me-2"></i>Créer un compte
                 </a>
-                <a href="{{ url_for('login') }}" class="btn btn-lg btn-outline-light">
-                    <i class="bi bi-door-open me-2"></i>Se connecter
+                <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-sign-in-alt me-2"></i>Connexion
                 </a>
             {% endif %}
         </div>
-    </header>
+    </div>
+</section>
 
-    <!-- Caractéristiques -->
-    <section class="py-5">
-        <div class="container">
-            <h2 class="text-center mb-5">Fonctionnalités principales</h2>
-            <div class="row g-4">
-                <div class="col-md-4">
-                    <div class="card bg-secondary h-100">
-                        <div class="card-body text-center">
-                            <i class="bi bi-shield-check display-4 text-info mb-3"></i>
-                            <h3 class="card-title h4">Analyse de sécurité</h3>
-                            <p class="card-text">Évaluation complète de la sécurité de votre réseau WiFi avec score détaillé et recommandations ciblées.</p>
+<!-- Section Fonctionnalités -->
+<section class="container my-5">
+    <h2 class="text-center mb-5">Fonctionnalités principales</h2>
+    
+    <div class="row text-center">
+        <div class="col-md-4 mb-4">
+            <div class="d-flex justify-content-center">
+                <div class="feature-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+            </div>
+            <h3>Détection des appareils</h3>
+            <p>Identifiez automatiquement tous les appareils connectés à votre réseau et obtenez des informations détaillées sur chacun d'eux.</p>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="d-flex justify-content-center">
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+            </div>
+            <h3>Analyse de sécurité</h3>
+            <p>Évaluez le niveau de sécurité de votre réseau et identifiez les vulnérabilités potentielles pour chaque appareil connecté.</p>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="d-flex justify-content-center">
+                <div class="feature-icon">
+                    <i class="fas fa-project-diagram"></i>
+                </div>
+            </div>
+            <h3>Topologie interactive</h3>
+            <p>Visualisez la structure de votre réseau grâce à une carte interactive qui montre les connexions entre tous vos appareils.</p>
+        </div>
+    </div>
+    
+    <div class="row text-center">
+        <div class="col-md-4 mb-4">
+            <div class="d-flex justify-content-center">
+                <div class="feature-icon">
+                    <i class="fas fa-bell"></i>
+                </div>
+            </div>
+            <h3>Alertes en temps réel</h3>
+            <p>Recevez des notifications immédiates lorsqu'un nouvel appareil se connecte à votre réseau ou qu'une menace potentielle est détectée.</p>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="d-flex justify-content-center">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+            </div>
+            <h3>Rapports détaillés</h3>
+            <p>Générez des rapports complets sur l'état de santé de votre réseau et obtenez des recommandations personnalisées.</p>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="d-flex justify-content-center">
+                <div class="feature-icon">
+                    <i class="fas fa-comment-dots"></i>
+                </div>
+            </div>
+            <h3>Assistant de sécurité</h3>
+            <p>Posez des questions à notre assistant virtuel intelligent pour obtenir des conseils adaptés à votre configuration réseau.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Section Comment ça marche -->
+<section class="bg-light py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Comment ça marche</h2>
+        
+        <div class="row align-items-center mb-5">
+            <div class="col-md-6 order-md-2">
+                <h3>1. Analysez votre réseau</h3>
+                <p>NetSecure Pro détecte automatiquement tous les appareils connectés à votre réseau WiFi et filaire, identifie leur type, fabricant et système d'exploitation.</p>
+                <p>Notre technologie avancée cartographie les connexions entre les appareils pour vous offrir une vision claire de votre infrastructure réseau.</p>
+            </div>
+            <div class="col-md-6 order-md-1">
+                <img src="https://cdn.pixabay.com/photo/2016/10/09/19/19/networks-1726233_960_720.jpg" alt="Analyse réseau" class="img-fluid rounded shadow">
+            </div>
+        </div>
+        
+        <div class="row align-items-center mb-5">
+            <div class="col-md-6">
+                <h3>2. Évaluez les risques de sécurité</h3>
+                <p>Pour chaque appareil détecté, NetSecure Pro effectue une évaluation complète des risques de sécurité en identifiant les vulnérabilités potentielles.</p>
+                <p>Obtenez un score de sécurité global pour votre réseau et des scores individuels pour chaque appareil, avec des recommandations adaptées.</p>
+            </div>
+            <div class="col-md-6">
+                <img src="https://cdn.pixabay.com/photo/2018/05/14/15/12/cyber-security-3400555_960_720.jpg" alt="Évaluation des risques" class="img-fluid rounded shadow">
+            </div>
+        </div>
+        
+        <div class="row align-items-center">
+            <div class="col-md-6 order-md-2">
+                <h3>3. Améliorez votre sécurité</h3>
+                <p>Suivez les recommandations personnalisées pour renforcer la sécurité de votre réseau et de vos appareils connectés.</p>
+                <p>Surveillez en temps réel les nouvelles connexions et recevez des alertes en cas d'activité suspecte pour maintenir un niveau de sécurité optimal.</p>
+            </div>
+            <div class="col-md-6 order-md-1">
+                <img src="https://cdn.pixabay.com/photo/2017/01/18/08/25/social-media-1989152_960_720.jpg" alt="Amélioration de la sécurité" class="img-fluid rounded shadow">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Section Témoignages -->
+<section class="container my-5">
+    <h2 class="text-center mb-5">Ce que disent nos utilisateurs</h2>
+    
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="https://randomuser.me/api/portraits/women/45.jpg" alt="Utilisateur" class="rounded-circle me-3" width="60">
+                        <div>
+                            <h5 class="card-title mb-0">Sophie Martin</h5>
+                            <p class="text-muted mb-0">Responsable IT</p>
                         </div>
                     </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card bg-secondary h-100">
-                        <div class="card-body text-center">
-                            <i class="bi bi-diagram-3 display-4 text-info mb-3"></i>
-                            <h3 class="card-title h4">Topologie du réseau</h3>
-                            <p class="card-text">Visualisation interactive des appareils connectés et de leurs relations pour mieux comprendre votre réseau.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card bg-secondary h-100">
-                        <div class="card-body text-center">
-                            <i class="bi bi-chat-dots display-4 text-info mb-3"></i>
-                            <h3 class="card-title h4">Assistant sécurité</h3>
-                            <p class="card-text">Assistant conversationnel pour répondre à vos questions et vous guider dans l'amélioration de votre sécurité.</p>
-                        </div>
+                    <p class="card-text">"NetSecure Pro nous a permis d'identifier des appareils non autorisés sur notre réseau d'entreprise et de renforcer considérablement notre sécurité. Un outil indispensable pour toute équipe IT."</p>
+                    <div class="text-warning">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
-
-    <!-- Comment ça marche -->
-    <section class="py-5 bg-secondary">
-        <div class="container">
-            <h2 class="text-center mb-5">Comment ça marche</h2>
-            <div class="row align-items-center">
-                <div class="col-lg-6 mb-4 mb-lg-0">
-                    <img src="https://via.placeholder.com/600x400/212529/6c757d?text=Analyse+WiFi" class="img-fluid rounded shadow-lg" alt="WiFi Security Analysis">
-                </div>
-                <div class="col-lg-6">
-                    <div class="steps">
-                        <div class="step d-flex mb-4">
-                            <div class="step-icon bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
-                                <span class="fs-4">1</span>
-                            </div>
-                            <div>
-                                <h4>Créez un compte</h4>
-                                <p>Inscrivez-vous en quelques secondes pour accéder à toutes les fonctionnalités.</p>
-                            </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Utilisateur" class="rounded-circle me-3" width="60">
+                        <div>
+                            <h5 class="card-title mb-0">Thomas Dubois</h5>
+                            <p class="text-muted mb-0">Particulier</p>
                         </div>
-                        <div class="step d-flex mb-4">
-                            <div class="step-icon bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
-                                <span class="fs-4">2</span>
-                            </div>
-                            <div>
-                                <h4>Analysez votre réseau</h4>
-                                <p>Notre outil scanne automatiquement votre environnement WiFi et détecte les vulnérabilités.</p>
-                            </div>
-                        </div>
-                        <div class="step d-flex mb-4">
-                            <div class="step-icon bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
-                                <span class="fs-4">3</span>
-                            </div>
-                            <div>
-                                <h4>Recevez des recommandations</h4>
-                                <p>Obtenez des conseils personnalisés pour améliorer la sécurité de votre réseau.</p>
-                            </div>
-                        </div>
-                        <div class="step d-flex">
-                            <div class="step-icon bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
-                                <span class="fs-4">4</span>
-                            </div>
-                            <div>
-                                <h4>Surveillez en continu</h4>
-                                <p>Restez informé des changements et maintenez une sécurité optimale en permanence.</p>
-                            </div>
-                        </div>
+                    </div>
+                    <p class="card-text">"Grâce à la visualisation interactive, j'ai pu comprendre comment mes appareils étaient connectés et identifier une caméra IoT qui représentait un risque. Interface intuitive et recommandations claires !"</p>
+                    <div class="text-warning">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star-half-alt"></i>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="bg-primary text-white text-center py-4">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-4 mb-3 mb-md-0">
-                    <h5>À propos</h5>
-                    <p class="small">Analyse Sécurité WiFi est une solution complète pour évaluer et améliorer la sécurité de votre réseau sans fil.</p>
-                </div>
-                <div class="col-md-4 mb-3 mb-md-0">
-                    <h5>Liens rapides</h5>
-                    <ul class="list-unstyled small">
-                        <li><a href="#" class="text-white">Fonctionnalités</a></li>
-                        <li><a href="#" class="text-white">Support</a></li>
-                        <li><a href="#" class="text-white">FAQ</a></li>
-                    </ul>
-                </div>
-                <div class="col-md-4">
-                    <h5>Contact</h5>
-                    <p class="small">contact@analysewifi.fr</p>
-                    <div class="social-icons">
-                        <a href="#" class="text-white me-2"><i class="bi bi-twitter"></i></a>
-                        <a href="#" class="text-white me-2"><i class="bi bi-facebook"></i></a>
-                        <a href="#" class="text-white"><i class="bi bi-linkedin"></i></a>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Utilisateur" class="rounded-circle me-3" width="60">
+                        <div>
+                            <h5 class="card-title mb-0">Marie Leroy</h5>
+                            <p class="text-muted mb-0">Chef de projet</p>
+                        </div>
+                    </div>
+                    <p class="card-text">"L'assistant de sécurité est particulièrement utile pour répondre à mes questions techniques. J'apprécie les rapports détaillés qui me permettent de suivre l'évolution de la sécurité de mon réseau."</p>
+                    <div class="text-warning">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
                     </div>
                 </div>
             </div>
-            <hr class="mt-4 mb-3">
-            <p class="mb-0">&copy; 2025 Analyse Sécurité WiFi | Tous droits réservés</p>
         </div>
-    </footer>
+    </div>
+</section>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/socket.io/client-dist/socket.io.min.js"></script>
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-</body>
-</html>
+<!-- Section CTA -->
+<section class="bg-primary text-white text-center py-5">
+    <div class="container">
+        <h2 class="mb-4">Prêt à sécuriser votre réseau ?</h2>
+        <p class="lead mb-4">Rejoignez des milliers d'utilisateurs qui font confiance à NetSecure Pro pour protéger leur infrastructure réseau.</p>
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('dashboard') }}" class="btn btn-light btn-lg">
+                <i class="fas fa-tachometer-alt me-2"></i>Accéder à mon tableau de bord
+            </a>
+        {% else %}
+            <a href="{{ url_for('register') }}" class="btn btn-light btn-lg">
+                <i class="fas fa-user-plus me-2"></i>Créer un compte gratuitement
+            </a>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
