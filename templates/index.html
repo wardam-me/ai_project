@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Serveur Flask - Bienvenue</title>
+    <title>Analyseur WiFi - Bienvenue</title>
     <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 </head>
 <body>
     <div class="container min-vh-100 d-flex align-items-center justify-content-center">
@@ -15,17 +16,52 @@
                 {{ error }}
             </div>
             {% else %}
-            <h1 class="display-4 mb-4">Bienvenue sur notre serveur Flask!</h1>
-            <p class="lead mb-4">Cette page est générée par un serveur Flask en Python.</p>
-            <div class="card bg-secondary p-4">
+            <h1 class="display-4 mb-4">Analyseur de Réseaux WiFi</h1>
+            <p class="lead mb-4">Analyse en temps réel des réseaux disponibles</p>
+
+            <div class="card bg-secondary p-4 mb-4">
+                <h2 class="h4 mb-3">Meilleur Réseau Disponible</h2>
+                {% if network %}
+                <div id="network-info">
+                    <p class="mb-2"><strong>SSID:</strong> <span id="ssid">{{ network.ssid }}</span></p>
+                    <p class="mb-2"><strong>Force du signal:</strong> <span id="rssi">{{ network.rssi }}</span> dBm</p>
+                    <p class="mb-0"><strong>Fréquence:</strong> <span id="frequency">{{ network.frequency_mhz }}</span> MHz</p>
+                </div>
+                {% else %}
+                <p class="mb-0">Aucun réseau détecté pour le moment...</p>
+                {% endif %}
+            </div>
+
+            <div class="card bg-info bg-opacity-25 p-4">
                 <p class="mb-0">
                     <i class="fas fa-info-circle"></i>
-                    Ceci est un exemple de serveur web simple utilisant le framework Flask.
+                    Les données sont mises à jour automatiquement toutes les 10 secondes.
                 </p>
             </div>
             {% endif %}
         </div>
     </div>
+
+    <script>
+        const socket = io();
+
+        socket.on('connect', () => {
+            console.log('Connecté au serveur');
+            socket.emit('request_network_update');
+        });
+
+        socket.on('network_update', (network) => {
+            if (network) {
+                document.getElementById('ssid').textContent = network.ssid;
+                document.getElementById('rssi').textContent = network.rssi;
+                document.getElementById('frequency').textContent = network.frequency_mhz;
+            }
+        });
+
+        setInterval(() => {
+            socket.emit('request_network_update');
+        }, 10000);
+    </script>
 
     <script src="https://kit.fontawesome.com/a076d05399.js"></script>
 </body>
