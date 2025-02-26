@@ -1,0 +1,15 @@
+projtt2
+
+FlaskServer/
+│── app.py
+│── models.py
+│── routes.py
+│── database.db  # (sera généré après migration)
+│── templates/   # (HTML)
+│── static/      # (CSS, JS, images)
+│── config.py
+│── __init__.py  # (initialisation du package Flask)
+
+
+
+

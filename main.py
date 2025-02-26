@@ -321,6 +321,102 @@ def assistant():
     
     return render_template('assistant.html', conversations=conversations)
 
+@app.route('/vulnerability-analysis')
+@login_required
+def vulnerability_analysis():
+    """Page d'analyse des vulnérabilités"""
+    return render_template('vulnerability_analysis.html')
+
+@app.route('/security-report')
+@login_required
+def security_report():
+    """Page de rapport détaillé de sécurité"""
+    return render_template('security_report.html')
+
+@app.route('/protocol-analysis')
+@login_required
+def protocol_analysis():
+    """Page d'analyse des protocoles de sécurité WiFi"""
+    from protocol_analyzer import ProtocolAnalyzer
+    
+    # Initialiser l'analyseur de protocoles
+    analyzer = ProtocolAnalyzer()
+    
+    # Récupérer les données d'exemple pour la démonstration
+    # Dans une implémentation réelle, ces données viendraient d'une analyse réseau
+    test_networks = [
+        {
+            "ssid": "Réseau_Domicile",
+            "bssid": "00:11:22:33:44:55",
+            "security": "WPA2",
+            "encryption": "AES",
+            "authentication": "PSK",
+            "strength": -65,
+            "frequency": "2.4GHz",
+            "channel": 6
+        },
+        {
+            "ssid": "Réseau_Ancien",
+            "bssid": "AA:BB:CC:DD:EE:FF",
+            "security": "WEP",
+            "encryption": None,
+            "authentication": None,
+            "strength": -70,
+            "frequency": "2.4GHz",
+            "channel": 11
+        },
+        {
+            "ssid": "Réseau_Invité",
+            "bssid": "11:22:33:44:55:66",
+            "security": "OPEN",
+            "encryption": None,
+            "authentication": None,
+            "strength": -60,
+            "frequency": "2.4GHz",
+            "channel": 1
+        },
+        {
+            "ssid": "Réseau_Enterprise",
+            "bssid": "22:33:44:55:66:77",
+            "security": "WPA2",
+            "encryption": "AES",
+            "authentication": "ENTERPRISE",
+            "strength": -55,
+            "frequency": "5GHz",
+            "channel": 36
+        },
+        {
+            "ssid": "Réseau_Moderne",
+            "bssid": "33:44:55:66:77:88",
+            "security": "WPA3",
+            "encryption": "GCMP",
+            "authentication": "SAE",
+            "strength": -50,
+            "frequency": "5GHz",
+            "channel": 48
+        }
+    ]
+    
+    # Analyser les réseaux
+    analysis_results = analyzer.analyze_all_networks(test_networks)
+    
+    # Récupérer le résumé global
+    summary = analyzer.get_protocol_analysis_summary()
+    
+    # Récupérer la comparaison des protocoles
+    protocol_comparison = analyzer.get_protocol_comparison()
+    
+    # Récupérer la chronologie des analyses
+    timeline = analyzer.get_protocol_timeline()
+    
+    return render_template(
+        'protocol_analysis.html',
+        analysis_results=analysis_results,
+        summary=summary,
+        protocol_comparison=protocol_comparison,
+        timeline=timeline
+    )
+
 # Gestionnaires d'événements Socket.IO
 @socketio.on('connect')
 def handle_connect():
