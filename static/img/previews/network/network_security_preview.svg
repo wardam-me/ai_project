@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <rect width="800" height="600" fill="#1c1c1e"/>
+  <text x="400" y="50" font-family="Arial" font-size="24" fill="white" text-anchor="middle" font-weight="bold">RAPPORT DE SÉCURITÉ RÉSEAU</text>
+  <text x="400" y="80" font-family="Arial" font-size="14" fill="#888" text-anchor="middle">Aperçu</text>
+  
+  <!-- Jauge de sécurité -->
+  <circle cx="200" cy="160" r="70" fill="none" stroke="#333" stroke-width="20"/>
+  <path d="M200 160 L200 90 A70 70 0 0 1 253 120 Z" fill="#ffcc00"/>
+  <text x="200" y="170" font-family="Arial" font-size="24" fill="white" text-anchor="middle" font-weight="bold">72</text>
+  <text x="200" y="200" font-family="Arial" font-size="12" fill="white" text-anchor="middle">Score de sécurité</text>
+  
+  <!-- Distribution de protocoles -->
+  <circle cx="600" cy="160" r="70" fill="none" stroke="#333" stroke-width="1"/>
+  <path d="M600 160 L600 90 A70 70 0 0 1 667 180 Z" fill="#34c759"/>
+  <path d="M600 160 L667 180 A70 70 0 0 1 600 230 Z" fill="#5ac8fa"/>
+  <path d="M600 160 L600 230 A70 70 0 0 1 540 200 Z" fill="#ffcc00"/>
+  <path d="M600 160 L540 200 A70 70 0 0 1 550 120 Z" fill="#ff9500"/>
+  <path d="M600 160 L550 120 A70 70 0 0 1 600 90 Z" fill="#ff3b30"/>
+  <text x="600" y="200" font-family="Arial" font-size="12" fill="white" text-anchor="middle">Protocoles</text>
+  
+  <!-- Types de vulnérabilités -->
+  <rect x="100" y="280" width="200" height="20" fill="#5ac8fa"/>
+  <rect x="100" y="310" width="150" height="20" fill="#5ac8fa"/>
+  <rect x="100" y="340" width="120" height="20" fill="#5ac8fa"/>
+  <rect x="100" y="370" width="100" height="20" fill="#5ac8fa"/>
+  <rect x="100" y="400" width="80" height="20" fill="#5ac8fa"/>
+  <text x="90" y="295" font-family="Arial" font-size="12" fill="white" text-anchor="end">Type 1</text>
+  <text x="90" y="325" font-family="Arial" font-size="12" fill="white" text-anchor="end">Type 2</text>
+  <text x="90" y="355" font-family="Arial" font-size="12" fill="white" text-anchor="end">Type 3</text>
+  <text x="90" y="385" font-family="Arial" font-size="12" fill="white" text-anchor="end">Type 4</text>
+  <text x="90" y="415" font-family="Arial" font-size="12" fill="white" text-anchor="end">Type 5</text>
+  
+  <!-- Graphe radar -->
+  <polygon points="600,280 650,320 630,380 570,380 550,320" fill="none" stroke="#5ac8fa" stroke-width="2"/>
+  <polygon points="600,280 650,320 630,380 570,380 550,320" fill="#5ac8fa" fill-opacity="0.2"/>
+  <circle cx="600" cy="280" r="3" fill="#5ac8fa"/>
+  <circle cx="650" cy="320" r="3" fill="#5ac8fa"/>
+  <circle cx="630" cy="380" r="3" fill="#5ac8fa"/>
+  <circle cx="570" cy="380" r="3" fill="#5ac8fa"/>
+  <circle cx="550" cy="320" r="3" fill="#5ac8fa"/>
+  <text x="600" y="400" font-family="Arial" font-size="12" fill="white" text-anchor="middle">Dimensions</text>
+  
+  <!-- Appareils vulnérables -->
+  <rect x="100" y="480" width="80" height="20" fill="#ff3b30"/>
+  <rect x="100" y="510" width="120" height="20" fill="#ff9500"/>
+  <rect x="100" y="540" width="160" height="20" fill="#ffcc00"/>
+  <text x="90" y="495" font-family="Arial" font-size="12" fill="white" text-anchor="end">Appareil 1</text>
+  <text x="90" y="525" font-family="Arial" font-size="12" fill="white" text-anchor="end">Appareil 2</text>
+  <text x="90" y="555" font-family="Arial" font-size="12" fill="white" text-anchor="end">Appareil 3</text>
+  
+  <!-- Tendance sécurité -->
+  <polyline points="500,480 530,470 560,465 590,450 620,440 650,430" fill="none" stroke="#5ac8fa" stroke-width="2"/>
+  <circle cx="500" cy="480" r="3" fill="#5ac8fa"/>
+  <circle cx="530" cy="470" r="3" fill="#5ac8fa"/>
+  <circle cx="560" cy="465" r="3" fill="#5ac8fa"/>
+  <circle cx="590" cy="450" r="3" fill="#5ac8fa"/>
+  <circle cx="620" cy="440" r="3" fill="#5ac8fa"/>
+  <circle cx="650" cy="430" r="3" fill="#5ac8fa"/>
+  <text x="575" y="500" font-family="Arial" font-size="12" fill="white" text-anchor="middle">Tendance</text>
+</svg>
