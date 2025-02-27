@@ -492,11 +492,58 @@ def export_infographic(report_type):
     from infographic_generator import InfographicGenerator
     from protocol_analyzer import ProtocolAnalyzer
     
+    # Récupérer les paramètres d'exportation depuis la requête
+    export_format = request.args.get('format', 'png').lower()
+    resolution = request.args.get('resolution', 'standard')
+    interactive = request.args.get('interactive', 'true').lower() == 'true'
+    
+    # Valider le format d'exportation
+    valid_formats = ['pdf', 'png', 'svg', 'html']
+    if export_format not in valid_formats:
+        export_format = 'png'  # Format par défaut si non valide
+    
+    # Déterminer la résolution basée sur le paramètre
+    if resolution == 'ultra':
+        dpi = 300
+    elif resolution == 'high':
+        dpi = 200
+    else:  # standard
+        dpi = 150
+    
     # Initialiser le générateur d'infographies
     generator = InfographicGenerator()
     
-    # Chemin du fichier infographique généré
-    output_path = None
+    # Préparer les noms pour l'export
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    user_id = current_user.id
+    
+    # Mapper les types de rapport à des noms de dossier
+    report_type_dirs = {
+        'network_security': 'network',
+        'protocol_analysis': 'protocol',
+        'vulnerability_report': 'vulnerability'
+    }
+    
+    # Déterminer le dossier de destination
+    report_dir = report_type_dirs.get(report_type, 'general')
+    export_subdir = os.path.join('static', 'exports', report_dir)
+    os.makedirs(export_subdir, exist_ok=True)
+    
+    # Créer le nom de fichier basé sur les paramètres
+    base_filename = f"user_{user_id}_{report_dir}_{timestamp}"
+    filename = f"{base_filename}.{export_format}"
+    output_path = os.path.join(export_subdir, filename)
+    
+    # Préparer les informations pour la page de succès
+    report_type_names = {
+        'network_security': 'Sécurité Réseau',
+        'protocol_analysis': 'Analyse de Protocoles',
+        'vulnerability_report': 'Rapport de Vulnérabilités'
+    }
+    report_type_name = report_type_names.get(report_type, 'Rapport Personnalisé')
+    
+    # Variables pour stocker les chemins des aperçus
+    preview_path = None
     
     # Selon le type de rapport, générer l'infographie appropriée
     if report_type == 'network_security':
@@ -564,12 +611,17 @@ def export_infographic(report_type):
             ]
         }
         
-        # Générer l'infographie
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"network_security_{timestamp}.png"
+        # Générer l'infographie avec le format spécifié
         output_path = generator.generate_network_security_infographic(
-            network_data, vulnerability_data, output_filename=filename
+            network_data, 
+            vulnerability_data, 
+            output_filename=filename,
+            format=export_format,
+            dpi=dpi,
+            interactive=interactive
         )
+        # Définir le chemin de l'aperçu
+        preview_path = "img/previews/network_security_preview.svg"
     
     elif report_type == 'protocol_analysis':
         # Initialiser l'analyseur de protocoles
@@ -632,12 +684,16 @@ def export_infographic(report_type):
             'recommendations': analyzer.get_protocol_analysis_summary().get('recommendations', [])
         }
         
-        # Générer l'infographie
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"protocol_analysis_{timestamp}.png"
+        # Générer l'infographie avec le format spécifié
         output_path = generator.generate_protocol_analysis_infographic(
-            protocol_data, output_filename=filename
+            protocol_data, 
+            output_filename=filename,
+            format=export_format,
+            dpi=dpi,
+            interactive=interactive
         )
+        # Définir le chemin de l'aperçu
+        preview_path = "img/previews/protocol_analysis_preview.svg"
     
     elif report_type == 'vulnerability_report':
         # Exemple de données de vulnérabilité
@@ -723,12 +779,16 @@ def export_infographic(report_type):
             ]
         }
         
-        # Générer l'infographie
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"vulnerability_report_{timestamp}.png"
+        # Générer l'infographie avec le format spécifié
         output_path = generator.generate_vulnerability_report_infographic(
-            vulnerability_data, output_filename=filename
+            vulnerability_data, 
+            output_filename=filename,
+            format=export_format,
+            dpi=dpi,
+            interactive=interactive
         )
+        # Définir le chemin de l'aperçu
+        preview_path = "img/previews/vulnerability_report_preview.svg"
     
     else:
         # Type de rapport non pris en charge
@@ -744,11 +804,96 @@ def export_infographic(report_type):
     relative_path = output_path.replace('static/', '')
     
     # Enregistrer le téléchargement dans l'historique de l'utilisateur
-    # Cette partie serait implémentée dans une version complète
+    # Dans une version réelle, ceci serait stocké dans une base de données
+    export_record = {
+        'user_id': current_user.id,
+        'report_type': report_type_dirs.get(report_type, 'general'),
+        'report_name': report_type_name,
+        'file_path': relative_path,
+        'format': export_format,
+        'created_at': datetime.now(),
+        'file_size': os.path.getsize(output_path) if os.path.exists(output_path) else 0
+    }
+    
+    # Logger l'exportation pour référence
+    logger.info(f"Infographie générée: {export_record}")
+    
+    # Construire la réponse avec toutes les informations nécessaires pour la page de succès
+    export_success_data = {
+        'image_path': relative_path,
+        'preview_path': preview_path,
+        'report_type': report_type,
+        'report_name': report_type_name,
+        'format': export_format,
+        'resolution': resolution,
+        'file_size': f"{export_record['file_size'] / 1024:.1f} Ko" if export_record['file_size'] > 0 else "N/A",
+        'created_at': export_record['created_at'].strftime("%d/%m/%Y %H:%M"),
+        'download_url': url_for('static', filename=relative_path)
+    }
     
     # Rediriger vers la page de visualisation avec un message de succès
     flash('Infographie générée avec succès', 'success')
-    return render_template('export_success.html', image_path=relative_path)
+    return render_template('export_success.html', **export_success_data)
+
+
+@app.route('/infographic-export-hub')
+@login_required
+def infographic_export_hub():
+    """Hub d'exportation d'infographies en un clic"""
+    # Récupérer l'historique des exports pour cet utilisateur
+    export_history = []
+    
+    # Pour la démonstration, nous allons créer quelques exemples d'historique
+    # Dans une version réelle, cela serait récupéré depuis la base de données
+    if not os.path.exists('static/exports'):
+        os.makedirs('static/exports', exist_ok=True)
+    
+    # Vérifier si l'utilisateur a déjà généré des infographies
+    user_id = current_user.id
+    export_dir = 'static/exports'
+    
+    # Dans une implémentation plus complète, nous utiliserions un modèle de base de données
+    # pour stocker l'historique des exports. Pour simplifier, nous allons vérifier les fichiers
+    # présents dans le répertoire d'exports et assumé qu'ils appartiennent à l'utilisateur courant.
+    if os.path.exists(export_dir):
+        for filename in os.listdir(export_dir):
+            if filename.startswith(f'user_{user_id}_'):
+                # Extraire le type de rapport depuis le nom de fichier
+                parts = filename.split('_')
+                if len(parts) >= 4:
+                    report_type = parts[2]
+                    # Obtenir la date de création du fichier
+                    file_path = os.path.join(export_dir, filename)
+                    created_at = datetime.fromtimestamp(os.path.getctime(file_path))
+                    
+                    # Déterminer le nom convivial du type de rapport
+                    report_type_name = {
+                        'network': 'Sécurité Réseau',
+                        'protocol': 'Analyse de Protocoles',
+                        'vulnerability': 'Rapport de Vulnérabilités'
+                    }.get(report_type, 'Rapport')
+                    
+                    # Définir des tags basés sur le type de rapport
+                    tags = []
+                    if report_type == 'network':
+                        tags.append({'name': 'Réseau', 'color': 'primary'})
+                    elif report_type == 'protocol':
+                        tags.append({'name': 'Protocoles', 'color': 'info'})
+                    elif report_type == 'vulnerability':
+                        tags.append({'name': 'Vulnérabilités', 'color': 'danger'})
+                    
+                    export_history.append({
+                        'report_type': report_type,
+                        'report_type_name': report_type_name,
+                        'file_path': os.path.join('exports', filename),
+                        'created_at': created_at,
+                        'tags': tags
+                    })
+    
+    # Trier l'historique par date (le plus récent d'abord)
+    export_history.sort(key=lambda x: x['created_at'], reverse=True)
+    
+    return render_template('infographic_export_hub.html', export_history=export_history)
 
 
 @app.route('/api/export-infographic/<report_type>', methods=['POST'])
@@ -758,13 +903,24 @@ def api_export_infographic(report_type):
     # Cette route est appelée par AJAX pour générer l'infographie en arrière-plan
     
     try:
-        # Rediriger vers la route normale qui génère l'infographie
-        response_url = url_for('export_infographic', report_type=report_type)
+        # Récupérer les paramètres d'exportation depuis la requête JSON
+        data = request.get_json() or {}
+        
+        # Construire l'URL avec les paramètres
+        export_params = {
+            'format': data.get('format', 'png'),
+            'resolution': data.get('resolution', 'standard'),
+            'interactive': str(data.get('interactive', True)).lower()
+        }
+        
+        # Rediriger vers la route normale qui génère l'infographie avec les paramètres
+        response_url = url_for('export_infographic', report_type=report_type, **export_params)
         
         return jsonify({
             'success': True,
-            'message': 'Génération de l\'infographie en cours...',
-            'redirect_url': response_url
+            'message': f'Génération de l\'infographie {report_type} au format {export_params["format"]} en cours...',
+            'redirect_url': response_url,
+            'params': export_params  # Renvoyer les paramètres pour référence
         })
     except Exception as e:
         logger.error(f"Erreur lors de la génération de l'infographie: {e}")

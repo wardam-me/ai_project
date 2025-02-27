@@ -6,6 +6,7 @@ Permet de créer des visualisations attrayantes et informatives des données de 
 import json
 import logging
 import os
+import shutil
 from datetime import datetime
 from typing import Dict, List, Any, Optional, Tuple
 
@@ -23,6 +24,7 @@ logger = logging.getLogger(__name__)
 # Constantes pour les chemins de fichiers
 EXPORT_DIR = os.path.join("static", "exports")
 TEMPLATES_DIR = os.path.join("static", "templates")
+PREVIEWS_DIR = os.path.join("static", "img", "previews")
 
 
 class InfographicGenerator:
@@ -63,7 +65,10 @@ class InfographicGenerator:
         self, 
         network_data: Dict[str, Any],
         vulnerability_data: Dict[str, Any],
-        output_filename: Optional[str] = None
+        output_filename: Optional[str] = None,
+        format: str = 'png',
+        dpi: int = 150,
+        interactive: bool = False
     ) -> str:
         """
         Génère une infographie complète de sécurité réseau
@@ -72,19 +77,58 @@ class InfographicGenerator:
             network_data: Données sur les réseaux et leur sécurité
             vulnerability_data: Données sur les vulnérabilités détectées
             output_filename: Nom du fichier de sortie (optionnel)
+            format: Format de sortie (png, pdf, svg, html)
+            dpi: Résolution en points par pouce (pour PNG et PDF)
+            interactive: Inclure des éléments interactifs (pour PDF et HTML)
             
         Returns:
             str: Chemin vers le fichier infographique généré
         """
+        # Valider le format
+        format = format.lower()
+        if format not in ['png', 'pdf', 'svg', 'html']:
+            format = 'png'
+        
         # Générer un nom de fichier basé sur la date et l'heure si non spécifié
         if not output_filename:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            output_filename = f"network_security_{timestamp}.png"
+            output_filename = f"network_security_{timestamp}.{format}"
+        elif not output_filename.endswith(f'.{format}'):
+            # Changer l'extension si nécessaire
+            output_filename = f"{os.path.splitext(output_filename)[0]}.{format}"
         
-        output_path = os.path.join(EXPORT_DIR, output_filename)
+        # Créer le répertoire s'il n'existe pas
+        export_subdir = os.path.join(EXPORT_DIR, 'network')
+        os.makedirs(export_subdir, exist_ok=True)
         
+        output_path = os.path.join(export_subdir, output_filename)
+        
+        # Si c'est un format HTML interactif, utiliser un template préexistant
+        if format == 'html' and interactive:
+            # Copier un template et remplacer les données
+            html_template_path = os.path.join(TEMPLATES_DIR, 'network_security_template.html')
+            if os.path.exists(html_template_path):
+                with open(html_template_path, 'r') as f:
+                    template_content = f.read()
+                
+                # Remplacer les données dans le template
+                template_content = template_content.replace('__DATA_PLACEHOLDER__', 
+                                                          json.dumps({
+                                                              'network_data': network_data,
+                                                              'vulnerability_data': vulnerability_data,
+                                                              'generated_at': datetime.now().strftime('%d/%m/%Y à %H:%M')
+                                                          }))
+                
+                # Écrire le fichier HTML
+                with open(output_path, 'w') as f:
+                    f.write(template_content)
+                
+                logger.info(f"Infographie HTML interactive générée: {output_path}")
+                return output_path
+        
+        # Pour les autres formats (png, pdf, svg) ou si le template HTML n'existe pas
         # Créer une figure avec plusieurs sous-graphiques
-        fig = plt.figure(figsize=(12, 15), dpi=150)
+        fig = plt.figure(figsize=(12, 15), dpi=dpi)
         fig.suptitle("RAPPORT DE SÉCURITÉ RÉSEAU", fontsize=24, fontweight='bold', y=0.98)
         subtitle = f"Généré le {datetime.now().strftime('%d/%m/%Y à %H:%M')}"
         fig.text(0.5, 0.96, subtitle, fontsize=14, ha='center')
@@ -124,7 +168,10 @@ class InfographicGenerator:
     def generate_protocol_analysis_infographic(
         self,
         protocol_data: Dict[str, Any],
-        output_filename: Optional[str] = None
+        output_filename: Optional[str] = None,
+        format: str = 'png',
+        dpi: int = 150,
+        interactive: bool = False
     ) -> str:
         """
         Génère une infographie d'analyse de protocole WiFi
@@ -132,19 +179,57 @@ class InfographicGenerator:
         Args:
             protocol_data: Données d'analyse de protocole
             output_filename: Nom du fichier de sortie (optionnel)
+            format: Format de sortie (png, pdf, svg, html)
+            dpi: Résolution en points par pouce (pour PNG et PDF)
+            interactive: Inclure des éléments interactifs (pour PDF et HTML)
             
         Returns:
             str: Chemin vers le fichier infographique généré
         """
+        # Valider le format
+        format = format.lower()
+        if format not in ['png', 'pdf', 'svg', 'html']:
+            format = 'png'
+        
         # Générer un nom de fichier basé sur la date et l'heure si non spécifié
         if not output_filename:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            output_filename = f"protocol_analysis_{timestamp}.png"
+            output_filename = f"protocol_analysis_{timestamp}.{format}"
+        elif not output_filename.endswith(f'.{format}'):
+            # Changer l'extension si nécessaire
+            output_filename = f"{os.path.splitext(output_filename)[0]}.{format}"
         
-        output_path = os.path.join(EXPORT_DIR, output_filename)
+        # Créer le répertoire s'il n'existe pas
+        export_subdir = os.path.join(EXPORT_DIR, 'protocol')
+        os.makedirs(export_subdir, exist_ok=True)
         
+        output_path = os.path.join(export_subdir, output_filename)
+        
+        # Si c'est un format HTML interactif, utiliser un template préexistant
+        if format == 'html' and interactive:
+            # Copier un template et remplacer les données
+            html_template_path = os.path.join(TEMPLATES_DIR, 'protocol_analysis_template.html')
+            if os.path.exists(html_template_path):
+                with open(html_template_path, 'r') as f:
+                    template_content = f.read()
+                
+                # Remplacer les données dans le template
+                template_content = template_content.replace('__DATA_PLACEHOLDER__', 
+                                                          json.dumps({
+                                                              'protocol_data': protocol_data,
+                                                              'generated_at': datetime.now().strftime('%d/%m/%Y à %H:%M')
+                                                          }))
+                
+                # Écrire le fichier HTML
+                with open(output_path, 'w') as f:
+                    f.write(template_content)
+                
+                logger.info(f"Infographie HTML interactive générée: {output_path}")
+                return output_path
+        
+        # Pour les autres formats (png, pdf, svg) ou si le template HTML n'existe pas
         # Créer une figure avec plusieurs sous-graphiques
-        fig = plt.figure(figsize=(12, 16), dpi=150)
+        fig = plt.figure(figsize=(12, 16), dpi=dpi)
         fig.suptitle("ANALYSE DES PROTOCOLES WIFI", fontsize=24, fontweight='bold', y=0.98)
         subtitle = f"Généré le {datetime.now().strftime('%d/%m/%Y à %H:%M')}"
         fig.text(0.5, 0.96, subtitle, fontsize=14, ha='center')

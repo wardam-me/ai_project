@@ -63,6 +63,11 @@
                                         <i class="fas fa-file-alt me-1"></i>Rapport
                                     </a>
                                 </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('infographic_export_hub') }}">
+                                        <i class="fas fa-file-export me-1"></i>Infographies
+                                    </a>
+                                </li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <a class="dropdown-item" href="{{ url_for('ai_analysis') }}">
@@ -211,6 +216,7 @@
                         {% if current_user.is_authenticated %}
                             <li><a href="{{ url_for('dashboard') }}" class="text-decoration-none text-muted">Tableau de bord</a></li>
                             <li><a href="{{ url_for('network_topology_view') }}" class="text-decoration-none text-muted">Topologie</a></li>
+                            <li><a href="{{ url_for('infographic_export_hub') }}" class="text-decoration-none text-muted">Infographies</a></li>
                         {% else %}
                             <li><a href="{{ url_for('login') }}" class="text-decoration-none text-muted">Connexion</a></li>
                             <li><a href="{{ url_for('register') }}" class="text-decoration-none text-muted">Inscription</a></li>
