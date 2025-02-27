@@ -1,639 +1,431 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
-{% block title %}Tableau de bord gamifié | NetSecure Pro{% endblock %}
+{% block title %}Tableau de Bord de Sécurité Gamifié{% endblock %}
 
-{% block content %}
-<div class="row mb-4">
-    <div class="col-md-6">
-        <h1>Tableau de bord gamifié</h1>
-        <p class="lead">Bienvenue, <strong>{{ current_user.username }}</strong>! Améliorez votre sécurité, gagnez des points et des récompenses.</p>
-    </div>
-    <div class="col-md-6 text-end">
-        <div class="btn-group">
-            <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
-                <i class="fas fa-tachometer-alt me-2"></i>Tableau de bord standard
-            </a>
-            <a href="{{ url_for('network_topology_view') }}" class="btn btn-info">
-                <i class="fas fa-project-diagram me-2"></i>Topologie
-            </a>
-            <a href="{{ url_for('protocol_analysis') }}" class="btn btn-dark">
-                <i class="fas fa-shield-alt me-2"></i>Analyse
-            </a>
-        </div>
-    </div>
-</div>
-
-<!-- Carte de profil joueur -->
-<div class="row">
-    <div class="col-lg-4 mb-4">
-        <div class="card bg-dark text-white border-0 shadow-lg">
-            <div class="card-header">
-                <h4 class="mb-0"><i class="fas fa-user-shield me-2"></i>Profil de sécurité</h4>
-            </div>
-            <div class="card-body">
-                <div class="text-center mb-4">
-                    <div class="avatar-container position-relative mx-auto">
-                        <!-- Avatar avec niveau -->
-                        <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center" style="width: 120px; height: 120px; font-size: 3em;">
-                            <i class="fas fa-user-ninja"></i>
-                        </div>
-                        <div class="position-absolute badge rounded-pill bg-warning px-2" style="bottom: 0; right: 30px; font-size: 1.2em;">
-                            <i class="fas fa-trophy me-1"></i><span id="userLevel">{{ user_data.scores.level }}</span>
-                        </div>
-                    </div>
-                    <h4 class="mt-3 mb-0">{{ current_user.username }}</h4>
-                    <p class="text-muted">{{ user_data.scores.level | default(1) | int }} - {{ user_title }}</p>
-                </div>
-                
-                <!-- Barre de progression XP -->
-                <div class="mb-3">
-                    <div class="d-flex justify-content-between mb-1">
-                        <span>Expérience</span>
-                        <span id="userXP">{{ user_data.scores.xp | default(0) | int }}/{{ user_data.scores.next_level_xp | default(100) | int }} XP</span>
-                    </div>
-                    <div class="progress" style="height: 15px;">
-                        {% set xp_percent = (user_data.scores.xp / user_data.scores.next_level_xp * 100) if user_data.scores.next_level_xp > 0 else 0 %}
-                        <div class="progress-bar bg-info progress-bar-striped progress-bar-animated" role="progressbar" style="width: {{ xp_percent }}%;" aria-valuenow="{{ xp_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                </div>
-                
-                <!-- Taux de défense -->
-                <div class="mb-3">
-                    <div class="d-flex justify-content-between mb-1">
-                        <span>Taux de défense</span>
-                        <span id="defenseRating">{{ user_data.scores.defense_rating | default(0) | int }}%</span>
-                    </div>
-                    <div class="progress" style="height: 15px;">
-                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ user_data.scores.defense_rating | default(0) }}%;" aria-valuenow="{{ user_data.scores.defense_rating | default(0) }}" aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                </div>
-                
-                <!-- Série d'activités -->
-                <div class="mt-4 text-center">
-                    <div class="d-flex justify-content-center align-items-center mb-2">
-                        <div class="badge bg-danger rounded-pill px-3 py-2 me-2">
-                            <i class="fas fa-fire me-1"></i><span id="currentStreak">{{ user_data.streak.current_streak | default(0) }}</span> jours
-                        </div>
-                        <div class="text-muted small">Série d'activités</div>
-                    </div>
-                    <div class="text-muted small">Record: <span id="highestStreak">{{ user_data.streak.highest_streak | default(0) }}</span> jours</div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Score de sécurité -->
-    <div class="col-lg-4 mb-4">
-        <div class="card border-0 shadow-lg">
-            <div class="card-header bg-gradient-primary text-white">
-                <h4 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Score de sécurité</h4>
-            </div>
-            <div class="card-body">
-                <div class="text-center mb-4">
-                    <!-- Jauge de score -->
-                    <div class="gauge-container position-relative mx-auto">
-                        <div id="securityScoreGauge" class="security-score-gauge rounded-circle d-flex align-items-center justify-content-center 
-                            {{ 'security-score-high' if network_stats.overall_score >= 80 else 'security-score-medium' if network_stats.overall_score >= 50 else 'security-score-low' }}"
-                            style="width: 150px; height: 150px; font-size: 2.5em; border: 8px solid 
-                            {{ '#28a745' if network_stats.overall_score >= 80 else '#ffc107' if network_stats.overall_score >= 50 else '#dc3545' }}">
-                            {{ network_stats.overall_score }}
-                        </div>
-                        <svg class="position-absolute" width="166" height="166" style="top: 0; left: 50%; transform: translateX(-50%);">
-                            <path id="scoreArc" d="M83,8 A75,75 0 1,1 82.9,8" fill="none" stroke="{{ '#28a745' if network_stats.overall_score >= 80 else '#ffc107' if network_stats.overall_score >= 50 else '#dc3545' }}" stroke-width="2" />
-                        </svg>
-                    </div>
-                    <h4 class="mt-3">{{ score_title }}</h4>
-                </div>
-                
-                <!-- Badges de score -->
-                <div class="row text-center">
-                    <div class="col-4">
-                        <div class="small text-success mb-2">Sécurisés</div>
-                        <h3>{{ network_stats.low_risk_count }}</h3>
-                    </div>
-                    <div class="col-4">
-                        <div class="small text-warning mb-2">À risque</div>
-                        <h3>{{ network_stats.medium_risk_count }}</h3>
-                    </div>
-                    <div class="col-4">
-                        <div class="small text-danger mb-2">Critiques</div>
-                        <h3>{{ network_stats.high_risk_count }}</h3>
-                    </div>
-                </div>
-                
-                <!-- Progression -->
-                <div class="mt-4">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <div class="text-muted">Progression vers la sécurité parfaite</div>
-                        <div class="badge bg-primary">{{ network_stats.overall_score }}/100</div>
-                    </div>
-                    <div class="progress" style="height: 10px;">
-                        <div class="progress-bar bg-primary" role="progressbar" style="width: {{ network_stats.overall_score }}%;" aria-valuenow="{{ network_stats.overall_score }}" aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Défis actifs -->
-    <div class="col-lg-4 mb-4">
-        <div class="card border-0 shadow-lg">
-            <div class="card-header bg-gradient-info text-white">
-                <h4 class="mb-0"><i class="fas fa-tasks me-2"></i>Défis actifs</h4>
-            </div>
-            <div class="card-body p-0">
-                <div class="list-group list-group-flush">
-                    {% for challenge in user_data.challenges %}
-                        {% if challenge.status == 'active' %}
-                            <div class="list-group-item">
-                                <div class="d-flex w-100 justify-content-between mb-1">
-                                    <h6 class="mb-0">{{ challenge.name }}</h6>
-                                    <span class="badge {{ 'bg-success' if challenge.progress/challenge.target >= 0.75 else 'bg-warning' if challenge.progress/challenge.target >= 0.25 else 'bg-danger' }}">
-                                        {{ challenge.progress }}/{{ challenge.target }}
-                                    </span>
-                                </div>
-                                <p class="mb-2 small text-muted">{{ challenge.description }}</p>
-                                <div class="progress" style="height: 5px;">
-                                    {% set progress_percent = (challenge.progress / challenge.target * 100) if challenge.target > 0 else 0 %}
-                                    <div class="progress-bar bg-info" role="progressbar" style="width: {{ progress_percent }}%;" aria-valuenow="{{ progress_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                                <div class="d-flex justify-content-between align-items-center mt-2">
-                                    <small class="text-muted">
-                                        <i class="fas fa-gift me-1"></i>{{ challenge.xp_reward }} XP
-                                    </small>
-                                    <small class="text-danger">
-                                        <i class="fas fa-clock me-1"></i>Expire dans {{ ((challenge.expires_at|from_isoformat - now).total_seconds() / 86400)|int }} jours
-                                    </small>
-                                </div>
-                            </div>
-                        {% endif %}
-                    {% else %}
-                        <div class="list-group-item text-center py-4">
-                            <i class="fas fa-clipboard-check fa-3x text-muted mb-3"></i>
-                            <p class="mb-0">Aucun défi actif pour le moment</p>
-                            <button class="btn btn-sm btn-primary mt-3">Générer de nouveaux défis</button>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Seconde rangée -->
-<div class="row">
-    <!-- Dernières récompenses -->
-    <div class="col-lg-4 mb-4">
-        <div class="card border-0 shadow-lg">
-            <div class="card-header bg-gradient-success text-white">
-                <h4 class="mb-0"><i class="fas fa-medal me-2"></i>Récompenses</h4>
-            </div>
-            <div class="card-body p-0">
-                <div class="list-group list-group-flush">
-                    {% if user_data.rewards %}
-                        {% for reward in user_data.rewards %}
-                            <div class="list-group-item">
-                                <div class="d-flex align-items-center">
-                                    <div class="reward-icon me-3">
-                                        {% if reward.type == 'badge' %}
-                                            <i class="fas fa-certificate fa-2x text-warning"></i>
-                                        {% elif reward.type == 'theme' %}
-                                            <i class="fas fa-palette fa-2x text-primary"></i>
-                                        {% elif reward.type == 'avatar' %}
-                                            <i class="fas fa-user-astronaut fa-2x text-success"></i>
-                                        {% else %}
-                                            <i class="fas fa-gift fa-2x text-info"></i>
-                                        {% endif %}
-                                    </div>
-                                    <div>
-                                        <h6 class="mb-0">{{ reward.name }}</h6>
-                                        <p class="mb-0 small text-muted">{{ reward.description }}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    {% else %}
-                        <div class="list-group-item text-center py-4">
-                            <i class="fas fa-gift fa-3x text-muted mb-3"></i>
-                            <p class="mb-0">Améliorez votre sécurité pour débloquer des récompenses</p>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Badges de réussite -->
-    <div class="col-lg-4 mb-4">
-        <div class="card border-0 shadow-lg">
-            <div class="card-header bg-gradient-warning text-white">
-                <h4 class="mb-0"><i class="fas fa-trophy me-2"></i>Réussites</h4>
-            </div>
-            <div class="card-body">
-                <div class="row g-3">
-                    {% if user_data.achievements %}
-                        {% for achievement in user_data.achievements %}
-                            <div class="col-6 col-sm-4">
-                                <div class="achievement-badge text-center" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ achievement.description }}">
-                                    <div class="badge-icon rounded-circle d-flex align-items-center justify-content-center bg-warning text-dark mx-auto mb-2" style="width: 60px; height: 60px;">
-                                        <i class="fas fa-{{ achievement.icon }} fa-2x"></i>
-                                    </div>
-                                    <div class="badge-name small">{{ achievement.name }}</div>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    {% else %}
-                        <div class="col-12 text-center py-4">
-                            <i class="fas fa-award fa-3x text-muted mb-3"></i>
-                            <p class="mb-0">Complétez des défis pour débloquer des réussites</p>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Classement -->
-    <div class="col-lg-4 mb-4">
-        <div class="card border-0 shadow-lg">
-            <div class="card-header bg-gradient-danger text-white">
-                <h4 class="mb-0"><i class="fas fa-crown me-2"></i>Classement</h4>
-            </div>
-            <div class="card-body p-0">
-                <div class="list-group list-group-flush">
-                    {% if leaderboard %}
-                        {% for user in leaderboard %}
-                            <div class="list-group-item">
-                                <div class="d-flex align-items-center">
-                                    <div class="leaderboard-rank me-3 fw-bold {{ 'text-warning' if loop.index == 1 else 'text-secondary' if loop.index == 2 else 'text-danger' if loop.index == 3 else '' }}">
-                                        #{{ loop.index }}
-                                    </div>
-                                    <div class="leaderboard-avatar me-3">
-                                        {% if loop.index == 1 %}
-                                            <i class="fas fa-crown text-warning"></i>
-                                        {% else %}
-                                            <i class="fas fa-user-circle"></i>
-                                        {% endif %}
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <h6 class="mb-0">{{ leaderboard_users[user.user_id] }}</h6>
-                                        <div class="small text-muted">Niveau {{ user.level }}</div>
-                                    </div>
-                                    <div class="leaderboard-score ms-2">
-                                        <span class="badge bg-primary">{{ user.security_points }} pts</span>
-                                    </div>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    {% else %}
-                        <div class="list-group-item text-center py-4">
-                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
-                            <p class="mb-0">Soyez le premier au classement</p>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Zone d'action -->
-<div class="row">
-    <div class="col-12 mb-4">
-        <div class="card border-0 shadow-lg">
-            <div class="card-header bg-gradient-dark text-white">
-                <h4 class="mb-0"><i class="fas fa-bolt me-2"></i>Actions de sécurité</h4>
-            </div>
-            <div class="card-body">
-                <div class="row g-3">
-                    <div class="col-md-3">
-                        <a href="{{ url_for('perform_network_scan') }}" class="btn btn-primary w-100 py-3 h-100 d-flex flex-column align-items-center justify-content-center">
-                            <i class="fas fa-search fa-2x mb-2"></i>
-                            <span>Analyser le réseau</span>
-                            <small class="text-light">+30 XP</small>
-                        </a>
-                    </div>
-                    <div class="col-md-3">
-                        <a href="{{ url_for('fix_security_issues') }}" class="btn btn-danger w-100 py-3 h-100 d-flex flex-column align-items-center justify-content-center">
-                            <i class="fas fa-tools fa-2x mb-2"></i>
-                            <span>Corriger les vulnérabilités</span>
-                            <small class="text-light">+50 XP</small>
-                        </a>
-                    </div>
-                    <div class="col-md-3">
-                        <a href="{{ url_for('network_topology_view') }}" class="btn btn-info w-100 py-3 h-100 d-flex flex-column align-items-center justify-content-center">
-                            <i class="fas fa-project-diagram fa-2x mb-2"></i>
-                            <span>Vérifier la topologie</span>
-                            <small class="text-light">+20 XP</small>
-                        </a>
-                    </div>
-                    <div class="col-md-3">
-                        <a href="{{ url_for('protocol_analysis') }}" class="btn btn-warning w-100 py-3 h-100 d-flex flex-column align-items-center justify-content-center">
-                            <i class="fas fa-shield-alt fa-2x mb-2"></i>
-                            <span>Analyser les protocoles</span>
-                            <small class="text-light">+40 XP</small>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal de notification de récompense -->
-<div class="modal fade" id="rewardModal" tabindex="-1" aria-labelledby="rewardModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-warning text-dark">
-                <h5 class="modal-title" id="rewardModalLabel"><i class="fas fa-gift me-2"></i>Nouvelle récompense !</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body text-center py-4">
-                <div class="reward-animation mb-4">
-                    <i class="fas fa-certificate fa-5x text-warning pulse"></i>
-                </div>
-                <h4 id="rewardName">Badge débloqué</h4>
-                <p id="rewardDescription" class="mb-4">Vous avez débloqué un nouveau badge pour votre progression!</p>
-                
-                <div class="xp-gain mb-4">
-                    <span class="badge bg-info px-3 py-2">+<span id="xpGained">100</span> XP</span>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Super !</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal de montée de niveau -->
-<div class="modal fade" id="levelUpModal" tabindex="-1" aria-labelledby="levelUpModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title" id="levelUpModalLabel"><i class="fas fa-arrow-up me-2"></i>Niveau supérieur !</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body text-center py-4">
-                <div class="level-animation mb-4 position-relative">
-                    <i class="fas fa-user-shield fa-5x text-success"></i>
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="newLevel">
-                        5
-                    </span>
-                </div>
-                <h4>Félicitations !</h4>
-                <p class="mb-4">Vous avez atteint le niveau <span id="levelUpValue">5</span> !</p>
-                
-                <div id="levelRewards" class="rewards-container mb-3">
-                    <!-- Les récompenses de niveau seront affichées ici -->
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-success" data-bs-dismiss="modal">Continuer</button>
-            </div>
-        </div>
-    </div>
-</div>
+{% block custom_css %}
+<style>
+  .card-progress-bar {
+    height: 8px;
+    border-radius: 6px;
+  }
+  .score-card {
+    border-left: 4px solid;
+    transition: transform 0.3s;
+  }
+  .score-card:hover {
+    transform: translateY(-5px);
+  }
+  .score-high {
+    border-color: #28a745;
+  }
+  .score-medium {
+    border-color: #ffc107;
+  }
+  .score-low {
+    border-color: #dc3545;
+  }
+  .badge-pill {
+    font-size: 0.8rem;
+    padding: 0.35em 0.7em;
+    border-radius: 10rem;
+  }
+  .streak-flames {
+    color: #ff7700;
+    margin-right: 5px;
+  }
+  .xp-bar-container {
+    height: 8px;
+    background-color: rgba(0,0,0,0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 5px;
+  }
+  .xp-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #4481eb, #04befe);
+    border-radius: 4px;
+    transition: width 1s ease-in-out;
+  }
+  .achievement-icon {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+  }
+  .challenge-card {
+    border-left: 4px solid #6f42c1;
+    transition: all 0.3s;
+  }
+  .challenge-card:hover {
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  }
+  .level-badge {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+    line-height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #6f42c1, #17a2b8);
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    margin-right: 15px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+  }
+  .leaderboard-position {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    border-radius: 50%;
+    background-color: #f8f9fa;
+    color: #495057;
+    font-weight: bold;
+    text-align: center;
+    margin-right: 10px;
+  }
+  .leaderboard-item:nth-child(1) .leaderboard-position {
+    background: gold;
+    color: #212529;
+  }
+  .leaderboard-item:nth-child(2) .leaderboard-position {
+    background: silver;
+    color: #212529;
+  }
+  .leaderboard-item:nth-child(3) .leaderboard-position {
+    background: #cd7f32;
+    color: #212529;
+  }
+  .reward-card {
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: all 0.3s;
+  }
+  .reward-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+  }
+  .reward-icon {
+    font-size: 2rem;
+    margin-bottom: 15px;
+    color: #6f42c1;
+  }
+  .progress-animate {
+    animation: progress-bar-stripes 1s linear infinite;
+  }
+  
+  /* Animation pour le gain d'XP */
+  @keyframes xp-gain {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .xp-gain {
+    animation: xp-gain 1s;
+  }
+  .badge-achievement {
+    background-color: #6f42c1;
+    color: white;
+    margin-right: 5px;
+  }
+</style>
 {% endblock %}
 
-{% block styles %}
-<style>
-    /* Styles pour le tableau de bord gamifié */
-    .security-score-gauge {
-        position: relative;
-        z-index: 10;
-        background-color: #343a40;
-        color: white;
-        font-weight: bold;
-    }
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="row mb-4">
+    <div class="col-12">
+      <h1 class="display-4">
+        <i class="fas fa-gamepad mr-2"></i> Tableau de Bord de Sécurité
+        <small class="text-muted font-weight-light">Gamifié</small>
+      </h1>
+      <p class="lead">Améliorez la sécurité de votre réseau et gagnez des points, débloquez des récompenses et relevez des défis !</p>
+    </div>
+  </div>
+
+  <!-- Notifications et alertes -->
+  {% if xp_gain > 0 %}
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    <i class="fas fa-award mr-2"></i> <strong>Félicitations !</strong> Vous avez gagné <span class="badge badge-pill badge-success xp-gain">+{{ xp_gain }} XP</span>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  {% endif %}
+
+  {% if level_up %}
+  <div class="alert alert-primary alert-dismissible fade show" role="alert">
+    <i class="fas fa-level-up-alt mr-2"></i> <strong>Niveau supérieur !</strong> Vous êtes passé du niveau {{ level_up.old_level }} au niveau {{ level_up.new_level }} !
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  {% endif %}
+
+  {% if new_achievements %}
+  <div class="alert alert-info alert-dismissible fade show" role="alert">
+    <i class="fas fa-trophy mr-2"></i> <strong>Nouvelle réalisation !</strong> Vous avez débloqué : 
+    {% for achievement in new_achievements %}
+    <span class="badge badge-achievement">{{ achievement.name }}</span>
+    {% endfor %}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  {% endif %}
+
+  <!-- Profil Joueur et Score -->
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <div class="d-flex align-items-center mb-3">
+            <div class="level-badge">
+              {{ user_data.scores.level }}
+            </div>
+            <div>
+              <h5 class="card-title mb-0">{{ current_user.username }}</h5>
+              <p class="text-muted mb-0">{{ user_title }}</p>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <small>XP: {{ user_data.scores.xp }} / {{ user_data.scores.next_level_xp }}</small>
+              <small>Niveau {{ user_data.scores.level }}</small>
+            </div>
+            <div class="xp-bar-container">
+              <div class="xp-bar" style="width: {{ (user_data.scores.xp / user_data.scores.next_level_xp * 100)|int }}%"></div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-6">
+              <div class="text-center mb-3">
+                <h3 class="mb-0">{{ user_data.scores.security_points }}</h3>
+                <small class="text-muted">Score de sécurité</small>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="text-center mb-3">
+                <h3 class="mb-0">{{ user_data.scores.defense_rating }}%</h3>
+                <small class="text-muted">Taux de défense</small>
+              </div>
+            </div>
+          </div>
+          
+          {% if user_data.streak.current_streak > 0 %}
+          <div class="text-center">
+            <span class="streak-flames"><i class="fas fa-fire"></i></span>
+            <span class="font-weight-bold">{{ user_data.streak.current_streak }}</span> jours consécutifs
+            <small class="text-muted">(Record: {{ user_data.streak.highest_streak }})</small>
+          </div>
+          {% endif %}
+        </div>
+        <div class="card-footer bg-transparent d-flex justify-content-between">
+          <small class="text-muted">Dernière activité: {{ user_data.scores.last_updated|from_isoformat|datetime }}</small>
+        </div>
+      </div>
+    </div>
     
-    .security-score-low {
-        box-shadow: 0 0 15px rgba(220, 53, 69, 0.7);
-    }
+    <div class="col-md-8">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Statistiques de Sécurité du Réseau</h5>
+          <h2 class="display-4 mb-3">{{ network_stats.overall_score }} <small class="text-muted">/ 100</small></h2>
+          <p>{{ score_title }}</p>
+          
+          <div class="row mb-4">
+            <div class="col-md-4">
+              <div class="text-center">
+                <h3>{{ network_stats.device_count }}</h3>
+                <p class="mb-0">Appareils détectés</p>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="text-center">
+                <h3>{{ network_stats.high_risk_count }}</h3>
+                <p class="mb-0 text-danger">Risque élevé</p>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="text-center">
+                <h3>{{ network_stats.low_risk_count }}</h3>
+                <p class="mb-0 text-success">Risque faible</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="d-flex justify-content-around">
+            <a href="{{ url_for('perform_network_scan') }}" class="btn btn-primary">
+              <i class="fas fa-sync-alt mr-2"></i> Analyser le réseau
+            </a>
+            <a href="{{ url_for('fix_security_issues') }}" class="btn btn-success">
+              <i class="fas fa-shield-alt mr-2"></i> Corriger les vulnérabilités
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Défis en cours -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <h3><i class="fas fa-tasks mr-2"></i> Défis en cours</h3>
+    </div>
     
-    .security-score-medium {
-        box-shadow: 0 0 15px rgba(255, 193, 7, 0.7);
-    }
+    {% for challenge in user_data.challenges %}
+    <div class="col-md-4">
+      <div class="card shadow-sm challenge-card mb-3">
+        <div class="card-body">
+          <h5 class="card-title">{{ challenge.name }}</h5>
+          <p class="card-text">{{ challenge.description }}</p>
+          
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <small>Progression: {{ challenge.progress }} / {{ challenge.target }}</small>
+              <small>{{ (challenge.progress / challenge.target * 100)|int }}%</small>
+            </div>
+            <div class="progress card-progress-bar">
+              <div class="progress-bar {% if challenge.progress > 0 %}progress-bar-striped progress-animate{% endif %}" 
+                  role="progressbar" 
+                  style="width: {{ (challenge.progress / challenge.target * 100)|int }}%" 
+                  aria-valuenow="{{ challenge.progress }}" 
+                  aria-valuemin="0" 
+                  aria-valuemax="{{ challenge.target }}"></div>
+            </div>
+          </div>
+          
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="badge badge-pill badge-primary">+{{ challenge.xp_reward }} XP</span>
+            <small class="text-muted">Expire: {{ challenge.expires_at|from_isoformat|datetime('relative') }}</small>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Réalisations -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <h3><i class="fas fa-trophy mr-2"></i> Réalisations</h3>
+    </div>
     
-    .security-score-high {
-        box-shadow: 0 0 15px rgba(40, 167, 69, 0.7);
-    }
+    {% if user_data.achievements %}
+    {% for achievement in user_data.achievements %}
+    <div class="col-md-3 mb-3">
+      <div class="card score-card score-high text-center shadow-sm h-100">
+        <div class="card-body">
+          <div class="achievement-icon">
+            <i class="fas fa-{{ achievement.icon }}"></i>
+          </div>
+          <h5 class="card-title">{{ achievement.name }}</h5>
+          <p class="card-text small">{{ achievement.description }}</p>
+          <small class="text-muted">Débloqué: {{ achievement.unlocked_at|from_isoformat|datetime('relative') }}</small>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="col-12">
+      <div class="alert alert-info" role="alert">
+        <i class="fas fa-info-circle mr-2"></i> Vous n'avez pas encore débloqué de réalisations. Continuez à améliorer la sécurité de votre réseau !
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Classement -->
+  <div class="row">
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-header bg-transparent">
+          <h5 class="mb-0"><i class="fas fa-crown mr-2"></i> Classement</h5>
+        </div>
+        <div class="card-body p-0">
+          <ul class="list-group list-group-flush">
+            {% for entry in leaderboard %}
+            <li class="list-group-item d-flex justify-content-between align-items-center leaderboard-item">
+              <div>
+                <span class="leaderboard-position">{{ loop.index }}</span>
+                <span class="font-weight-bold">{{ leaderboard_users[entry.user_id] }}</span>
+              </div>
+              <div>
+                <span class="badge badge-pill badge-primary">Niveau {{ entry.level }}</span>
+                <span class="badge badge-pill badge-info">{{ entry.security_points }} pts</span>
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
     
-    .achievement-badge {
-        transition: all 0.3s ease;
-    }
-    
-    .achievement-badge:hover {
-        transform: translateY(-5px);
-    }
-    
-    .badge-icon {
-        transition: all 0.3s ease;
-    }
-    
-    .achievement-badge:hover .badge-icon {
-        transform: rotate(10deg);
-    }
-    
-    .bg-gradient-primary {
-        background: linear-gradient(135deg, #2196F3, #0D47A1);
-    }
-    
-    .bg-gradient-success {
-        background: linear-gradient(135deg, #4CAF50, #1B5E20);
-    }
-    
-    .bg-gradient-info {
-        background: linear-gradient(135deg, #00BCD4, #006064);
-    }
-    
-    .bg-gradient-warning {
-        background: linear-gradient(135deg, #FFC107, #FF6F00);
-    }
-    
-    .bg-gradient-danger {
-        background: linear-gradient(135deg, #F44336, #B71C1C);
-    }
-    
-    .bg-gradient-dark {
-        background: linear-gradient(135deg, #455A64, #263238);
-    }
-    
-    .pulse {
-        animation: pulse 1.5s infinite;
-    }
-    
-    @keyframes pulse {
-        0% {
-            transform: scale(0.95);
-            opacity: 0.7;
-        }
-        50% {
-            transform: scale(1.05);
-            opacity: 1;
-        }
-        100% {
-            transform: scale(0.95);
-            opacity: 0.7;
-        }
-    }
-    
-    .level-animation {
-        animation: levelUp 1s;
-    }
-    
-    @keyframes levelUp {
-        0% {
-            transform: scale(0.5);
-            opacity: 0;
-        }
-        50% {
-            transform: scale(1.2);
-        }
-        100% {
-            transform: scale(1);
-            opacity: 1;
-        }
-    }
-    
-    .reward-animation {
-        animation: reward 1s;
-    }
-    
-    @keyframes reward {
-        0% {
-            transform: scale(0.5) rotate(-15deg);
-            opacity: 0;
-        }
-        50% {
-            transform: scale(1.2) rotate(10deg);
-        }
-        100% {
-            transform: scale(1) rotate(0deg);
-            opacity: 1;
-        }
-    }
-</style>
+    {% if level_up and level_up.rewards %}
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-header bg-transparent">
+          <h5 class="mb-0"><i class="fas fa-gift mr-2"></i> Nouvelles récompenses</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            {% for reward in level_up.rewards %}
+            <div class="col-md-6 mb-3">
+              <div class="card reward-card text-center">
+                <div class="card-body">
+                  <div class="reward-icon">
+                    {% if reward.type == 'badge' %}
+                    <i class="fas fa-certificate"></i>
+                    {% elif reward.type == 'theme' %}
+                    <i class="fas fa-paint-brush"></i>
+                    {% elif reward.type == 'avatar' %}
+                    <i class="fas fa-user-circle"></i>
+                    {% else %}
+                    <i class="fas fa-gift"></i>
+                    {% endif %}
+                  </div>
+                  <h5 class="card-title">{{ reward.name }}</h5>
+                  <p class="card-text small">{{ reward.description }}</p>
+                  <span class="badge badge-pill badge-success">Niveau {{ level_up.new_level }}</span>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialiser les tooltips pour les badges
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
-        
-        // Vérifier s'il y a des récompenses ou une montée de niveau à afficher
-        {% if xp_gain and xp_gain > 0 %}
-            // Afficher la notification d'XP
-            showXPNotification({{ xp_gain }});
-        {% endif %}
-        
-        {% if level_up %}
-            // Afficher la notification de montée de niveau
-            showLevelUpNotification({
-                oldLevel: {{ level_up.old_level }},
-                newLevel: {{ level_up.new_level }},
-                rewards: {{ level_up.rewards|tojson }}
-            });
-        {% endif %}
-        
-        {% if new_achievements and new_achievements|length > 0 %}
-            // Afficher les nouvelles réussites
-            {% for achievement in new_achievements %}
-                showAchievementNotification({{ achievement|tojson }});
-            {% endfor %}
-        {% endif %}
-    });
+  document.addEventListener('DOMContentLoaded', function() {
+    // Animation des alertes
+    setTimeout(function() {
+      $('.alert').alert('close');
+    }, 5000);
     
-    // Fonction pour afficher une notification d'XP
-    function showXPNotification(xp) {
-        // Créer une notification toast
-        const toast = document.createElement('div');
-        toast.className = 'toast align-items-center text-white bg-info border-0 position-fixed bottom-0 end-0 m-3';
-        toast.setAttribute('role', 'alert');
-        toast.setAttribute('aria-live', 'assertive');
-        toast.setAttribute('aria-atomic', 'true');
-        toast.innerHTML = `
-            <div class="d-flex">
-                <div class="toast-body">
-                    <i class="fas fa-bolt me-2"></i>+${xp} XP
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-        `;
-        
-        document.body.appendChild(toast);
-        
-        const bsToast = new bootstrap.Toast(toast, {
-            autohide: true,
-            delay: 3000
-        });
-        
-        bsToast.show();
-        
-        // Supprimer l'élément après la fermeture
-        toast.addEventListener('hidden.bs.toast', function () {
-            document.body.removeChild(toast);
-        });
-    }
-    
-    // Fonction pour afficher la notification de montée de niveau
-    function showLevelUpNotification(levelData) {
-        // Mettre à jour les éléments du modal
-        document.getElementById('newLevel').textContent = levelData.newLevel;
-        document.getElementById('levelUpValue').textContent = levelData.newLevel;
-        
-        // Afficher les récompenses
-        const rewardsContainer = document.getElementById('levelRewards');
-        rewardsContainer.innerHTML = '';
-        
-        if (levelData.rewards && levelData.rewards.length > 0) {
-            levelData.rewards.forEach(reward => {
-                const rewardElement = document.createElement('div');
-                rewardElement.className = 'alert alert-success d-flex align-items-center';
-                
-                let icon = 'gift';
-                if (reward.type === 'badge') icon = 'certificate';
-                else if (reward.type === 'theme') icon = 'palette';
-                else if (reward.type === 'avatar') icon = 'user-astronaut';
-                
-                rewardElement.innerHTML = `
-                    <i class="fas fa-${icon} me-2"></i>
-                    <div>
-                        <strong>${reward.name}</strong>: ${reward.description}
-                    </div>
-                `;
-                
-                rewardsContainer.appendChild(rewardElement);
-            });
-        } else {
-            rewardsContainer.innerHTML = '<div class="alert alert-info">Aucune récompense pour ce niveau</div>';
-        }
-        
-        // Afficher le modal
-        const levelUpModal = new bootstrap.Modal(document.getElementById('levelUpModal'));
-        levelUpModal.show();
-    }
-    
-    // Fonction pour afficher une notification de réussite
-    function showAchievementNotification(achievement) {
-        // Mettre à jour les éléments du modal
-        document.getElementById('rewardName').textContent = achievement.name;
-        document.getElementById('rewardDescription').textContent = achievement.description;
-        document.getElementById('xpGained').textContent = '50'; // XP fixe pour les réussites
-        
-        // Changer l'icône selon le type de réussite
-        const rewardIcon = document.querySelector('.reward-animation i');
-        rewardIcon.className = `fas fa-${achievement.icon} fa-5x text-warning pulse`;
-        
-        // Afficher le modal avec un délai pour éviter les conflits avec d'autres modals
-        setTimeout(() => {
-            const rewardModal = new bootstrap.Modal(document.getElementById('rewardModal'));
-            rewardModal.show();
-        }, 1000);
-    }
+    // Actualiser les données de progression périodiquement
+    setInterval(function() {
+      fetch('/api/gamification/user-data')
+        .then(response => response.json())
+        .then(data => {
+          // Mettre à jour les barres de progression
+          const xpPercentage = Math.floor(data.scores.xp / data.scores.next_level_xp * 100);
+          $('.xp-bar').css('width', xpPercentage + '%');
+          
+          // Mettre à jour d'autres éléments au besoin
+        })
+        .catch(error => console.error('Erreur lors de la récupération des données:', error));
+    }, 30000); // Toutes les 30 secondes
+  });
 </script>
 {% endblock %}
