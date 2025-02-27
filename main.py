@@ -1822,5 +1822,7 @@ if __name__ == '__main__':
     logger.info(f"Clone IA par défaut créé : {default_clone_id}")
     
     # Démarrer l'application Flask avec l'extension SocketIO
-    # Utilisation du port 5000 au lieu de 8080 pour respecter les directives de développement de Replit
-    socketio.run(app, host="0.0.0.0", port=5000, debug=True)
+    # Configuration pour le déploiement et le développement
+    port = int(os.environ.get("PORT", 5000))
+    debug = os.environ.get("REPLIT_DEPLOYMENT", "0") != "1"
+    socketio.run(app, host="0.0.0.0", port=port, debug=debug)
