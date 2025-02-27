@@ -20,6 +20,7 @@ def create_directories():
         'static/exports',  # Dossier pour les infographies exportées
         'static/templates', # Dossier pour les templates d'infographie
         'templates',
+        'templates/admin',  # Dossier pour les templates d'administration
         'config'
     ]
     
