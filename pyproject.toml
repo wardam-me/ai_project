@@ -18,10 +18,4 @@ dependencies = [
     "matplotlib>=3.10.0",
     "numpy>=2.2.3",
     "psutil>=7.0.0",
-    "sqlalchemy>=2.0.38",
-    "plotly>=6.0.0",
-    "chart-studio>=1.1.0",
-    "flask-babel>=4.0.0",
-    "pillow>=11.1.0",
-    "babel>=2.17.0",
 ]

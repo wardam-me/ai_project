@@ -4,87 +4,110 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log("Initialisation du radar de sécurité...");
-
-    // Récupérer les dimensions de sécurité
-    const securityDimensions = getSecurityDimensionsData();
+    console.log('Initialisation du radar de sécurité interactif');
     
-    // Initialiser les graphiques principaux
-    initializeRadarChart(securityDimensions);
-    initializeDetailsCharts();
+    // Récupérer les données
+    const securityDimensionsElement = document.getElementById('security-dimensions-data');
+    const networksElement = document.getElementById('networks-data');
+    const historicalElement = document.getElementById('historical-data');
+    const wifiAnalysisElement = document.getElementById('wifi-analysis-data');
     
-    // Configurer les interactions utilisateur
-    setupViewModeButtons();
-    setupControlPanels();
-    setupRefreshButton();
-});
-
-/**
- * Récupère les données de dimensions de sécurité depuis les variables du template
- */
-function getSecurityDimensionsData() {
-    // Ces données seraient normalement récupérées du serveur via une API
-    // Pour cette démo, nous les extrayons des variables injectées dans le template
-    const dimensionsElement = document.getElementById('security-dimensions-data');
+    let securityDimensions = {};
+    let networks = [];
+    let historicalData = [];
+    let wifiAnalysis = {};
     
-    if (dimensionsElement) {
-        try {
-            return JSON.parse(dimensionsElement.textContent);
-        } catch (e) {
-            console.error("Erreur lors de l'analyse des dimensions de sécurité:", e);
-        }
+    if (securityDimensionsElement) {
+        securityDimensions = JSON.parse(securityDimensionsElement.textContent);
     }
     
-    // Valeurs par défaut si les données ne sont pas disponibles
-    return {
-        protocol: 75,
-        encryption: 80,
-        authentication: 70,
-        password: 65,
-        privacy: 60
-    };
-}
+    if (networksElement) {
+        networks = JSON.parse(networksElement.textContent);
+    }
+    
+    if (historicalElement) {
+        historicalData = JSON.parse(historicalElement.textContent);
+    }
+    
+    if (wifiAnalysisElement) {
+        wifiAnalysis = JSON.parse(wifiAnalysisElement.textContent);
+    }
+    
+    // Initialiser le graphique radar principal
+    initializeRadarChart(securityDimensions);
+    
+    // Initialiser les graphiques de détails
+    initializeDetailsCharts(wifiAnalysis);
+    
+    // Configurer les boutons de mode d'affichage
+    setupViewModeButtons();
+    
+    // Configurer les panneaux de contrôle
+    setupControlPanels();
+    
+    // Configurer le bouton d'actualisation
+    setupRefreshButton();
+});
 
 /**
  * Initialise le graphique radar principal
  */
 function initializeRadarChart(securityDimensions) {
-    const ctx = document.getElementById('securityRadarChart').getContext('2d');
+    const ctx = document.getElementById('securityRadarChart');
+    if (!ctx) return;
     
-    // Configurer les données du radar
-    const dimensions = Object.keys(securityDimensions);
-    const values = dimensions.map(dim => securityDimensions[dim]);
+    // Transformer les données en format pour le radar
+    const labels = [
+        'Protocole', 
+        'Chiffrement', 
+        'Authentification',
+        'Mots de passe',
+        'Confidentialité'
+    ];
     
-    // Déterminer la couleur en fonction du score moyen
-    const avgScore = values.reduce((sum, val) => sum + val, 0) / values.length;
-    let color = getScoreColor(avgScore);
+    const values = [
+        securityDimensions.protocol || 0,
+        securityDimensions.encryption || 0,
+        securityDimensions.authentication || 0,
+        securityDimensions.password || 0,
+        securityDimensions.privacy || 0
+    ];
     
-    // Créer le graphique radar
+    // Valeurs cibles "idéales" pour comparaison
+    const targetValues = [100, 100, 100, 100, 100];
+    
+    // Créer le graphique
     window.radarChart = new Chart(ctx, {
         type: 'radar',
         data: {
-            labels: dimensions.map(dim => dim.charAt(0).toUpperCase() + dim.slice(1)),
+            labels: labels,
             datasets: [
                 {
-                    label: 'Niveau actuel',
+                    label: 'Sécurité Actuelle',
                     data: values,
-                    backgroundColor: color + '40', // Avec transparence
-                    borderColor: color,
-                    pointBackgroundColor: color,
+                    fill: true,
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgb(54, 162, 235)',
+                    pointBackgroundColor: 'rgb(54, 162, 235)',
                     pointBorderColor: '#fff',
                     pointHoverBackgroundColor: '#fff',
-                    pointHoverBorderColor: color,
+                    pointHoverBorderColor: 'rgb(54, 162, 235)',
                     pointRadius: 5,
-                    pointHoverRadius: 7
+                    borderWidth: 2
                 },
                 {
-                    label: 'Niveau optimal',
-                    data: dimensions.map(() => 90), // Cible optimale fixée à 90
-                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
-                    borderColor: 'rgba(0, 123, 255, 0.5)',
-                    borderDash: [5, 5],
-                    pointRadius: 0,
-                    fill: false
+                    label: 'Cible Optimale',
+                    data: targetValues,
+                    fill: true,
+                    backgroundColor: 'rgba(75, 192, 75, 0.1)',
+                    borderColor: 'rgba(75, 192, 75, 0.6)',
+                    pointBackgroundColor: 'rgba(75, 192, 75, 0.8)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgb(75, 192, 75)',
+                    pointRadius: 3,
+                    borderWidth: 1,
+                    borderDash: [5, 5]
                 }
             ]
         },
@@ -94,76 +117,82 @@ function initializeRadarChart(securityDimensions) {
             scales: {
                 r: {
                     angleLines: {
-                        color: 'rgba(255, 255, 255, 0.2)'
-                    },
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.2)'
-                    },
-                    pointLabels: {
-                        color: '#666',
-                        font: {
-                            size: 14,
-                            weight: 'bold'
-                        }
+                        display: true
                     },
                     suggestedMin: 0,
                     suggestedMax: 100,
                     ticks: {
                         stepSize: 20,
-                        backdropColor: 'transparent'
+                        backdropColor: 'rgba(0, 0, 0, 0)'
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.2)'
+                    },
+                    pointLabels: {
+                        font: {
+                            size: 14,
+                            weight: 'bold'
+                        },
+                        color: '#555'
                     }
                 }
             },
             plugins: {
-                legend: {
-                    position: 'bottom'
-                },
                 tooltip: {
                     callbacks: {
                         label: function(context) {
-                            return context.dataset.label + ': ' + context.raw + '%';
+                            return `${context.dataset.label}: ${context.raw}/100`;
+                        },
+                        title: function(context) {
+                            return context[0].label;
                         }
                     }
+                },
+                legend: {
+                    position: 'bottom'
                 }
             }
         }
     });
-    
-    console.log("Graphique radar initialisé");
 }
 
 /**
  * Initialise les graphiques de détails pour chaque dimension
  */
-function initializeDetailsCharts() {
-    // Initialiser les graphiques pour chaque dimension
-    createDimensionDetailsChart('protocolDetailsChart', 'Distribution des Protocoles', {
-        'WPA3': 15,
-        'WPA2': 45,
-        'WPA': 25,
-        'WEP': 10,
-        'Ouvert': 5
+function initializeDetailsCharts(wifiAnalysis) {
+    // Graphique pour le protocole
+    createDimensionDetailsChart('protocolDetailsChart', 'Protocoles', {
+        'WPA3': wifiAnalysis.network_scores ? wifiAnalysis.network_scores.filter(n => n.security_type === 'WPA3').length : 0,
+        'WPA2': wifiAnalysis.network_scores ? wifiAnalysis.network_scores.filter(n => n.security_type === 'WPA2' || n.security_type === 'WPA2-Enterprise').length : 0,
+        'WPA': wifiAnalysis.network_scores ? wifiAnalysis.network_scores.filter(n => n.security_type === 'WPA').length : 0,
+        'WEP': wifiAnalysis.network_scores ? wifiAnalysis.network_scores.filter(n => n.security_type === 'WEP').length : 0,
+        'OPEN': wifiAnalysis.network_scores ? wifiAnalysis.network_scores.filter(n => n.security_type === 'OPEN').length : 0
     });
     
-    createDimensionDetailsChart('encryptionDetailsChart', 'Types de Chiffrement', {
-        'GCMP': 10,
-        'AES/CCMP': 55,
-        'TKIP': 25,
-        'Aucun': 10
+    // Graphique pour le chiffrement
+    createDimensionDetailsChart('encryptionDetailsChart', 'Chiffrement', {
+        'GCMP': wifiAnalysis.network_scores ? wifiAnalysis.network_scores.filter(n => n.encryption === 'GCMP').length : 0,
+        'AES/CCMP': wifiAnalysis.network_scores ? wifiAnalysis.network_scores.filter(n => n.encryption === 'AES' || n.encryption === 'CCMP').length : 0,
+        'TKIP': wifiAnalysis.network_scores ? wifiAnalysis.network_scores.filter(n => n.encryption === 'TKIP').length : 0,
+        'Aucun': wifiAnalysis.network_scores ? wifiAnalysis.network_scores.filter(n => !n.encryption).length : 0
     });
     
-    createDimensionDetailsChart('authenticationDetailsChart', 'Méthodes d\'Authentification', {
-        'SAE': 15,
-        'Enterprise': 10,
-        'PSK': 65,
-        'Aucune': 10
+    // Graphique pour l'authentification
+    createDimensionDetailsChart('authenticationDetailsChart', 'Authentification', {
+        'SAE': wifiAnalysis.network_scores ? wifiAnalysis.network_scores.filter(n => n.authentication === 'SAE').length : 0,
+        'ENTERPRISE': wifiAnalysis.network_scores ? wifiAnalysis.network_scores.filter(n => n.authentication === 'ENTERPRISE').length : 0,
+        'PSK': wifiAnalysis.network_scores ? wifiAnalysis.network_scores.filter(n => n.authentication === 'PSK').length : 0,
+        'OWE': wifiAnalysis.network_scores ? wifiAnalysis.network_scores.filter(n => n.authentication === 'OWE').length : 0,
+        'Aucune': wifiAnalysis.network_scores ? wifiAnalysis.network_scores.filter(n => !n.authentication).length : 0
     });
     
-    createSimpleGaugeChart('passwordDetailsChart', 'Force des Mots de Passe', 65);
+    // Pour les mots de passe et la confidentialité, on utilise des graphiques simplifiés
+    // car ces valeurs sont dérivées et non directement mesurables
+    createSimpleGaugeChart('passwordDetailsChart', 'Robustesse des mots de passe', 
+        wifiAnalysis.security_dimensions ? wifiAnalysis.security_dimensions.password || 0 : 0);
     
-    createSimpleGaugeChart('privacyDetailsChart', 'Niveau de Confidentialité', 60);
-    
-    console.log("Graphiques de détails initialisés");
+    createSimpleGaugeChart('privacyDetailsChart', 'Niveau de confidentialité', 
+        wifiAnalysis.security_dimensions ? wifiAnalysis.security_dimensions.privacy || 0 : 0);
 }
 
 /**
@@ -176,16 +205,31 @@ function createDimensionDetailsChart(canvasId, title, data) {
     const labels = Object.keys(data);
     const values = Object.values(data);
     
-    // Déterminer les couleurs en fonction des types
+    // Définir les couleurs en fonction du type de données
     const colors = labels.map(label => {
-        if (label.includes('WPA3') || label === 'GCMP' || label === 'SAE' || label === 'Enterprise') {
-            return '#28a745'; // Vert pour les options les plus sécurisées
-        } else if (label.includes('WPA2') || label === 'AES/CCMP' || label === 'PSK') {
-            return '#17a2b8'; // Bleu pour les options acceptables
-        } else if (label.includes('WPA') || label === 'TKIP') {
-            return '#ffc107'; // Jaune pour les options moyennes
-        } else {
-            return '#dc3545'; // Rouge pour les options non sécurisées
+        switch(label.toLowerCase()) {
+            case 'wpa3':
+            case 'gcmp':
+            case 'sae':
+                return 'rgba(40, 167, 69, 0.8)'; // Vert
+            case 'wpa2':
+            case 'wpa2-enterprise':
+            case 'aes/ccmp':
+            case 'enterprise':
+            case 'owe':
+                return 'rgba(23, 162, 184, 0.8)'; // Bleu
+            case 'wpa':
+            case 'psk':
+            case 'tkip':
+                return 'rgba(255, 193, 7, 0.8)'; // Jaune
+            case 'wep':
+                return 'rgba(253, 126, 20, 0.8)'; // Orange
+            case 'open':
+            case 'aucun':
+            case 'aucune':
+                return 'rgba(220, 53, 69, 0.8)'; // Rouge
+            default:
+                return 'rgba(108, 117, 125, 0.8)'; // Gris
         }
     });
     
@@ -197,34 +241,25 @@ function createDimensionDetailsChart(canvasId, title, data) {
                 label: title,
                 data: values,
                 backgroundColor: colors,
-                borderColor: colors.map(c => c.replace('0.7', '1')),
+                borderColor: colors.map(c => c.replace('0.8', '1')),
                 borderWidth: 1
             }]
         },
         options: {
-            indexAxis: 'y',
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return context.raw + '%';
-                        }
-                    }
-                }
-            },
+            indexAxis: 'y',
             scales: {
                 x: {
                     beginAtZero: true,
-                    max: 100,
-                    title: {
-                        display: true,
-                        text: 'Pourcentage (%)'
+                    ticks: {
+                        precision: 0
                     }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
                 }
             }
         }
@@ -238,7 +273,15 @@ function createSimpleGaugeChart(canvasId, title, value) {
     const ctx = document.getElementById(canvasId);
     if (!ctx) return;
     
-    const color = getScoreColor(value);
+    // Déterminer la couleur en fonction de la valeur
+    let color;
+    if (value >= 80) {
+        color = 'rgba(40, 167, 69, 0.8)'; // Vert
+    } else if (value >= 50) {
+        color = 'rgba(255, 193, 7, 0.8)'; // Jaune
+    } else {
+        color = 'rgba(220, 53, 69, 0.8)'; // Rouge
+    }
     
     new Chart(ctx, {
         type: 'doughnut',
@@ -246,7 +289,7 @@ function createSimpleGaugeChart(canvasId, title, value) {
             labels: ['Score', 'Restant'],
             datasets: [{
                 data: [value, 100 - value],
-                backgroundColor: [color, '#eee'],
+                backgroundColor: [color, 'rgba(200, 200, 200, 0.2)'],
                 borderWidth: 0
             }]
         },
@@ -261,35 +304,30 @@ function createSimpleGaugeChart(canvasId, title, value) {
                     display: false
                 },
                 tooltip: {
-                    enabled: false
+                    callbacks: {
+                        label: function(context) {
+                            return context.label === 'Score' ? `${value}/100` : '';
+                        }
+                    }
                 }
             }
-        },
-        plugins: [{
-            id: 'gaugeText',
-            afterDraw: function(chart) {
-                const width = chart.width;
-                const height = chart.height;
-                const ctx = chart.ctx;
-                
-                ctx.restore();
-                ctx.font = "bold 16px Arial";
-                ctx.textBaseline = "middle";
-                ctx.textAlign = "center";
-                
-                const text = value + '%';
-                const textX = width / 2;
-                const textY = height - 10;
-                
-                ctx.fillText(text, textX, textY);
-                ctx.save();
-                
-                // Afficher le titre
-                ctx.font = "14px Arial";
-                ctx.fillText(title, textX, height - 40);
-            }
-        }]
+        }
     });
+    
+    // Ajouter le texte du score au centre
+    const fontSize = ctx.width / 8;
+    const valueText = document.createElement('div');
+    valueText.style.position = 'absolute';
+    valueText.style.top = '60%';
+    valueText.style.left = '50%';
+    valueText.style.transform = 'translate(-50%, -50%)';
+    valueText.style.fontSize = `${fontSize}px`;
+    valueText.style.fontWeight = 'bold';
+    valueText.style.color = color.replace('0.8', '1');
+    valueText.textContent = `${Math.round(value)}%`;
+    
+    ctx.parentNode.style.position = 'relative';
+    ctx.parentNode.appendChild(valueText);
 }
 
 /**
@@ -305,65 +343,52 @@ function setupViewModeButtons() {
     const historicalControls = document.getElementById('historicalControls');
     
     if (viewCurrentBtn && viewComparisonBtn && viewHistoricalBtn) {
-        // Vue actuelle
         viewCurrentBtn.addEventListener('click', function() {
-            // Activer/désactiver les boutons
+            // Activer ce bouton et désactiver les autres
             viewCurrentBtn.classList.add('active');
             viewComparisonBtn.classList.remove('active');
             viewHistoricalBtn.classList.remove('active');
             
-            // Afficher les contrôles appropriés
-            currentControls.style.display = 'block';
-            comparisonControls.style.display = 'none';
-            historicalControls.style.display = 'none';
+            // Afficher le panneau de contrôle correspondant
+            if (currentControls) currentControls.style.display = 'block';
+            if (comparisonControls) comparisonControls.style.display = 'none';
+            if (historicalControls) historicalControls.style.display = 'none';
             
-            // Mettre à jour le radar
+            // Revenir à l'affichage du radar standard
             updateRadarToCurrentView();
         });
         
-        // Vue comparative
         viewComparisonBtn.addEventListener('click', function() {
-            // Activer/désactiver les boutons
             viewCurrentBtn.classList.remove('active');
             viewComparisonBtn.classList.add('active');
             viewHistoricalBtn.classList.remove('active');
             
-            // Afficher les contrôles appropriés
-            currentControls.style.display = 'none';
-            comparisonControls.style.display = 'block';
-            historicalControls.style.display = 'none';
+            if (currentControls) currentControls.style.display = 'none';
+            if (comparisonControls) comparisonControls.style.display = 'block';
+            if (historicalControls) historicalControls.style.display = 'none';
             
-            // Mettre à jour le radar (utilise le réseau sélectionné si disponible)
-            const selectedNetwork = document.getElementById('comparisonNetworkSelect').value;
-            if (selectedNetwork) {
-                updateRadarToComparisonView(selectedNetwork);
-            } else {
-                showNotification('Veuillez sélectionner un réseau pour la comparaison', 'warning');
+            // Déclencher le changement initial si un réseau est sélectionné
+            const comparisonSelect = document.getElementById('comparisonNetworkSelect');
+            if (comparisonSelect && comparisonSelect.value) {
+                updateRadarToComparisonView(comparisonSelect.value);
             }
         });
         
-        // Vue historique
         viewHistoricalBtn.addEventListener('click', function() {
-            // Activer/désactiver les boutons
             viewCurrentBtn.classList.remove('active');
             viewComparisonBtn.classList.remove('active');
             viewHistoricalBtn.classList.add('active');
             
-            // Afficher les contrôles appropriés
-            currentControls.style.display = 'none';
-            comparisonControls.style.display = 'none';
-            historicalControls.style.display = 'block';
+            if (currentControls) currentControls.style.display = 'none';
+            if (comparisonControls) comparisonControls.style.display = 'none';
+            if (historicalControls) historicalControls.style.display = 'block';
             
-            // Mettre à jour le radar (utilise la date sélectionnée si disponible)
-            const selectedDate = document.getElementById('historicalDateSelect').value;
-            if (selectedDate) {
-                updateRadarToHistoricalView(selectedDate);
-            } else {
-                showNotification('Veuillez sélectionner une date pour la comparaison historique', 'warning');
+            // Déclencher le changement initial si une date est sélectionnée
+            const historicalSelect = document.getElementById('historicalDateSelect');
+            if (historicalSelect && historicalSelect.value) {
+                updateRadarToHistoricalView(historicalSelect.value);
             }
         });
-        
-        console.log("Boutons de mode d'affichage configurés");
     }
 }
 
@@ -371,30 +396,11 @@ function setupViewModeButtons() {
  * Configure les panneaux de contrôle interactifs
  */
 function setupControlPanels() {
-    // Configuration des sélecteurs de réseaux pour les comparaisons
-    const comparisonNetworkSelect = document.getElementById('comparisonNetworkSelect');
-    if (comparisonNetworkSelect) {
-        comparisonNetworkSelect.addEventListener('change', function() {
-            const selectedNetwork = this.value;
-            if (selectedNetwork) {
-                updateRadarToComparisonView(selectedNetwork);
-            }
-        });
-    }
-    
-    // Configuration des sélecteurs de dates pour les comparaisons historiques
-    const historicalDateSelect = document.getElementById('historicalDateSelect');
-    if (historicalDateSelect) {
-        historicalDateSelect.addEventListener('change', function() {
-            const selectedDate = this.value;
-            if (selectedDate) {
-                updateRadarToHistoricalView(selectedDate);
-            }
-        });
-    }
-    
-    // Configuration des cases à cocher pour les options d'affichage
+    // Contrôles pour l'affichage actuel
     const showTargetCheckbox = document.getElementById('showTarget');
+    const showLabelsCheckbox = document.getElementById('showLabels');
+    const animateChangesCheckbox = document.getElementById('animateChanges');
+    
     if (showTargetCheckbox) {
         showTargetCheckbox.addEventListener('change', function() {
             if (window.radarChart) {
@@ -404,230 +410,306 @@ function setupControlPanels() {
         });
     }
     
-    console.log("Panneaux de contrôle configurés");
+    // Contrôles pour la comparaison avec un réseau
+    const comparisonNetworkSelect = document.getElementById('comparisonNetworkSelect');
+    const showDifferenceCheckbox = document.getElementById('showDifference');
+    
+    if (comparisonNetworkSelect) {
+        comparisonNetworkSelect.addEventListener('change', function() {
+            updateRadarToComparisonView(this.value);
+        });
+    }
+    
+    // Contrôles pour la comparaison historique
+    const historicalDateSelect = document.getElementById('historicalDateSelect');
+    const showTrendCheckbox = document.getElementById('showTrend');
+    
+    if (historicalDateSelect) {
+        historicalDateSelect.addEventListener('change', function() {
+            updateRadarToHistoricalView(this.value);
+        });
+    }
 }
 
 /**
  * Met à jour le radar pour afficher la vue actuelle standard
  */
 function updateRadarToCurrentView() {
-    // Utiliser les données de dimensions actuelles
-    const dimensions = getSecurityDimensionsData();
+    const securityDimensionsElement = document.getElementById('security-dimensions-data');
+    if (!securityDimensionsElement || !window.radarChart) return;
     
-    if (window.radarChart) {
-        // Mise à jour des données actuelles
-        window.radarChart.data.datasets[0].data = Object.values(dimensions);
-        
-        // Réinitialiser le style du dataset actuel
-        const avgScore = Object.values(dimensions).reduce((sum, val) => sum + val, 0) / Object.keys(dimensions).length;
-        const color = getScoreColor(avgScore);
-        
-        window.radarChart.data.datasets[0].backgroundColor = color + '40';
-        window.radarChart.data.datasets[0].borderColor = color;
-        window.radarChart.data.datasets[0].pointBackgroundColor = color;
-        window.radarChart.data.datasets[0].pointHoverBorderColor = color;
-        
-        // Supprimer tout dataset de comparaison supplémentaire
-        if (window.radarChart.data.datasets.length > 2) {
-            window.radarChart.data.datasets.splice(2, window.radarChart.data.datasets.length - 2);
-        }
-        
-        window.radarChart.update();
-        console.log("Vue actuelle mise à jour");
+    const securityDimensions = JSON.parse(securityDimensionsElement.textContent);
+    
+    // Extraire les valeurs pour le radar
+    const values = [
+        securityDimensions.protocol || 0,
+        securityDimensions.encryption || 0,
+        securityDimensions.authentication || 0,
+        securityDimensions.password || 0,
+        securityDimensions.privacy || 0
+    ];
+    
+    // Mettre à jour le premier dataset (sécurité actuelle)
+    window.radarChart.data.datasets[0].data = values;
+    window.radarChart.data.datasets[0].label = 'Sécurité Actuelle';
+    window.radarChart.data.datasets[0].backgroundColor = 'rgba(54, 162, 235, 0.2)';
+    window.radarChart.data.datasets[0].borderColor = 'rgb(54, 162, 235)';
+    
+    // S'assurer que seuls deux datasets sont affichés
+    if (window.radarChart.data.datasets.length > 2) {
+        window.radarChart.data.datasets = window.radarChart.data.datasets.slice(0, 2);
     }
+    
+    // Mettre à jour le graphique
+    window.radarChart.update();
 }
 
 /**
  * Met à jour le radar pour afficher une comparaison avec un réseau spécifique
  */
 function updateRadarToComparisonView(bssid) {
-    // Dans une application réelle, ces données viendraient d'une API
-    // Pour cette démonstration, nous utilisons des données fictives
-    const comparisonData = {
-        "00:11:22:33:44:55": { // Réseau Domicile (WPA2)
-            protocol: 80,
-            encryption: 85,
-            authentication: 75,
-            password: 70,
-            privacy: 75
-        },
-        "AA:BB:CC:DD:EE:FF": { // Réseau Ancien (WEP)
-            protocol: 20,
-            encryption: 15,
-            authentication: 10,
-            password: 30,
-            privacy: 25
-        },
-        "11:22:33:44:55:66": { // Réseau Public (OPEN)
-            protocol: 0,
-            encryption: 0,
-            authentication: 0,
-            password: 0,
-            privacy: 5
-        },
-        "22:33:44:55:66:77": { // Réseau Enterprise (WPA2-Enterprise)
-            protocol: 85,
-            encryption: 85,
-            authentication: 95,
-            password: 90,
-            privacy: 90
-        },
-        "33:44:55:66:77:88": { // Réseau Moderne (WPA3)
-            protocol: 95,
-            encryption: 95,
-            authentication: 90,
-            password: 85,
-            privacy: 85
-        }
-    };
+    const networksElement = document.getElementById('networks-data');
+    const securityDimensionsElement = document.getElementById('security-dimensions-data');
     
-    // Récupérer les données du réseau sélectionné
-    const networkData = comparisonData[bssid];
-    if (!networkData) {
-        showNotification('Données non disponibles pour ce réseau', 'warning');
-        return;
+    if (!networksElement || !securityDimensionsElement || !window.radarChart) return;
+    
+    const networks = JSON.parse(networksElement.textContent);
+    const securityDimensions = JSON.parse(securityDimensionsElement.textContent);
+    
+    // Trouver le réseau sélectionné
+    const selectedNetwork = networks.find(n => n.bssid === bssid);
+    if (!selectedNetwork) return;
+    
+    // Valeurs actuelles
+    const currentValues = [
+        securityDimensions.protocol || 0,
+        securityDimensions.encryption || 0,
+        securityDimensions.authentication || 0,
+        securityDimensions.password || 0,
+        securityDimensions.privacy || 0
+    ];
+    
+    // Estimer les valeurs pour le réseau sélectionné
+    // Ceci est une simplification - dans un système réel, vous feriez une analyse complète
+    const networkType = selectedNetwork.security || 'OPEN';
+    const encryption = selectedNetwork.encryption;
+    const authentication = selectedNetwork.authentication;
+    
+    // Scores simplifiés basés sur le type de réseau
+    let protocolScore = 0;
+    switch(networkType) {
+        case 'WPA3': protocolScore = 95; break;
+        case 'WPA2-Enterprise': protocolScore = 90; break;
+        case 'WPA2': protocolScore = 80; break;
+        case 'WPA': protocolScore = 50; break;
+        case 'WEP': protocolScore = 20; break;
+        default: protocolScore = 0; // OPEN
     }
     
-    // Obtenir les dimensions actuelles
-    const currentDimensions = getSecurityDimensionsData();
+    // Score de chiffrement
+    let encryptionScore = 0;
+    switch(encryption) {
+        case 'GCMP': encryptionScore = 95; break;
+        case 'AES': 
+        case 'CCMP': encryptionScore = 90; break;
+        case 'TKIP': encryptionScore = 50; break;
+        default: encryptionScore = 0; // Aucun
+    }
     
-    if (window.radarChart) {
-        // Mise à jour des données actuelles
-        window.radarChart.data.datasets[0].data = Object.values(currentDimensions);
+    // Score d'authentification
+    let authScore = 0;
+    switch(authentication) {
+        case 'SAE': authScore = 95; break;
+        case 'ENTERPRISE': authScore = 90; break;
+        case 'OWE': authScore = 85; break;
+        case 'PSK': authScore = 70; break;
+        default: authScore = 0; // Aucun
+    }
+    
+    // Estimation du score de mot de passe et confidentialité
+    let passwordScore = 0;
+    let privacyScore = 0;
+    
+    if (networkType === 'WPA3') {
+        passwordScore = 90;
+        privacyScore = 85;
+    } else if (networkType === 'WPA2-Enterprise') {
+        passwordScore = 85;
+        privacyScore = 90;
+    } else if (networkType === 'WPA2') {
+        passwordScore = 70;
+        privacyScore = 70;
+    } else if (networkType === 'WPA') {
+        passwordScore = 50;
+        privacyScore = 40;
+    } else if (networkType === 'WEP') {
+        passwordScore = 20;
+        privacyScore = 20;
+    } else {
+        passwordScore = 0;
+        privacyScore = 0;
+    }
+    
+    const comparisonValues = [
+        protocolScore,
+        encryptionScore,
+        authScore,
+        passwordScore,
+        privacyScore
+    ];
+    
+    // Mettre à jour le graphique avec les deux séries
+    window.radarChart.data.datasets[0].data = currentValues;
+    window.radarChart.data.datasets[0].label = 'Réseau Actuel';
+    
+    // Définir le deuxième dataset pour le réseau comparé
+    window.radarChart.data.datasets[1].data = comparisonValues;
+    window.radarChart.data.datasets[1].label = `Réseau: ${selectedNetwork.ssid}`;
+    window.radarChart.data.datasets[1].backgroundColor = 'rgba(255, 159, 64, 0.2)';
+    window.radarChart.data.datasets[1].borderColor = 'rgb(255, 159, 64)';
+    window.radarChart.data.datasets[1].borderDash = [];
+    
+    // Afficher les différences si demandé
+    const showDifference = document.getElementById('showDifference');
+    if (showDifference && showDifference.checked) {
+        // Calculer les différences
+        const diffValues = currentValues.map((val, idx) => Math.max(0, val - comparisonValues[idx]));
         
-        // Réinitialiser le style du dataset actuel
-        const avgCurrentScore = Object.values(currentDimensions).reduce((sum, val) => sum + val, 0) / Object.keys(currentDimensions).length;
-        const currentColor = getScoreColor(avgCurrentScore);
-        
-        window.radarChart.data.datasets[0].backgroundColor = currentColor + '40';
-        window.radarChart.data.datasets[0].borderColor = currentColor;
-        window.radarChart.data.datasets[0].pointBackgroundColor = currentColor;
-        window.radarChart.data.datasets[0].pointHoverBorderColor = currentColor;
-        
-        // Ajouter ou mettre à jour le dataset de comparaison
-        if (window.radarChart.data.datasets.length > 2) {
-            window.radarChart.data.datasets[2].data = Object.values(networkData);
-        } else {
-            const avgCompareScore = Object.values(networkData).reduce((sum, val) => sum + val, 0) / Object.keys(networkData).length;
-            const compareColor = getScoreColor(avgCompareScore);
-            
+        // Ajouter un troisième dataset pour les différences
+        if (window.radarChart.data.datasets.length < 3) {
             window.radarChart.data.datasets.push({
-                label: 'Réseau comparé',
-                data: Object.values(networkData),
-                backgroundColor: compareColor + '40',
-                borderColor: compareColor,
-                pointBackgroundColor: compareColor,
+                label: 'Différence',
+                data: diffValues,
+                fill: true,
+                backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                borderColor: 'rgb(153, 102, 255)',
+                pointBackgroundColor: 'rgb(153, 102, 255)',
                 pointBorderColor: '#fff',
-                pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: compareColor,
-                pointRadius: 5,
-                pointHoverRadius: 7
+                pointRadius: 4
             });
+        } else {
+            window.radarChart.data.datasets[2].data = diffValues;
         }
-        
-        window.radarChart.update();
-        console.log("Vue comparative mise à jour");
+    } else if (window.radarChart.data.datasets.length > 2) {
+        // Supprimer le dataset de différence s'il existe
+        window.radarChart.data.datasets = window.radarChart.data.datasets.slice(0, 2);
     }
+    
+    window.radarChart.update();
 }
 
 /**
  * Met à jour le radar pour afficher une comparaison avec des données historiques
  */
 function updateRadarToHistoricalView(date) {
-    // Dans une application réelle, ces données viendraient d'une API
-    // Pour cette démonstration, nous utilisons des données fictives
-    const historicalData = {
-        // Date il y a 30 jours
-        [(new Date(Date.now() - 30*24*60*60*1000)).toISOString().split('T')[0]]: {
-            protocol: 60,
-            encryption: 55,
-            authentication: 50,
-            password: 45,
-            privacy: 40
-        },
-        // Date il y a 15 jours
-        [(new Date(Date.now() - 15*24*60*60*1000)).toISOString().split('T')[0]]: {
-            protocol: 65,
-            encryption: 70,
-            authentication: 60,
-            password: 55,
-            privacy: 50
-        },
-        // Date il y a 7 jours
-        [(new Date(Date.now() - 7*24*60*60*1000)).toISOString().split('T')[0]]: {
-            protocol: 70,
-            encryption: 75,
-            authentication: 65,
-            password: 60,
-            privacy: 55
-        }
-    };
+    const historicalElement = document.getElementById('historical-data');
+    if (!historicalElement || !window.radarChart) return;
     
-    // Récupérer les données historiques pour la date sélectionnée
-    const historicalDimensions = historicalData[date];
-    if (!historicalDimensions) {
-        showNotification('Données historiques non disponibles pour cette date', 'warning');
-        return;
-    }
+    const historicalData = JSON.parse(historicalElement.textContent);
     
-    // Obtenir les dimensions actuelles
-    const currentDimensions = getSecurityDimensionsData();
+    // Trouver les données pour la date sélectionnée
+    const selectedData = historicalData.find(d => d.date === date);
+    if (!selectedData || !selectedData.dimensions) return;
     
-    if (window.radarChart) {
-        // Mise à jour des données actuelles
-        window.radarChart.data.datasets[0].data = Object.values(currentDimensions);
+    // Extraire les valeurs actuelles et historiques
+    const currentValues = [
+        selectedData.dimensions.protocol || 0,
+        selectedData.dimensions.encryption || 0,
+        selectedData.dimensions.authentication || 0,
+        selectedData.dimensions.password || 0,
+        selectedData.dimensions.privacy || 0
+    ];
+    
+    // Mettre à jour le premier dataset
+    window.radarChart.data.datasets[0].data = currentValues;
+    window.radarChart.data.datasets[0].label = `Sécurité le ${date}`;
+    window.radarChart.data.datasets[0].backgroundColor = 'rgba(54, 162, 235, 0.2)';
+    window.radarChart.data.datasets[0].borderColor = 'rgb(54, 162, 235)';
+    
+    // Pour la tendance, ajouter les données de la période précédente si disponible
+    const showTrend = document.getElementById('showTrend');
+    if (showTrend && showTrend.checked) {
+        const currentIndex = historicalData.findIndex(d => d.date === date);
         
-        // Réinitialiser le style du dataset actuel
-        const avgCurrentScore = Object.values(currentDimensions).reduce((sum, val) => sum + val, 0) / Object.keys(currentDimensions).length;
-        const currentColor = getScoreColor(avgCurrentScore);
-        
-        window.radarChart.data.datasets[0].backgroundColor = currentColor + '40';
-        window.radarChart.data.datasets[0].borderColor = currentColor;
-        window.radarChart.data.datasets[0].pointBackgroundColor = currentColor;
-        window.radarChart.data.datasets[0].pointHoverBorderColor = currentColor;
-        
-        // Ajouter ou mettre à jour le dataset historique
-        if (window.radarChart.data.datasets.length > 2) {
-            window.radarChart.data.datasets[2].data = Object.values(historicalDimensions);
-            window.radarChart.data.datasets[2].label = `Données du ${formatDate(date)}`;
+        if (currentIndex > 0) {
+            const previousData = historicalData[currentIndex - 1];
+            const previousValues = [
+                previousData.dimensions.protocol || 0,
+                previousData.dimensions.encryption || 0,
+                previousData.dimensions.authentication || 0,
+                previousData.dimensions.password || 0,
+                previousData.dimensions.privacy || 0
+            ];
+            
+            // Mettre à jour le second dataset pour la comparaison historique
+            window.radarChart.data.datasets[1].data = previousValues;
+            window.radarChart.data.datasets[1].label = `Sécurité le ${previousData.date}`;
+            window.radarChart.data.datasets[1].backgroundColor = 'rgba(255, 99, 132, 0.2)';
+            window.radarChart.data.datasets[1].borderColor = 'rgb(255, 99, 132)';
+            window.radarChart.data.datasets[1].borderDash = [];
         } else {
-            window.radarChart.data.datasets.push({
-                label: `Données du ${formatDate(date)}`,
-                data: Object.values(historicalDimensions),
-                backgroundColor: 'rgba(108, 117, 125, 0.4)',
-                borderColor: 'rgba(108, 117, 125, 0.8)',
-                pointBackgroundColor: 'rgba(108, 117, 125, 0.8)',
-                pointBorderColor: '#fff',
-                pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: 'rgba(108, 117, 125, 0.8)',
-                pointRadius: 5,
-                pointHoverRadius: 7
-            });
+            // S'il n'y a pas de données précédentes, cacher le deuxième dataset
+            window.radarChart.data.datasets[1].hidden = true;
         }
-        
-        window.radarChart.update();
-        console.log("Vue historique mise à jour");
+    } else {
+        // Afficher le dataset cible standard
+        window.radarChart.data.datasets[1].data = [100, 100, 100, 100, 100];
+        window.radarChart.data.datasets[1].label = 'Cible Optimale';
+        window.radarChart.data.datasets[1].backgroundColor = 'rgba(75, 192, 75, 0.1)';
+        window.radarChart.data.datasets[1].borderColor = 'rgba(75, 192, 75, 0.6)';
+        window.radarChart.data.datasets[1].borderDash = [5, 5];
+        window.radarChart.data.datasets[1].hidden = false;
     }
+    
+    // S'assurer que seuls deux datasets sont affichés
+    if (window.radarChart.data.datasets.length > 2) {
+        window.radarChart.data.datasets = window.radarChart.data.datasets.slice(0, 2);
+    }
+    
+    window.radarChart.update();
 }
 
 /**
  * Configure le bouton d'actualisation
  */
 function setupRefreshButton() {
-    const refreshButton = document.getElementById('refreshRadarBtn');
-    if (refreshButton) {
-        refreshButton.addEventListener('click', function() {
-            // Simulation d'une nouvelle analyse
-            showNotification('Analyse en cours...', 'info');
+    const refreshBtn = document.getElementById('refreshRadarBtn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', function() {
+            // Afficher une animation de chargement sur le bouton
+            const originalText = refreshBtn.innerHTML;
+            refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Actualisation...';
+            refreshBtn.disabled = true;
             
-            // Dans une application réelle, nous ferions un appel AJAX pour récupérer de nouvelles données
+            // Simuler une actualisation des données (normalement appel AJAX)
             setTimeout(function() {
-                updateRadarToCurrentView();
-                showNotification('Analyse terminée avec succès !', 'success');
-            }, 1500);
+                // Restaurer le bouton
+                refreshBtn.innerHTML = originalText;
+                refreshBtn.disabled = false;
+                
+                // Actualiser la vue
+                const viewCurrentBtn = document.getElementById('viewCurrentBtn');
+                const viewComparisonBtn = document.getElementById('viewComparisonBtn');
+                const viewHistoricalBtn = document.getElementById('viewHistoricalBtn');
+                
+                if (viewCurrentBtn && viewCurrentBtn.classList.contains('active')) {
+                    updateRadarToCurrentView();
+                } else if (viewComparisonBtn && viewComparisonBtn.classList.contains('active')) {
+                    const comparisonSelect = document.getElementById('comparisonNetworkSelect');
+                    if (comparisonSelect && comparisonSelect.value) {
+                        updateRadarToComparisonView(comparisonSelect.value);
+                    }
+                } else if (viewHistoricalBtn && viewHistoricalBtn.classList.contains('active')) {
+                    const historicalSelect = document.getElementById('historicalDateSelect');
+                    if (historicalSelect && historicalSelect.value) {
+                        updateRadarToHistoricalView(historicalSelect.value);
+                    }
+                }
+                
+                // Afficher une notification
+                showNotification('Données de sécurité actualisées');
+            }, 1000);
         });
-        
-        console.log("Bouton d'actualisation configuré");
     }
 }
 
@@ -635,65 +717,35 @@ function setupRefreshButton() {
  * Affiche une notification temporaire
  */
 function showNotification(message, type = 'success') {
-    const container = document.createElement('div');
-    container.className = `toast-container position-fixed bottom-0 end-0 p-3`;
-    container.style.zIndex = "1050";
+    // Créer l'élément de notification
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type} notification-toast fade show`;
+    notification.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>${message}
+        <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
     
-    const toast = document.createElement('div');
-    toast.className = `toast align-items-center text-white bg-${type} border-0`;
-    toast.setAttribute('role', 'alert');
-    toast.setAttribute('aria-live', 'assertive');
-    toast.setAttribute('aria-atomic', 'true');
+    // Styler la notification
+    notification.style.position = 'fixed';
+    notification.style.top = '20px';
+    notification.style.right = '20px';
+    notification.style.zIndex = '9999';
+    notification.style.minWidth = '300px';
+    notification.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+    notification.style.opacity = '0';
+    notification.style.transition = 'opacity 0.3s ease-in-out';
     
-    const flexContainer = document.createElement('div');
-    flexContainer.className = 'd-flex';
+    // Ajouter la notification au document
+    document.body.appendChild(notification);
     
-    const toastBody = document.createElement('div');
-    toastBody.className = 'toast-body';
-    toastBody.textContent = message;
+    // Afficher la notification avec une animation
+    setTimeout(() => { notification.style.opacity = '1'; }, 10);
     
-    const closeButton = document.createElement('button');
-    closeButton.type = 'button';
-    closeButton.className = 'btn-close btn-close-white me-2 m-auto';
-    closeButton.setAttribute('data-bs-dismiss', 'toast');
-    closeButton.setAttribute('aria-label', 'Fermer');
-    
-    flexContainer.appendChild(toastBody);
-    flexContainer.appendChild(closeButton);
-    toast.appendChild(flexContainer);
-    container.appendChild(toast);
-    
-    document.body.appendChild(container);
-    
-    const toastInstance = new bootstrap.Toast(toast, { delay: 3000 });
-    toastInstance.show();
-    
-    toast.addEventListener('hidden.bs.toast', function() {
-        document.body.removeChild(container);
-    });
-}
-
-/**
- * Formate une date en format français
- */
-function formatDate(dateStr) {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('fr-FR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-    });
-}
-
-/**
- * Détermine la couleur en fonction du score de sécurité
- */
-function getScoreColor(score) {
-    if (score >= 80) {
-        return 'rgba(40, 167, 69, 1)'; // Vert - Bon
-    } else if (score >= 50) {
-        return 'rgba(255, 193, 7, 1)'; // Jaune - Moyen
-    } else {
-        return 'rgba(220, 53, 69, 1)'; // Rouge - Mauvais
-    }
+    // Fermer automatiquement après 5 secondes
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => {
+            notification.remove();
+        }, 300);
+    }, 5000);
 }

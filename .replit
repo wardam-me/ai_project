@@ -5,7 +5,7 @@ channel = "stable-24_05"
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["sh", "-c", "python create_flags_dir.py"]
+run = ["sh", "-c", "python mkdir_directories.py"]
 build = ["sh", "-c", "pip install -r requirements.txt"]
 
 [workflows]
@@ -24,14 +24,6 @@ args = "Setup Directories"
 task = "workflow.run"
 args = "Flask Server"
 
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Create User"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Init Translations"
-
 [[workflows.workflow]]
 name = "Setup Directories"
 author = "agent"
@@ -44,7 +36,7 @@ task = "packager.installForAll"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python create_flags_dir.py"
+args = "python mkdir_directories.py"
 
 [[workflows.workflow]]
 name = "Flask Server"
@@ -60,34 +52,6 @@ task = "packager.installForAll"
 task = "shell.exec"
 args = "python main.py"
 waitForPort = 8080
-
-[[workflows.workflow]]
-name = "Create User"
-author = "agent"
-
-[workflows.workflow.metadata]
-agentRequireRestartOnSave = false
-
-[[workflows.workflow.tasks]]
-task = "packager.installForAll"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "python create_test_user.py"
-
-[[workflows.workflow]]
-name = "Init Translations"
-author = "agent"
-
-[workflows.workflow.metadata]
-agentRequireRestartOnSave = false
-
-[[workflows.workflow.tasks]]
-task = "packager.installForAll"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "python babel_commands.py extract && python babel_commands.py init fr && python babel_commands.py init en && python babel_commands.py compile"
 
 [[ports]]
 localPort = 5000

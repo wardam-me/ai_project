@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ current_language }}">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -31,40 +31,40 @@
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('accueil') }}">
-                            <i class="fas fa-home me-1"></i> {{ get_translation("nav_home") }}
+                            <i class="fas fa-home me-1"></i> Accueil
                         </a>
                     </li>
                     {% if current_user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('dashboard') }}">
-                            <i class="fas fa-tachometer-alt me-1"></i> {{ get_translation("nav_dashboard", default="Tableau de bord") }}
+                            <i class="fas fa-tachometer-alt me-1"></i> Tableau de bord
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('network_topology_view') }}">
-                            <i class="fas fa-project-diagram me-1"></i> {{ get_translation("nav_network_topology") }}
+                            <i class="fas fa-project-diagram me-1"></i> Topologie réseau
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('chatbot') }}">
-                            <i class="fas fa-robot me-1"></i> {{ get_translation("nav_assistant") }}
+                            <i class="fas fa-robot me-1"></i> Assistant IA
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('security_game') }}">
-                            <i class="fas fa-gamepad me-1"></i> {{ get_translation("nav_security_game", default="Sécurité Gamifiée") }}
+                            <i class="fas fa-gamepad me-1"></i> Sécurité Gamifiée
                         </a>
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="analyseDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-shield-alt me-1"></i> {{ get_translation("nav_analysis", default="Analyses") }}
+                            <i class="fas fa-shield-alt me-1"></i> Analyses
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="analyseDropdown">
-                            <li><a class="dropdown-item" href="{{ url_for('vulnerability_analysis') }}"><i class="fas fa-bug me-1"></i> {{ get_translation("nav_vulnerabilities", default="Vulnérabilités") }}</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('protocol_analysis') }}"><i class="fas fa-wifi me-1"></i> {{ get_translation("nav_protocols", default="Protocoles") }}</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('security_report') }}"><i class="fas fa-file-alt me-1"></i> {{ get_translation("nav_security_report") }}</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('vulnerability_analysis') }}"><i class="fas fa-bug me-1"></i> Vulnérabilités</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('protocol_analysis') }}"><i class="fas fa-wifi me-1"></i> Protocoles</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('security_report') }}"><i class="fas fa-file-alt me-1"></i> Rapport de sécurité</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('ai_analysis') }}"><i class="fas fa-brain me-1"></i> {{ get_translation("nav_ai_analysis", default="Analyse IA avancée") }}</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('ai_analysis') }}"><i class="fas fa-brain me-1"></i> Analyse IA avancée</a></li>
                         </ul>
                     </li>
                     {% endif %}
@@ -84,44 +84,16 @@
                     {% else %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('login') }}">
-                            <i class="fas fa-sign-in-alt me-1"></i> {{ get_translation("login", default="Connexion") }}
+                            <i class="fas fa-sign-in-alt me-1"></i> Connexion
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('register') }}">
-                            <i class="fas fa-user-plus me-1"></i> {{ get_translation("register", default="Inscription") }}
+                            <i class="fas fa-user-plus me-1"></i> Inscription
                         </a>
                     </li>
                     {% endif %}
                 </ul>
-                
-                <!-- Sélecteur de langue -->
-                <div class="d-flex">
-                    <div class="dropdown">
-                        <button class="btn btn-sm btn-outline-light dropdown-toggle" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-globe me-1"></i>
-                            {% if current_language == 'fr' %}
-                                <span>FR</span>
-                            {% else %}
-                                <span>EN</span>
-                            {% endif %}
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
-                            <li>
-                                <a class="dropdown-item {% if current_language == 'fr' %}active{% endif %}" href="{{ url_for('change_language', lang='fr', next=request.path) }}">
-                                    <img src="{{ url_for('static', filename='img/flags/fr.png') }}" alt="Français" width="20" class="me-2">
-                                    Français
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item {% if current_language == 'en' %}active{% endif %}" href="{{ url_for('change_language', lang='en', next=request.path) }}">
-                                    <img src="{{ url_for('static', filename='img/flags/en.png') }}" alt="English" width="20" class="me-2">
-                                    English
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
             </div>
         </div>
     </nav>
@@ -148,7 +120,7 @@
     <!-- Pied de page -->
     <footer class="footer mt-auto py-3 bg-dark text-white">
         <div class="container text-center">
-            <span>Copyright &copy; {{ now.year }} NetSecure Pro. {{ get_translation("footer_rights", default="Tous droits réservés.") }}</span>
+            <span>Copyright &copy; {{ now.year }} NetSecure Pro. Tous droits réservés.</span>
         </div>
     </footer>
     
