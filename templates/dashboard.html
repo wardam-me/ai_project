@@ -22,7 +22,7 @@
             <a href="{{ url_for('protocol_analysis') }}" class="btn btn-dark">
                 <i class="fas fa-shield-alt me-2"></i>Analyse protocoles
             </a>
-            <a href="{{ url_for('assistant') }}" class="btn btn-success">
+            <a href="{{ url_for('chatbot') }}" class="btn btn-success">
                 <i class="fas fa-comment-dots me-2"></i>Assistant
             </a>
         </div>
@@ -128,9 +128,9 @@
                                     </td>
                                     <td>{{ device.last_updated|datetime }}</td>
                                     <td>
-                                        <a href="{{ url_for('get_device_details', mac_address=device.mac_address) }}" class="btn btn-sm btn-outline-primary">
+                                        <button class="btn btn-sm btn-outline-primary" onclick="showDeviceDetailsModal('{{ device.mac_address }}')">
                                             <i class="fas fa-info-circle"></i> Détails
-                                        </a>
+                                        </button>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -250,5 +250,127 @@
             }
         });
     });
+    
+    // Fonction pour afficher les détails d'un appareil dans une fenêtre modale
+    function showDeviceDetailsModal(macAddress) {
+        // Chercher les données de l'appareil dans les données déjà chargées
+        let device = null;
+        {% if device_scores %}
+            {% for dev in device_scores %}
+                if ("{{ dev.mac_address }}" === macAddress) {
+                    device = {
+                        name: "{{ dev.name|default('Appareil inconnu') }}",
+                        type: "{{ dev.device_type|default('Inconnu') }}",
+                        macAddress: "{{ dev.mac_address }}",
+                        score: {{ dev.security_score }},
+                        lastUpdated: "{{ dev.last_updated|datetime }}",
+                        issues: {{ dev.security_issues|tojson if dev.security_issues else [] }},
+                        recommendations: {{ dev.recommendations|tojson if dev.recommendations else [] }}
+                    };
+                }
+            {% endfor %}
+        {% endif %}
+
+        if (!device) {
+            alert("Impossible de trouver les détails de cet appareil.");
+            return;
+        }
+
+        // Créer le contenu de la modale
+        let modalContent = `
+            <div class="modal-header">
+                <h5 class="modal-title">Détails de l'appareil : ${device.name}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p><strong>Type d'appareil :</strong> ${device.type}</p>
+                        <p><strong>Adresse MAC :</strong> ${device.macAddress}</p>
+                        <p><strong>Dernière mise à jour :</strong> ${device.lastUpdated}</p>
+                    </div>
+                    <div class="col-md-6 text-center">
+                        <div class="d-inline-block position-relative">
+                            <div class="security-score rounded-circle d-flex align-items-center justify-content-center 
+                                ${device.score >= 80 ? 'security-score-high' : device.score >= 50 ? 'security-score-medium' : 'security-score-low'}"
+                                style="width: 100px; height: 100px; font-size: 2em;">
+                                ${device.score}
+                            </div>
+                        </div>
+                        <h5 class="mt-2">Score de sécurité</h5>
+                    </div>
+                </div>
+                
+                <h5 class="mb-3">Problèmes de sécurité détectés</h5>
+                <ul class="list-group mb-4">
+                    ${device.issues && device.issues.length > 0 ? 
+                        device.issues.map(issue => `
+                            <li class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">${issue.title}</h6>
+                                    <small class="${issue.severity === 'high' ? 'text-danger' : issue.severity === 'medium' ? 'text-warning' : 'text-info'}">${
+                                        issue.severity === 'high' ? 'Critique' : 
+                                        issue.severity === 'medium' ? 'Important' : 'Faible'
+                                    }</small>
+                                </div>
+                                <p class="mb-1">${issue.description}</p>
+                            </li>
+                        `).join('') : 
+                        '<li class="list-group-item">Aucun problème de sécurité détecté pour cet appareil.</li>'
+                    }
+                </ul>
+                
+                <h5 class="mb-3">Recommandations</h5>
+                <ul class="list-group">
+                    ${device.recommendations && device.recommendations.length > 0 ? 
+                        device.recommendations.map(rec => `
+                            <li class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">${rec.title}</h6>
+                                    <small class="${rec.priority === 'high' ? 'text-danger' : rec.priority === 'medium' ? 'text-warning' : 'text-info'}">${
+                                        rec.priority === 'high' ? 'Critique' : 
+                                        rec.priority === 'medium' ? 'Important' : 'Recommandé'
+                                    }</small>
+                                </div>
+                                <p class="mb-1">${rec.description}</p>
+                            </li>
+                        `).join('') : 
+                        '<li class="list-group-item">Aucune recommandation spécifique pour cet appareil.</li>'
+                    }
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                <button type="button" class="btn btn-primary">Exporter le rapport</button>
+            </div>
+        `;
+
+        // Créer une modale ou utiliser une modale existante
+        let modal = document.getElementById('deviceDetailsModal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'deviceDetailsModal';
+            modal.className = 'modal fade';
+            modal.tabIndex = '-1';
+            modal.setAttribute('aria-labelledby', 'deviceDetailsModalLabel');
+            modal.setAttribute('aria-hidden', 'true');
+            
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        ${modalContent}
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        } else {
+            document.querySelector('#deviceDetailsModal .modal-content').innerHTML = modalContent;
+        }
+
+        // Afficher la modale
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+    }
 </script>
 {% endblock %}
