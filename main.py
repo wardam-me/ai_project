@@ -27,6 +27,7 @@ from network_topology import NetworkTopology
 from security_scoring import DeviceSecurityScoring
 from assistant_securite import AssistantSecurite
 from gamification import SecurityGamification
+from module_IA import SecurityAI, NetworkOptimizer
 from datetime import datetime, timedelta
 
 # Configuration du logging
@@ -37,6 +38,8 @@ logger = logging.getLogger(__name__)
 network_topology = NetworkTopology()
 security_scoring = DeviceSecurityScoring()
 assistant_securite = AssistantSecurite()
+security_ai = SecurityAI()
+network_optimizer = NetworkOptimizer()
 
 # Contexte global pour tous les templates
 @app.context_processor
@@ -1017,9 +1020,109 @@ def memory_stats():
     memory_info = MemoryMonitor.log_memory_usage()
     return jsonify(memory_info)
 
+# Nouvelle route pour l'analyse IA
+@app.route('/ai-analysis')
+@login_required
+def ai_analysis():
+    """Page d'analyse avancée avec Intelligence Artificielle"""
+    # Récupérer les données de topologie pour l'analyse
+    topology_data = network_topology.get_topology_data()
+    
+    # Utiliser le module d'IA pour l'analyse et l'optimisation
+    optimization_results = network_optimizer.optimize_network_security(topology_data)
+    
+    # Récupérer des données wifi de test
+    test_networks = [
+        {
+            "ssid": "Réseau_Domicile",
+            "bssid": "00:11:22:33:44:55",
+            "security": "WPA2",
+            "encryption": "AES",
+            "authentication": "PSK",
+            "strength": -65,
+            "frequency": "2.4GHz",
+            "channel": 6
+        },
+        {
+            "ssid": "Réseau_Ancien",
+            "bssid": "AA:BB:CC:DD:EE:FF",
+            "security": "WEP",
+            "encryption": None,
+            "authentication": None,
+            "strength": -70,
+            "frequency": "2.4GHz",
+            "channel": 11
+        },
+        {
+            "ssid": "Réseau_Invité",
+            "bssid": "11:22:33:44:55:66",
+            "security": "OPEN",
+            "encryption": None,
+            "authentication": None,
+            "strength": -60,
+            "frequency": "2.4GHz",
+            "channel": 1
+        }
+    ]
+    
+    # Analyser les réseaux WiFi
+    wifi_analysis = security_ai.analyze_wifi_security(test_networks)
+    
+    return render_template(
+        'ai_analysis.html',
+        optimization_results=optimization_results,
+        wifi_analysis=wifi_analysis
+    )
+
+@app.route('/api/optimize-network')
+@login_required
+def api_optimize_network():
+    """API pour obtenir des recommandations d'optimisation du réseau"""
+    # Récupérer les données de topologie
+    topology_data = network_topology.get_topology_data()
+    
+    # Analyser et optimiser la sécurité du réseau
+    optimization_results = network_optimizer.optimize_network_security(topology_data)
+    
+    return jsonify(optimization_results)
+
+@app.route('/api/analyze-wifi')
+@login_required
+def api_analyze_wifi():
+    """API pour analyser la sécurité des réseaux WiFi"""
+    # Dans une implémentation réelle, ces données viendraient d'une analyse réseau
+    # Pour la démonstration, utiliser des données d'exemple
+    test_networks = [
+        {
+            "ssid": "Réseau_Domicile",
+            "bssid": "00:11:22:33:44:55",
+            "security": "WPA2",
+            "encryption": "AES",
+            "authentication": "PSK",
+            "strength": -65,
+            "frequency": "2.4GHz",
+            "channel": 6
+        },
+        {
+            "ssid": "Réseau_Ancien",
+            "bssid": "AA:BB:CC:DD:EE:FF",
+            "security": "WEP",
+            "encryption": None,
+            "authentication": None,
+            "strength": -70,
+            "frequency": "2.4GHz",
+            "channel": 11
+        }
+    ]
+    
+    # Analyser les réseaux WiFi
+    wifi_analysis = security_ai.analyze_wifi_security(test_networks)
+    
+    return jsonify(wifi_analysis)
+
 # Point d'entrée principal
 if __name__ == '__main__':
     # Log initial de l'utilisation de la mémoire au démarrage
     MemoryMonitor.log_memory_usage()
-    # Démarrer l'application avec Socket.IO
-    socketio.run(app, host='0.0.0.0', port=5000, debug=True)
+    # Démarrer l'application Flask avec l'extension SocketIO
+    socketio.run(app, host="0.0.0.0", port=5000)
