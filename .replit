@@ -5,7 +5,7 @@ channel = "stable-24_05"
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["sh", "-c", "python main.py"]
+run = ["sh", "-c", "python app.py"]
 build = ["sh", "-c", "pip install -r requirements.txt"]
 
 [workflows]
@@ -27,6 +27,10 @@ args = "Flask Server"
 [[workflows.workflow.tasks]]
 task = "workflow.run"
 args = "Run Setup Directories"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Test AI Integration"
 
 [[workflows.workflow]]
 name = "Setup Directories"
@@ -54,7 +58,7 @@ task = "packager.installForAll"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python main.py"
+args = "python app.py"
 waitForPort = 5000
 
 [[workflows.workflow]]
@@ -70,6 +74,20 @@ task = "packager.installForAll"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python mkdir_directories.py"
+
+[[workflows.workflow]]
+name = "Test AI Integration"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python test_ai_integration.py"
 
 [[ports]]
 localPort = 5000
