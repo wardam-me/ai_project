@@ -1125,4 +1125,4 @@ if __name__ == '__main__':
     # Log initial de l'utilisation de la mémoire au démarrage
     MemoryMonitor.log_memory_usage()
     # Démarrer l'application Flask avec l'extension SocketIO
-    socketio.run(app, host="0.0.0.0", port=5000)
+    socketio.run(app, host="0.0.0.0", port=5001)
