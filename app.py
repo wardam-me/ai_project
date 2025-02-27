@@ -37,7 +37,7 @@ def create_app():
         db.create_all()
         
         # Importation des routes
-        from main import register_routes
+        from routes import register_routes
         register_routes(app)
     
     return app
