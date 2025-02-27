@@ -30,8 +30,14 @@ class CyberDefenseAssistant:
             try:
                 self.ai_module = SecurityAnalysisAI()
                 logger.info("Module IA chargé avec succès pour l'assistant de cyberdéfense")
-            except Exception as e:
-                logger.error(f"Erreur lors de l'initialisation du module IA: {e}")
+            except (ValueError, TypeError) as e:
+                logger.error(f"Erreur de configuration lors de l'initialisation du module IA: {e}")
+            except ImportError as e:
+                logger.error(f"Erreur d'importation lors de l'initialisation du module IA: {e}")
+            except ConnectionError as e:
+                logger.error(f"Erreur de connexion lors de l'initialisation du module IA: {e}")
+            except RuntimeError as e:
+                logger.error(f"Erreur d'exécution lors de l'initialisation du module IA: {e}")
         
         # Charger les modèles de réponses et les connaissances
         self.load_response_templates()
