@@ -24,6 +24,10 @@ args = "Setup Directories"
 task = "workflow.run"
 args = "Flask Server"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Create User"
+
 [[workflows.workflow]]
 name = "Setup Directories"
 author = "agent"
@@ -52,6 +56,20 @@ task = "packager.installForAll"
 task = "shell.exec"
 args = "python main.py"
 waitForPort = 8080
+
+[[workflows.workflow]]
+name = "Create User"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python create_test_user.py"
 
 [[ports]]
 localPort = 5000
