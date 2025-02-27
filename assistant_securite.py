@@ -384,8 +384,17 @@ class AssistantSecurite:
         try:
             with open(conversation_file, "r") as f:
                 return json.load(f)
-        except Exception as e:
-            logger.error(f"Erreur lors de la lecture de la conversation {conversation_id}: {e}")
+        except FileNotFoundError as e:
+            logger.error(f"Fichier de conversation introuvable pour {conversation_id}: {e}")
+            return []
+        except json.JSONDecodeError as e:
+            logger.error(f"Format JSON invalide pour la conversation {conversation_id}: {e}")
+            return []
+        except PermissionError as e:
+            logger.error(f"Erreur de permission lors de la lecture de la conversation {conversation_id}: {e}")
+            return []
+        except IOError as e:
+            logger.error(f"Erreur d'I/O lors de la lecture de la conversation {conversation_id}: {e}")
             return []
     
     def get_all_conversations(self):
@@ -409,8 +418,14 @@ class AssistantSecurite:
                                 "message_count": len(data),
                                 "first_message": first_message.get("user_input", "")[:50] + "..."
                             })
-                except Exception as e:
-                    logger.error(f"Erreur lors de la lecture de {filename}: {e}")
+                except FileNotFoundError as e:
+                    logger.error(f"Fichier de conversation introuvable pour {filename}: {e}")
+                except json.JSONDecodeError as e:
+                    logger.error(f"Format JSON invalide pour le fichier {filename}: {e}")
+                except PermissionError as e:
+                    logger.error(f"Erreur de permission lors de la lecture de {filename}: {e}")
+                except IOError as e:
+                    logger.error(f"Erreur d'I/O lors de la lecture de {filename}: {e}")
         
         # Trier par date (plus récent en premier)
         conversations.sort(key=lambda x: x["date"], reverse=True)
@@ -425,7 +440,7 @@ class AssistantSecurite:
             try:
                 with open(conversation_file, "r") as f:
                     conversation = json.load(f)
-            except Exception:
+            except (json.JSONDecodeError, FileNotFoundError, PermissionError, IOError):
                 conversation = []
         else:
             conversation = []
@@ -443,8 +458,14 @@ class AssistantSecurite:
             os.makedirs(os.path.dirname(conversation_file), exist_ok=True)
             with open(conversation_file, "w") as f:
                 json.dump(conversation, f, indent=2)
-        except Exception as e:
-            logger.error(f"Erreur lors de la sauvegarde de la conversation: {e}")
+        except FileNotFoundError as e:
+            logger.error(f"Chemin de fichier invalide lors de la sauvegarde de la conversation: {e}")
+        except PermissionError as e:
+            logger.error(f"Erreur de permission lors de la sauvegarde de la conversation: {e}")
+        except IOError as e:
+            logger.error(f"Erreur d'I/O lors de la sauvegarde de la conversation: {e}")
+        except TypeError as e:
+            logger.error(f"Erreur de type lors de la sérialisation JSON: {e}")
     
     def _get_random_advice(self, count=3):
         """Retourne quelques conseils aléatoires sous forme de liste à puces"""
