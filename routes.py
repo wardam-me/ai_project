@@ -523,8 +523,19 @@ def register_routes(app):
     @login_required
     @admin_required
     def admin_ai_management():
-        """Page de gestion de l'IA"""
-        return render_template('admin/ai_management.html')
+        """Page de gestion de l'IA et des clones IA"""
+        # Récupérer le gestionnaire de clones
+        from ai_clone_manager import get_clone_manager
+        
+        clone_manager = get_clone_manager()
+        clones = clone_manager.get_all_clones()
+        statistics = clone_manager.get_clone_statistics()
+        
+        return render_template(
+            'admin/ai_management.html',
+            clones=clones,
+            statistics=statistics
+        )
     
     @app.route('/admin/security')
     @login_required
