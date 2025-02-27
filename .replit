@@ -89,6 +89,14 @@ task = "packager.installForAll"
 task = "shell.exec"
 args = "python test_ai_integration.py"
 
+[[workflows.workflow]]
+name = "IA Automatique"
+author = 39699562
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python ia_activite_automatique.py"
+
 [[ports]]
 localPort = 5000
 externalPort = 80
