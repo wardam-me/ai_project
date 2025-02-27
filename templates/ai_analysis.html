@@ -10,7 +10,7 @@
         <div class="col-md-6">
             <div class="card mb-4 shadow-sm">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="fas fa-brain mr-2"></i> Score d'Optimalité du Réseau</h5>
+                    <h5 class="mb-0"><i class="fas fa-brain me-2"></i> Score d'Optimalité du Réseau</h5>
                 </div>
                 <div class="card-body">
                     <div class="text-center mb-4">
@@ -27,11 +27,17 @@
                     </div>
                     
                     <h6 class="text-muted">Statistiques de vulnérabilités</h6>
+                    <!-- Graphique des vulnérabilités -->
+                    <div class="chart-container mb-3" style="position: relative; height:200px;">
+                        <canvas id="vulnerability-stats-chart"></canvas>
+                    </div>
+
+                    <!-- Liste des vulnérabilités -->
                     <ul class="list-group mb-3">
                         {% for severity, count in optimization_results.vulnerability_statistics.items() %}
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 {{ severity|capitalize }}
-                                <span class="badge badge-{{ 'primary' if severity == 'low' else 'warning' if severity == 'medium' else 'danger' }} badge-pill">{{ count }}</span>
+                                <span class="badge bg-{{ 'primary' if severity == 'low' else 'warning' if severity == 'medium' else 'danger' }} rounded-pill">{{ count }}</span>
                             </li>
                         {% endfor %}
                     </ul>
@@ -42,7 +48,7 @@
         <div class="col-md-6">
             <div class="card mb-4 shadow-sm">
                 <div class="card-header bg-info text-white">
-                    <h5 class="mb-0"><i class="fas fa-wifi mr-2"></i> Analyse WiFi</h5>
+                    <h5 class="mb-0"><i class="fas fa-wifi me-2"></i> Analyse WiFi</h5>
                 </div>
                 <div class="card-body">
                     <div class="text-center mb-4">
@@ -59,11 +65,17 @@
                     </div>
                     
                     <h6 class="text-muted">Niveaux de sécurité</h6>
+                    <!-- Graphique de distribution des niveaux de sécurité -->
+                    <div class="chart-container mb-3" style="position: relative; height:200px;">
+                        <canvas id="security-levels-chart"></canvas>
+                    </div>
+                    
+                    <!-- Liste des niveaux de sécurité -->
                     <ul class="list-group mb-3">
                         {% for level, count in wifi_analysis.security_levels.items() %}
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 {{ level|capitalize }}
-                                <span class="badge badge-{{ 'success' if level == 'secure' else 'primary' if level == 'low' else 'warning' if level == 'medium' else 'danger' }} badge-pill">{{ count }}</span>
+                                <span class="badge bg-{{ 'success' if level == 'secure' else 'primary' if level == 'low' else 'warning' if level == 'medium' else 'danger' }} rounded-pill">{{ count }}</span>
                             </li>
                         {% endfor %}
                     </ul>
@@ -79,7 +91,7 @@
     <!-- Recommandations prioritaires -->
     <div class="card mb-4 shadow-sm">
         <div class="card-header bg-danger text-white">
-            <h5 class="mb-0"><i class="fas fa-exclamation-triangle mr-2"></i> Recommandations Prioritaires</h5>
+            <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i> Recommandations Prioritaires</h5>
         </div>
         <div class="card-body">
             {% if optimization_results.recommendations.priority %}
@@ -206,7 +218,7 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <span class="badge badge-{{ 'success' if network.security_level == 'secure' else 'primary' if network.security_level == 'low' else 'warning' if network.security_level == 'medium' else 'danger' }}">
+                                        <span class="badge bg-{{ 'success' if network.security_level == 'secure' else 'primary' if network.security_level == 'low' else 'warning' if network.security_level == 'medium' else 'danger' }}">
                                             {{ network.security_level|capitalize }}
                                         </span>
                                     </td>
@@ -246,7 +258,7 @@
                                 <tr>
                                     <td>{{ vuln.vulnerability_type }}</td>
                                     <td>
-                                        <span class="badge badge-{{ 'danger' if vuln.severity == 'high' or vuln.severity == 'critical' else 'warning' if vuln.severity == 'medium' else 'primary' }}">
+                                        <span class="badge bg-{{ 'danger' if vuln.severity == 'high' or vuln.severity == 'critical' else 'warning' if vuln.severity == 'medium' else 'primary' }}">
                                             {{ vuln.severity|capitalize }}
                                         </span>
                                     </td>
@@ -267,21 +279,28 @@
     </div>
     
     <div class="text-center mt-4 mb-5">
-        <button class="btn btn-primary mr-2" onclick="window.print()">
-            <i class="fas fa-print mr-2"></i> Imprimer ce rapport
+        <button class="btn btn-primary me-2" onclick="window.print()">
+            <i class="fas fa-print me-2"></i> Imprimer ce rapport
         </button>
         <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left mr-2"></i> Retour au tableau de bord
+            <i class="fas fa-arrow-left me-2"></i> Retour au tableau de bord
         </a>
     </div>
 </div>
 {% endblock %}
 
-{% block scripts %}
-<script>
-    // Charts could be added here if needed
-    document.addEventListener('DOMContentLoaded', function() {
-        // Add any JavaScript needed for the page
-    });
+{% block extra_js %}
+<!-- Inclure Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Données cachées pour les graphiques -->
+<script type="application/json" id="security-levels-data">
+    {{ wifi_analysis.security_levels|tojson }}
 </script>
+<script type="application/json" id="vulnerability-stats-data">
+    {{ optimization_results.vulnerability_statistics|tojson }}
+</script>
+
+<!-- Notre script d'analyse IA -->
+<script src="{{ url_for('static', filename='js/ai_analysis.js') }}"></script>
 {% endblock %}
