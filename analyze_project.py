@@ -150,6 +150,12 @@ class ProjectAnalyzer:
                     sys.modules[module_name] = module
                     spec.loader.exec_module(module)
                     self.test_results['success'].append(f"Module {module_name} importé avec succès")
+                except SyntaxError as e:
+                    self.test_results['error'].append(f"Erreur de syntaxe dans le module {module_name}: {str(e)}")
+                except ImportError as e:
+                    self.test_results['error'].append(f"Erreur d'importation du module {module_name}: {str(e)}")
+                except AttributeError as e:
+                    self.test_results['error'].append(f"Erreur d'attribut dans le module {module_name}: {str(e)}")
                 except Exception as e:
                     self.test_results['error'].append(f"Erreur lors de l'import du module {module_name}: {str(e)}")
                 
@@ -168,6 +174,12 @@ class ProjectAnalyzer:
                         if not any(positive in match.group(0).lower() for positive in ['success', 'succès', 'réussi', 'passed']):
                             self.test_results['failure'].append(f"{test_file}: {match.group(0)}")
             
+            except FileNotFoundError as e:
+                self.errors.append(f"Fichier de test introuvable {test_file}: {str(e)}")
+            except PermissionError as e:
+                self.errors.append(f"Erreur de permission lors de l'accès au fichier {test_file}: {str(e)}")
+            except UnicodeDecodeError as e:
+                self.errors.append(f"Erreur de décodage du fichier {test_file}: {str(e)}")
             except Exception as e:
                 self.errors.append(f"Erreur lors de l'analyse des résultats de test pour {test_file}: {str(e)}")
     
@@ -216,6 +228,12 @@ class ProjectAnalyzer:
                             if not re.search(r'\bdef\s+' + var + r'\b|\bclass\s+' + var + r'\b', content):
                                 lsp_errors[py_file].append(f"Variable potentiellement non définie: {var}")
             
+            except FileNotFoundError as e:
+                self.errors.append(f"Fichier Python introuvable {py_file}: {str(e)}")
+            except PermissionError as e:
+                self.errors.append(f"Erreur de permission lors de l'accès au fichier {py_file}: {str(e)}")
+            except UnicodeDecodeError as e:
+                self.errors.append(f"Erreur de décodage du fichier {py_file}: {str(e)}")
             except Exception as e:
                 self.errors.append(f"Erreur lors de l'analyse LSP pour {py_file}: {str(e)}")
         

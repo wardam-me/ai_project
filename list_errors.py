@@ -49,12 +49,13 @@ def extract_errors_from_log(log_file):
                     continue
                 
                 # Si on est dans un traceback, continuer à collecter les lignes
-                if in_traceback:
+                if in_traceback and current_error is not None:
                     current_error.append(line)
                     
                     # Détecter la fin d'un traceback
                     if re.search(r'^\w+Error:', line) or re.search(r'^\w+Exception:', line):
-                        errors.append('\n'.join(current_error))
+                        if current_error is not None:
+                            errors.append('\n'.join(current_error))
                         current_error = None
                         in_traceback = False
                     continue
