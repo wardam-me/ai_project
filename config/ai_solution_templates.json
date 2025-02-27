@@ -1,0 +1,73 @@
+{
+  "weak_encryption": {
+    "title": "Mettre \u00e0 niveau le chiffrement WiFi",
+    "steps": [
+      "Acc\u00e9der \u00e0 l'interface d'administration du routeur",
+      "Naviguer vers les param\u00e8tres de s\u00e9curit\u00e9 WiFi",
+      "S\u00e9lectionner WPA2 ou WPA3 avec AES/CCMP",
+      "D\u00e9finir un mot de passe fort d'au moins 12 caract\u00e8res",
+      "Appliquer les changements et red\u00e9marrer le routeur si n\u00e9cessaire"
+    ],
+    "success_indicators": [
+      "Les appareils peuvent se reconnecter avec les nouveaux param\u00e8tres",
+      "Le r\u00e9seau appara\u00eet comme WPA2 ou WPA3 lors du scan"
+    ]
+  },
+  "open_network": {
+    "title": "S\u00e9curiser le r\u00e9seau ouvert",
+    "steps": [
+      "Acc\u00e9der \u00e0 l'interface d'administration du routeur",
+      "Activer le chiffrement (WPA2 ou WPA3)",
+      "Configurer un mot de passe fort",
+      "D\u00e9sactiver le WPS (Wi-Fi Protected Setup)",
+      "Enregistrer les param\u00e8tres"
+    ],
+    "success_indicators": [
+      "Le r\u00e9seau n'appara\u00eet plus comme 'Ouvert' lors du scan",
+      "Une cl\u00e9 est requise pour la connexion"
+    ]
+  },
+  "default_credentials": {
+    "title": "Modifier les identifiants par d\u00e9faut",
+    "steps": [
+      "Identifier tous les appareils utilisant des identifiants par d\u00e9faut",
+      "Pour chaque appareil, acc\u00e9der \u00e0 l'interface d'administration",
+      "Changer le nom d'utilisateur si possible",
+      "D\u00e9finir un mot de passe fort et unique",
+      "Enregistrer les nouvelles informations d'identification de mani\u00e8re s\u00e9curis\u00e9e"
+    ],
+    "success_indicators": [
+      "L'acc\u00e8s avec les identifiants par d\u00e9faut est refus\u00e9",
+      "L'acc\u00e8s avec les nouveaux identifiants fonctionne"
+    ]
+  },
+  "firmware_outdated": {
+    "title": "Mettre \u00e0 jour le firmware",
+    "steps": [
+      "V\u00e9rifier le mod\u00e8le et la version actuelle du firmware",
+      "T\u00e9l\u00e9charger la derni\u00e8re version depuis le site officiel du fabricant",
+      "Sauvegarder la configuration actuelle si possible",
+      "Suivre la proc\u00e9dure de mise \u00e0 jour sp\u00e9cifique \u00e0 l'appareil",
+      "Red\u00e9marrer l'appareil apr\u00e8s la mise \u00e0 jour",
+      "V\u00e9rifier que la mise \u00e0 jour a bien \u00e9t\u00e9 appliqu\u00e9e"
+    ],
+    "success_indicators": [
+      "La version du firmware indique la derni\u00e8re version",
+      "Les nouvelles fonctionnalit\u00e9s ou corrections sont disponibles"
+    ]
+  },
+  "connection_drops": {
+    "title": "R\u00e9soudre les pertes de connexion intermittentes",
+    "steps": [
+      "V\u00e9rifier la position du routeur et des appareils",
+      "\u00c9liminer les sources d'interf\u00e9rence",
+      "Changer le canal WiFi pour \u00e9viter les interf\u00e9rences",
+      "Mettre \u00e0 jour les pilotes WiFi des appareils",
+      "V\u00e9rifier la pr\u00e9sence de microcoupures sur la ligne Internet"
+    ],
+    "success_indicators": [
+      "Connexion stable sur une p\u00e9riode prolong\u00e9e",
+      "Am\u00e9lioration du signal WiFi"
+    ]
+  }
+}

@@ -27,7 +27,7 @@ from network_topology import NetworkTopology
 from security_scoring import DeviceSecurityScoring
 from assistant_securite import AssistantSecurite
 from gamification import SecurityGamification
-from module_IA import SecurityAI, NetworkOptimizer
+from module_IA import SecurityAI, NetworkOptimizer, AIErrorHandler, AICloneManager, ai_clone_manager
 from security_assistant import SecurityAssistant
 from datetime import datetime, timedelta
 
@@ -1381,10 +1381,165 @@ def api_security_assistant_chatbot():
         'response': response
     })
 
+# Routes pour le système de détection et correction auto IA
+@app.route('/ai-error-detection')
+@login_required
+def ai_error_detection():
+    """Page de détection automatique des erreurs réseau par IA"""
+    # Récupérer les clones actifs
+    clones = ai_clone_manager.get_all_clones()
+    
+    # Récupérer les données de topologie pour l'analyse
+    topology_data = network_topology.get_topology_data()
+    
+    # Initialiser l'AIErrorHandler pour la détection manuelle des erreurs
+    error_handler = AIErrorHandler()
+    detected_errors = error_handler.detect_errors(topology_data)
+    
+    # Générer des solutions pour les erreurs détectées
+    solutions = error_handler.generate_solutions(detected_errors)
+    
+    # Statistiques des erreurs
+    error_stats = error_handler.get_error_statistics()
+    
+    return render_template(
+        'ai_error_detection.html',
+        clones=clones,
+        detected_errors=detected_errors,
+        solutions=solutions,
+        error_stats=error_stats
+    )
+
+@app.route('/api/ai-error-detection', methods=['POST'])
+@login_required
+def api_ai_error_detection():
+    """API pour la détection d'erreurs réseau"""
+    data = request.json
+    
+    if not data:
+        return jsonify({'success': False, 'error': 'Données manquantes'}), 400
+    
+    # Récupérer les données de topologie
+    topology_data = network_topology.get_topology_data()
+    
+    # Récupérer les logs si fournis
+    logs = data.get('logs', [])
+    
+    # Initialiser l'AIErrorHandler
+    error_handler = AIErrorHandler()
+    
+    # Détecter les erreurs
+    detected_errors = error_handler.detect_errors(topology_data, logs)
+    
+    # Générer des solutions
+    solutions = error_handler.generate_solutions(detected_errors)
+    
+    return jsonify({
+        'success': True,
+        'detected_errors': detected_errors,
+        'solutions': solutions,
+        'error_count': len(detected_errors)
+    })
+
+@app.route('/api/ai-clone/create', methods=['POST'])
+@login_required
+def api_create_ai_clone():
+    """API pour créer un nouveau clone IA"""
+    data = request.json
+    
+    if not data or 'clone_type' not in data:
+        return jsonify({'success': False, 'error': 'Type de clone manquant'}), 400
+    
+    clone_type = data.get('clone_type')
+    custom_config = data.get('custom_config')
+    
+    # Créer le clone
+    clone_id = ai_clone_manager.create_clone(clone_type, custom_config)
+    
+    # Récupérer les informations du clone
+    clone_status = ai_clone_manager.get_clone_status(clone_id)
+    
+    return jsonify({
+        'success': True,
+        'clone_id': clone_id,
+        'status': clone_status
+    })
+
+@app.route('/api/ai-clone/<clone_id>/status')
+@login_required
+def api_get_ai_clone_status(clone_id):
+    """API pour récupérer le statut d'un clone IA"""
+    clone_status = ai_clone_manager.get_clone_status(clone_id)
+    
+    if not clone_status:
+        return jsonify({'success': False, 'error': f"Clone {clone_id} non trouvé"}), 404
+    
+    return jsonify({
+        'success': True,
+        'status': clone_status
+    })
+
+@app.route('/api/ai-clone/<clone_id>/stop', methods=['POST'])
+@login_required
+def api_stop_ai_clone(clone_id):
+    """API pour arrêter un clone IA"""
+    success = ai_clone_manager.stop_clone(clone_id)
+    
+    return jsonify({
+        'success': success,
+        'message': f"Clone {clone_id} arrêté avec succès" if success else f"Erreur lors de l'arrêt du clone {clone_id}"
+    })
+
+@app.route('/api/ai-clone/<clone_id>/auto-correct', methods=['POST'])
+@login_required
+def api_auto_correct_with_clone(clone_id):
+    """API pour appliquer des corrections automatiques avec un clone IA"""
+    # Récupérer les données de topologie
+    topology_data = network_topology.get_topology_data()
+    
+    # Appliquer les corrections automatiques
+    correction_result = ai_clone_manager.apply_auto_corrections(clone_id, topology_data)
+    
+    if correction_result.get('success'):
+        # Si des modifications ont été appliquées, mettre à jour les données de topologie
+        modified_data = correction_result.get('modified_data')
+        if modified_data:
+            # Dans une implémentation réelle, on sauvegarderait ces modifications
+            # dans la base de données ou le système de stockage approprié
+            
+            # Émettre un événement pour notifier les clients des modifications
+            socketio.emit('topology_updated', {
+                'message': correction_result.get('message'),
+                'changes_count': len(correction_result.get('changes', []))
+            })
+    
+    return jsonify(correction_result)
+
+@app.route('/ai-clones')
+@login_required
+def ai_clones_dashboard():
+    """Tableau de bord des clones IA"""
+    # Récupérer tous les clones
+    clones = ai_clone_manager.get_all_clones()
+    
+    # Récupérer les configurations disponibles
+    clone_configs = ai_clone_manager._load_clone_configs()
+    
+    return render_template(
+        'ai_clones.html',
+        clones=clones,
+        clone_configs=clone_configs
+    )
+
 # Point d'entrée principal
 if __name__ == '__main__':
     # Log initial de l'utilisation de la mémoire au démarrage
     MemoryMonitor.log_memory_usage()
+    
+    # Créer un clone IA par défaut pour la détection et correction automatique
+    default_clone_id = ai_clone_manager.create_clone('auto_repair')
+    logger.info(f"Clone IA par défaut créé : {default_clone_id}")
+    
     # Démarrer l'application Flask avec l'extension SocketIO
     # Utilisation du port 5000 au lieu de 8080 pour respecter les directives de développement de Replit
     socketio.run(app, host="0.0.0.0", port=5000, debug=True)
