@@ -1,6 +1,7 @@
 """
 Module de génération d'infographies pour l'export de vulnérabilités réseau.
 Permet de créer des visualisations attrayantes et informatives des données de sécurité.
+Intègre l'IA pour des analyses et recommandations avancées.
 """
 
 import json
@@ -16,6 +17,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.patches import Patch
+
+# Import conditionnel pour éviter les dépendances circulaires
+ai_assistant = None
+try:
+    from ai_infographic_assistant import ai_assistant
+except ImportError:
+    logger.warning("Module ai_infographic_assistant non disponible, fonctionnalités IA limitées")
 
 # Configuration du logger
 logging.basicConfig(level=logging.INFO)
@@ -1179,6 +1187,358 @@ class InfographicGenerator:
             
             # Mettre à jour la position verticale
             y_pos -= 0.13
+            
+    def generate_preview(self, report_type: str) -> str:
+        """
+        Génère ou renvoie un aperçu pour un type de rapport spécifique
+        
+        Args:
+            report_type: Type de rapport ('network', 'protocol', 'vulnerability')
+            
+        Returns:
+            str: Chemin vers l'image d'aperçu
+        """
+        # Vérifier si le type de rapport est valide
+        if report_type not in ['network', 'protocol', 'vulnerability']:
+            report_type = 'network'
+        
+        # Définir le chemin vers l'aperçu préexistant (SVG)
+        preview_path = os.path.join(PREVIEWS_DIR, f"{report_type}", f"{report_type}_security_preview.svg")
+        
+        # Si l'aperçu n'existe pas, utiliser l'aperçu par défaut
+        if not os.path.exists(preview_path):
+            default_preview_path = os.path.join(PREVIEWS_DIR, f"{report_type}_security_preview.svg")
+            
+            # Si l'aperçu par défaut existe, le retourner
+            if os.path.exists(default_preview_path):
+                return default_preview_path
+            
+            # Sinon, générer un nouvel aperçu
+            sample_data = self._generate_sample_data(report_type)
+            
+            # Créer le répertoire d'aperçus si nécessaire
+            preview_dir = os.path.join(PREVIEWS_DIR, report_type)
+            os.makedirs(preview_dir, exist_ok=True)
+            
+            # Générer un aperçu et le sauvegarder
+            if report_type == 'network':
+                return self.generate_network_security_infographic(
+                    sample_data.get('network_data', {}),
+                    sample_data.get('vulnerability_data', {}),
+                    output_filename=f"{report_type}_security_preview.svg",
+                    format='svg'
+                )
+            elif report_type == 'protocol':
+                return self.generate_protocol_analysis_infographic(
+                    sample_data.get('protocol_data', {}),
+                    output_filename=f"{report_type}_security_preview.svg",
+                    format='svg'
+                )
+            elif report_type == 'vulnerability':
+                return self.generate_vulnerability_report_infographic(
+                    sample_data.get('vulnerability_data', {}),
+                    output_filename=f"{report_type}_security_preview.svg",
+                    format='svg'
+                )
+        
+        return preview_path
+    
+    def _generate_sample_data(self, report_type: str) -> Dict[str, Any]:
+        """
+        Génère des données d'exemple pour les aperçus
+        
+        Args:
+            report_type: Type de rapport ('network', 'protocol', 'vulnerability')
+            
+        Returns:
+            Dict: Données d'exemple pour le type de rapport spécifié
+        """
+        if report_type == 'network':
+            return {
+                'network_data': {
+                    'overall_score': 72,
+                    'protocol_distribution': {
+                        'WPA3': 20,
+                        'WPA2': 45,
+                        'WPA': 20,
+                        'WEP': 10,
+                        'OPEN': 5
+                    },
+                    'security_dimensions': {
+                        'Authentification': 65,
+                        'Chiffrement': 70,
+                        'Mises à jour': 50,
+                        'Pare-feu': 85,
+                        'Segmentation': 90,
+                        'Monitoring': 60
+                    },
+                    'devices': [
+                        {'name': 'Caméra IP', 'security_score': 35},
+                        {'name': 'Smart TV', 'security_score': 55},
+                        {'name': 'Smartphone', 'security_score': 65},
+                        {'name': 'Routeur WiFi', 'security_score': 75},
+                        {'name': 'Ordinateur portable', 'security_score': 85}
+                    ],
+                    'security_trend': [
+                        {'date': 'Jan', 'score': 54},
+                        {'date': 'Fév', 'score': 58},
+                        {'date': 'Mar', 'score': 60},
+                        {'date': 'Avr', 'score': 65},
+                        {'date': 'Mai', 'score': 68},
+                        {'date': 'Juin', 'score': 72}
+                    ]
+                },
+                'vulnerability_data': {
+                    'vulnerability_types': {
+                        'Faible complexité de mot de passe': 12,
+                        'Protocoles non sécurisés': 8,
+                        'Firmware obsolète': 6,
+                        'Authentification faible': 5,
+                        'Ports ouverts': 4
+                    },
+                    'recommendations': [
+                        {
+                            'priority': 'critical',
+                            'description': 'Mettre à jour le firmware du routeur',
+                            'details': 'Votre routeur exécute un firmware obsolète contenant des vulnérabilités connues.'
+                        },
+                        {
+                            'priority': 'high',
+                            'description': 'Changer les mots de passe par défaut',
+                            'details': 'Plusieurs appareils IoT utilisent encore leurs mots de passe par défaut.'
+                        },
+                        {
+                            'priority': 'medium',
+                            'description': 'Activer WPA3 sur votre réseau WiFi',
+                            'details': 'Passer à WPA3 offre une meilleure protection contre les attaques.'
+                        }
+                    ]
+                }
+            }
+        elif report_type == 'protocol':
+            return {
+                'protocol_data': {
+                    'average_score': 68,
+                    'protocol_distribution': {
+                        'WPA3': 20,
+                        'WPA2': 45,
+                        'WPA': 20,
+                        'WEP': 10,
+                        'OPEN': 5
+                    },
+                    'protocols': [
+                        {
+                            'name': 'WPA3',
+                            'security_score': 95,
+                            'devices': 3,
+                            'vulnerabilities': 1
+                        },
+                        {
+                            'name': 'WPA2',
+                            'security_score': 80,
+                            'devices': 8,
+                            'vulnerabilities': 4
+                        },
+                        {
+                            'name': 'WPA',
+                            'security_score': 60,
+                            'devices': 4,
+                            'vulnerabilities': 7
+                        },
+                        {
+                            'name': 'WEP',
+                            'security_score': 30,
+                            'devices': 2,
+                            'vulnerabilities': 9
+                        },
+                        {
+                            'name': 'OPEN',
+                            'security_score': 10,
+                            'devices': 1,
+                            'vulnerabilities': 12
+                        }
+                    ],
+                    'vulnerability_by_protocol': {
+                        'WPA3': {'critical': 0, 'high': 0, 'medium': 1, 'low': 0},
+                        'WPA2': {'critical': 0, 'high': 1, 'medium': 2, 'low': 1},
+                        'WPA': {'critical': 1, 'high': 2, 'medium': 3, 'low': 1},
+                        'WEP': {'critical': 3, 'high': 3, 'medium': 2, 'low': 1},
+                        'OPEN': {'critical': 5, 'high': 4, 'medium': 2, 'low': 1}
+                    },
+                    'protocol_strengths': {
+                        'WPA3': {
+                            'Authentification': 95,
+                            'Chiffrement': 98,
+                            'Protection contre les attaques': 90,
+                            'Gestion des clés': 92,
+                            'Protection vie privée': 85
+                        },
+                        'WPA2': {
+                            'Authentification': 85,
+                            'Chiffrement': 90,
+                            'Protection contre les attaques': 70,
+                            'Gestion des clés': 80,
+                            'Protection vie privée': 65
+                        }
+                    },
+                    'recommendations': [
+                        {
+                            'priority': 'critical',
+                            'description': 'Migrer des réseaux WEP et ouverts vers WPA3',
+                            'details': 'Les réseaux WEP et ouverts présentent des risques majeurs de sécurité.'
+                        },
+                        {
+                            'priority': 'high',
+                            'description': 'Mettre à niveau les réseaux WPA vers WPA2/WPA3',
+                            'details': 'WPA contient des vulnérabilités connues et devrait être remplacé.'
+                        },
+                        {
+                            'priority': 'medium',
+                            'description': 'Activer le mode de transition WPA3 sur les réseaux WPA2',
+                            'details': 'Le mode de transition permet de bénéficier des avantages de WPA3 tout en maintenant la compatibilité.'
+                        }
+                    ]
+                }
+            }
+        elif report_type == 'vulnerability':
+            return {
+                'vulnerability_data': {
+                    'summary': {
+                        'total': 35,
+                        'critical': 5,
+                        'high': 10,
+                        'medium': 15,
+                        'low': 5
+                    },
+                    'critical_vulnerabilities': [
+                        {
+                            'id': 'CVE-2022-12345',
+                            'title': 'Vulnérabilité d\'exécution de code à distance dans le routeur',
+                            'severity': 'critical',
+                            'affected_devices': 1,
+                            'description': 'Permet à un attaquant d\'exécuter du code arbitraire sur le routeur WiFi.'
+                        },
+                        {
+                            'id': 'CVE-2022-23456',
+                            'title': 'Faille de sécurité dans le firmware de la caméra IP',
+                            'severity': 'critical',
+                            'affected_devices': 1,
+                            'description': 'Permet à un attaquant d\'accéder au flux vidéo sans authentification.'
+                        },
+                        {
+                            'id': 'CVE-2022-34567',
+                            'title': 'Authentification faible sur l\'assistant vocal intelligent',
+                            'severity': 'critical',
+                            'affected_devices': 1,
+                            'description': 'Permet à un attaquant de contourner l\'authentification et de prendre le contrôle.'
+                        }
+                    ],
+                    'severity_distribution': {
+                        'Critique': 5,
+                        'Élevée': 10,
+                        'Moyenne': 15,
+                        'Faible': 5
+                    },
+                    'discovery_timeline': [
+                        {'date': 'Jan', 'count': 3},
+                        {'date': 'Fév', 'count': 5},
+                        {'date': 'Mar', 'count': 8},
+                        {'date': 'Avr', 'count': 7},
+                        {'date': 'Mai', 'count': 6},
+                        {'date': 'Juin', 'count': 6}
+                    ],
+                    'remediation_plan': [
+                        {
+                            'id': 'RP-001',
+                            'vulnerability_id': 'CVE-2022-12345',
+                            'action': 'Mettre à jour le firmware du routeur vers la version 2.1.4',
+                            'difficulty': 'Facile',
+                            'status': 'À faire',
+                            'estimated_time': '30 minutes'
+                        },
+                        {
+                            'id': 'RP-002',
+                            'vulnerability_id': 'CVE-2022-23456',
+                            'action': 'Appliquer le correctif de sécurité sur la caméra IP',
+                            'difficulty': 'Moyenne',
+                            'status': 'À faire',
+                            'estimated_time': '1 heure'
+                        }
+                    ]
+                }
+            }
+        else:
+            return {}
+    
+    def copy_export_to_user_downloads(self, source_path: str, filename: Optional[str] = None) -> Dict[str, str]:
+        """
+        Copie un fichier d'export vers le répertoire de téléchargements de l'utilisateur
+        et renvoie les métadonnées du fichier
+        
+        Args:
+            source_path: Chemin vers le fichier d'export
+            filename: Nom de fichier personnalisé (optionnel)
+            
+        Returns:
+            Dict: Métadonnées du fichier (chemin, nom, taille, date)
+        """
+        if not os.path.exists(source_path):
+            return {
+                'success': False,
+                'error': 'Fichier source introuvable'
+            }
+        
+        # Obtenir le nom du fichier d'origine si aucun n'est spécifié
+        if not filename:
+            filename = os.path.basename(source_path)
+        
+        # Créer le répertoire de téléchargements s'il n'existe pas
+        downloads_dir = os.path.join(EXPORT_DIR, 'downloads')
+        os.makedirs(downloads_dir, exist_ok=True)
+        
+        # Chemin de destination
+        destination_path = os.path.join(downloads_dir, filename)
+        
+        # Copier le fichier
+        try:
+            shutil.copy2(source_path, destination_path)
+            
+            # Obtenir les métadonnées du fichier
+            file_stats = os.stat(destination_path)
+            file_size = file_stats.st_size
+            file_size_readable = self._get_readable_file_size(file_size)
+            modification_time = datetime.fromtimestamp(file_stats.st_mtime)
+            
+            return {
+                'success': True,
+                'path': destination_path,
+                'filename': filename,
+                'size': file_size_readable,
+                'date': modification_time.strftime('%d/%m/%Y %H:%M'),
+                'format': os.path.splitext(filename)[1][1:].upper()
+            }
+        except Exception as e:
+            logger.error(f"Erreur lors de la copie du fichier: {str(e)}")
+            return {
+                'success': False,
+                'error': f"Erreur lors de la copie du fichier: {str(e)}"
+            }
+    
+    def _get_readable_file_size(self, size_in_bytes: int) -> str:
+        """
+        Convertit une taille en octets en une chaîne de caractères lisible
+        
+        Args:
+            size_in_bytes: Taille en octets
+            
+        Returns:
+            str: Taille lisible avec unité
+        """
+        for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
+            if size_in_bytes < 1024.0 or unit == 'TB':
+                break
+            size_in_bytes /= 1024.0
+        return f"{size_in_bytes:.2f} {unit}"
 
 
 # Exemple d'utilisation
