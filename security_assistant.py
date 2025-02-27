@@ -42,8 +42,17 @@ class SecurityAssistant:
                 with open(history_path, 'r', encoding='utf-8') as f:
                     self.optimization_history = json.load(f)
                 logger.info(f"Historique de l'assistant chargé : {len(self.optimization_history)} entrées")
-        except Exception as e:
-            logger.error(f"Erreur lors du chargement de l'historique de l'assistant : {e}")
+        except FileNotFoundError as e:
+            logger.error(f"Fichier d'historique de l'assistant introuvable : {e}")
+            self.optimization_history = []
+        except json.JSONDecodeError as e:
+            logger.error(f"Format JSON invalide dans le fichier d'historique de l'assistant : {e}")
+            self.optimization_history = []
+        except PermissionError as e:
+            logger.error(f"Erreur de permission lors de la lecture du fichier d'historique : {e}")
+            self.optimization_history = []
+        except IOError as e:
+            logger.error(f"Erreur d'I/O lors de la lecture du fichier d'historique : {e}")
             self.optimization_history = []
     
     def save_history(self):
@@ -54,8 +63,14 @@ class SecurityAssistant:
             with open(history_path, 'w', encoding='utf-8') as f:
                 json.dump(self.optimization_history, f, indent=2)
             logger.info("Historique de l'assistant sauvegardé")
-        except Exception as e:
-            logger.error(f"Erreur lors de la sauvegarde de l'historique de l'assistant : {e}")
+        except FileNotFoundError as e:
+            logger.error(f"Erreur lors de la création du fichier d'historique : {e}")
+        except PermissionError as e:
+            logger.error(f"Erreur de permission lors de la sauvegarde de l'historique : {e}")
+        except TypeError as e:
+            logger.error(f"Erreur de type lors de la sérialisation de l'historique : {e}")
+        except IOError as e:
+            logger.error(f"Erreur d'I/O lors de la sauvegarde de l'historique : {e}")
     
     def generate_security_assessment(self, network_data: Dict[str, Any], wifi_networks: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
@@ -383,7 +398,11 @@ class SecurityAssistant:
                 try:
                     date = datetime.fromisoformat(entry['timestamp'].replace('Z', '+00:00'))
                     dates.append(date.strftime('%d/%m/%Y'))
-                except:
+                except ValueError as e:
+                    logger.warning(f"Format de date invalide: {e}")
+                    dates.append('Date inconnue')
+                except TypeError as e:
+                    logger.warning(f"Type de date invalide: {e}")
                     dates.append('Date inconnue')
         
         # Calculer l'évolution
