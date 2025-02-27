@@ -289,16 +289,26 @@ def register_routes(app):
     @app.route('/api/assistant/query', methods=['POST'])
     @login_required
     def assistant_query():
-        """API: Interroger l'assistant IA"""
-        user_input = request.json.get('query')
+        """API: Interroger l'assistant IA (route maintenue pour compatibilité)"""
+        return chatbot_query()
+        
+    @app.route('/api/chatbot', methods=['POST'])
+    @login_required
+    def chatbot_query():
+        """API: Interroger le chatbot d'assistant de cyberdéfense"""
+        user_input = request.json.get('query') or request.json.get('message')
         conversation_id = request.json.get('conversation_id')
         
         if not user_input:
             return jsonify({'error': 'Query is required'})
         
         # Récupérer les données réseau actuelles
-        with open('attached_assets/wifi_results.json', 'r') as f:
-            network_data = json.load(f)
+        try:
+            with open('attached_assets/wifi_results.json', 'r') as f:
+                network_data = json.load(f)
+        except Exception as e:
+            app.logger.error(f"Erreur lors de la lecture des données réseau: {e}")
+            network_data = {}
         
         # Générer une réponse
         response = assistant_securite.generate_response(
@@ -308,6 +318,20 @@ def register_routes(app):
         )
         
         return jsonify(response)
+        
+    @app.route('/api/chatbot/history', methods=['GET'])
+    @login_required
+    def chatbot_history():
+        """API: Récupérer l'historique des conversations"""
+        conversations = assistant_securite.get_all_conversations()
+        return jsonify(conversations)
+        
+    @app.route('/api/chatbot/conversation/<conversation_id>', methods=['GET'])
+    @login_required
+    def chatbot_conversation(conversation_id):
+        """API: Récupérer une conversation spécifique"""
+        conversation = assistant_securite.get_conversation_history(conversation_id)
+        return jsonify(conversation)
     
     # ======================================================
     # Routes pour l'analyse IA

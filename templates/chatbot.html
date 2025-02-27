@@ -1,83 +1,138 @@
 {% extends "base.html" %}
-{% block title %}Assistant Sécurité - Chatbot{% endblock %}
+{% block title %}Assistant IA de Cyberdéfense - NetSecure Pro{% endblock %}
 
 {% block content %}
-<div class="container py-4">
+<div class="container-fluid py-4">
     <div class="row">
-        <div class="col-lg-8 mx-auto">
-            <div class="card shadow-sm">
-                <div class="card-header bg-dark text-white">
+        <div class="col-lg-8">
+            <!-- Section principale du chatbot -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h4 class="mb-0">
-                        <i class="fas fa-robot me-2"></i>Assistant Sécurité
+                        <i class="fas fa-shield-alt me-2"></i>Assistant IA de Cyberdéfense
                     </h4>
+                    <div>
+                        <span class="badge bg-light text-primary" id="aiStatus">
+                            <i class="fas fa-microchip me-1"></i> IA active
+                        </span>
+                        <span class="badge bg-dark" id="threatLevel">
+                            <i class="fas fa-signal me-1"></i> Niveau de menace: Faible
+                        </span>
+                    </div>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-0">
                     <div class="chat-container" id="chatMessages">
                         <div class="chat-welcome mb-4 text-center">
-                            <div class="chat-avatar mx-auto mb-3">
-                                <i class="fas fa-shield-alt fa-3x text-primary"></i>
+                            <div class="chat-avatar-container mx-auto mb-3">
+                                <div class="chat-avatar">
+                                    <i class="fas fa-shield-alt fa-3x text-primary"></i>
+                                </div>
+                                <div class="pulse-ring"></div>
                             </div>
-                            <h5>Bienvenue sur l'Assistant de Sécurité Réseau</h5>
-                            <p class="text-muted">Je suis là pour répondre à vos questions concernant la sécurité de vos réseaux WiFi.</p>
+                            <h5>Assistant IA de Cyberdéfense</h5>
+                            <p class="text-muted px-4">
+                                Je suis votre assistant spécialisé en cybersécurité réseau. Posez-moi des questions sur les menaces, les vulnérabilités et les meilleures pratiques de sécurité pour vos réseaux WiFi.
+                            </p>
                         </div>
                         <!-- Les messages apparaîtront ici -->
                         <div id="messagesContainer">
                             <!-- Message initial du bot -->
                             <div class="chat-message bot-message">
+                                <div class="message-avatar">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
                                 <div class="message-content">
-                                    <p>Bonjour ! Je suis votre assistant de sécurité réseau. Comment puis-je vous aider aujourd'hui ?</p>
+                                    <p>Bonjour ! Je suis votre Assistant IA de Cyberdéfense. Comment puis-je vous aider aujourd'hui ? Vous pouvez me demander des informations sur la sécurité de vos réseaux, les menaces potentielles ou des conseils de protection.</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="card-footer">
+                <div class="card-footer bg-light">
                     <form id="chatForm" class="d-flex">
-                        <input type="text" id="userMessage" class="form-control me-2" placeholder="Posez votre question ici..." required>
+                        <input type="text" id="userMessage" class="form-control me-2" placeholder="Posez votre question sur la cybersécurité..." required>
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-paper-plane me-1"></i> Envoyer
                         </button>
                     </form>
                 </div>
             </div>
-            
-            <div class="card shadow-sm mt-4">
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Panneau latéral -->
+            <div class="card shadow-sm mb-4">
                 <div class="card-header bg-dark text-white">
                     <h5 class="mb-0">
-                        <i class="fas fa-lightbulb me-2"></i>Questions suggérées
+                        <i class="fas fa-lightbulb me-2"></i>Sujets de cybersécurité
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="suggestion-item" onclick="sendSuggestedQuestion('Comment améliorer la sécurité de mon réseau WiFi ?')">
-                                <i class="fas fa-wifi me-2 text-primary"></i> Comment améliorer la sécurité de mon réseau WiFi ?
-                            </div>
-                            <div class="suggestion-item" onclick="sendSuggestedQuestion('Quelle est la différence entre WPA2 et WPA3 ?')">
-                                <i class="fas fa-lock me-2 text-primary"></i> Quelle est la différence entre WPA2 et WPA3 ?
-                            </div>
+                    <div class="security-topics">
+                        <div class="security-topic" onclick="sendSuggestedQuestion('Quelles sont les principales menaces WiFi actuelles ?')">
+                            <i class="fas fa-radiation me-2 text-danger"></i> Menaces WiFi actuelles
                         </div>
-                        <div class="col-md-6">
-                            <div class="suggestion-item" onclick="sendSuggestedQuestion('Comment créer un mot de passe WiFi sécurisé ?')">
-                                <i class="fas fa-key me-2 text-primary"></i> Comment créer un mot de passe WiFi sécurisé ?
-                            </div>
-                            <div class="suggestion-item" onclick="sendSuggestedQuestion('Mon réseau est-il vulnérable aux attaques ?')">
-                                <i class="fas fa-shield-virus me-2 text-primary"></i> Mon réseau est-il vulnérable aux attaques ?
-                            </div>
+                        <div class="security-topic" onclick="sendSuggestedQuestion('Comment se protéger contre une attaque Evil Twin ?')">
+                            <i class="fas fa-clone me-2 text-warning"></i> Attaques Evil Twin
+                        </div>
+                        <div class="security-topic" onclick="sendSuggestedQuestion('Pourquoi WPA3 est-il plus sécurisé que WPA2 ?')">
+                            <i class="fas fa-lock me-2 text-success"></i> Sécurité WPA3 vs WPA2
+                        </div>
+                        <div class="security-topic" onclick="sendSuggestedQuestion('Comment configurer la segmentation réseau pour les appareils IoT ?')">
+                            <i class="fas fa-project-diagram me-2 text-info"></i> Segmentation réseau
+                        </div>
+                        <div class="security-topic" onclick="sendSuggestedQuestion('Comment générer et gérer des mots de passe WiFi robustes ?')">
+                            <i class="fas fa-key me-2 text-primary"></i> Mots de passe robustes
+                        </div>
+                        <div class="security-topic" onclick="sendSuggestedQuestion('Quelles sont les meilleures pratiques pour sécuriser mon réseau domestique ?')">
+                            <i class="fas fa-home me-2 text-secondary"></i> Sécurité réseau domestique
                         </div>
                     </div>
                 </div>
             </div>
             
-            <div class="card shadow-sm mt-4">
-                <div class="card-header bg-dark text-white">
+            <!-- Module de menaces détectées -->
+            <div class="card shadow-sm mb-4 threat-card">
+                <div class="card-header bg-danger text-white">
                     <h5 class="mb-0">
-                        <i class="fas fa-history me-2"></i>Historique des conversations
+                        <i class="fas fa-exclamation-triangle me-2"></i>Menaces potentielles
                     </h5>
                 </div>
-                <div class="card-body conversation-history" id="conversationHistory">
+                <div class="card-body">
+                    <div id="threatList">
+                        <div class="threat-item">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-wifi me-2"></i> WPA2-KRACK</span>
+                                <span class="badge bg-warning">Moyen</span>
+                            </div>
+                            <p class="text-muted small mb-0">Key Reinstallation AttaCK - Vulnérabilité WPA2</p>
+                            <button class="btn btn-sm btn-outline-danger mt-1" onclick="sendSuggestedQuestion('Comment me protéger contre KRACK Attack ?')">Plus d'infos</button>
+                        </div>
+                        <div class="threat-item">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-user-secret me-2"></i> Evil Twin</span>
+                                <span class="badge bg-danger">Élevé</span>
+                            </div>
+                            <p class="text-muted small mb-0">Points d'accès malveillants imitant votre réseau</p>
+                            <button class="btn btn-sm btn-outline-danger mt-1" onclick="sendSuggestedQuestion('Comment détecter un Evil Twin sur mon réseau ?')">Plus d'infos</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Historique des conversations -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>Historique
+                    </h5>
+                    <button class="btn btn-sm btn-outline-light" id="clearHistoryBtn">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+                <div class="card-body conversation-history p-0" id="conversationHistory">
                     <!-- L'historique des conversations sera chargé ici -->
-                    <p class="text-center text-muted" id="noHistoryMessage">Aucune conversation précédente</p>
+                    <p class="text-center text-muted py-3" id="noHistoryMessage">Aucune conversation précédente</p>
                 </div>
             </div>
         </div>
@@ -87,91 +142,182 @@
 
 {% block styles %}
 <style>
+    /* Conteneur principal du chat */
     .chat-container {
-        max-height: 400px;
+        max-height: 500px;
         overflow-y: auto;
         padding: 1rem;
+        background-color: #f9f9fc;
+        border-radius: 0 0 0.25rem 0.25rem;
     }
     
+    /* Message dans le chat */
     .chat-message {
         display: flex;
-        margin-bottom: 1rem;
+        margin-bottom: 1.5rem;
         animation: fadeIn 0.3s ease-in-out;
+        position: relative;
     }
     
+    /* Message de l'utilisateur */
     .user-message {
         justify-content: flex-end;
     }
     
+    /* Avatar des messages */
+    .message-avatar {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        background-color: #0d6efd;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 10px;
+    }
+    
+    .user-message .message-avatar {
+        background-color: #6c757d;
+        order: 2;
+        margin-right: 0;
+        margin-left: 10px;
+    }
+    
+    /* Contenu du message */
     .message-content {
         max-width: 80%;
         padding: 0.75rem 1rem;
         border-radius: 1rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
     
     .bot-message .message-content {
-        background-color: #f1f1f1;
+        background-color: white;
         border-top-left-radius: 0;
+        border-left: 4px solid #0d6efd;
     }
     
     .user-message .message-content {
         background-color: #007bff;
         color: white;
         border-top-right-radius: 0;
+        text-align: right;
     }
     
-    .suggestion-item {
+    /* Animation de l'avatar du chatbot */
+    .chat-avatar-container {
+        position: relative;
+        width: 80px;
+        height: 80px;
+    }
+    
+    .pulse-ring {
+        position: absolute;
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background-color: rgba(13, 110, 253, 0.2);
+        top: 0;
+        left: 0;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% {
+            transform: scale(0.95);
+            opacity: 0.7;
+        }
+        70% {
+            transform: scale(1.1);
+            opacity: 0.2;
+        }
+        100% {
+            transform: scale(0.95);
+            opacity: 0.7;
+        }
+    }
+    
+    /* Thèmes de cybersécurité */
+    .security-topics {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .security-topic {
         padding: 0.75rem;
         margin-bottom: 0.5rem;
         background-color: #f8f9fa;
         border-radius: 0.5rem;
         cursor: pointer;
         transition: all 0.2s;
+        border-left: 3px solid #dee2e6;
     }
     
-    .suggestion-item:hover {
+    .security-topic:hover {
         background-color: #e9ecef;
         transform: translateY(-2px);
+        border-left-color: #0d6efd;
     }
     
+    /* Menaces détectées */
+    .threat-card {
+        border-left: 4px solid #dc3545;
+    }
+    
+    .threat-item {
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+        background-color: rgba(220, 53, 69, 0.05);
+        border-radius: 0.5rem;
+        border: 1px solid rgba(220, 53, 69, 0.2);
+    }
+    
+    /* Historique des conversations */
     .conversation-history {
-        max-height: 200px;
+        max-height: 300px;
         overflow-y: auto;
     }
     
-    .chat-avatar {
-        width: 60px;
-        height: 60px;
-        background-color: #f1f1f1;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    .conversation-item {
+        cursor: pointer;
+        transition: all 0.2s;
+        padding: 10px 15px;
+        border-bottom: 1px solid #eee;
     }
     
+    .conversation-item:hover {
+        background-color: rgba(13, 110, 253, 0.05);
+    }
+    
+    /* Animation d'apparition */
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
     }
     
-    /* Loading dots animation */
+    /* Indicateur de frappe */
     .typing-indicator {
         display: flex;
         padding: 0.5rem 1rem;
-        background-color: #f1f1f1;
+        background-color: white;
         border-radius: 1rem;
         border-top-left-radius: 0;
         margin-bottom: 1rem;
         width: fit-content;
+        border-left: 4px solid #0d6efd;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
     
     .typing-indicator span {
         height: 8px;
         width: 8px;
-        background-color: #888;
+        background-color: #0d6efd;
         border-radius: 50%;
         display: inline-block;
         margin-right: 5px;
+        opacity: 0.7;
     }
     
     .typing-indicator span:nth-child(1) {
@@ -196,6 +342,10 @@
 
 {% block scripts %}
 <script>
+    /**
+     * Assistant IA de Cyberdéfense - Fonctionnalités JavaScript avancées
+     */
+    
     // Fonction globale pour envoyer une question suggérée
     function sendSuggestedQuestion(question) {
         document.getElementById('userMessage').value = question;
@@ -203,40 +353,285 @@
     }
     
     document.addEventListener('DOMContentLoaded', function() {
+        // Éléments DOM
         const chatForm = document.getElementById('chatForm');
         const userMessageInput = document.getElementById('userMessage');
         const messagesContainer = document.getElementById('messagesContainer');
         const chatContainer = document.getElementById('chatMessages');
         const conversationHistoryContainer = document.getElementById('conversationHistory');
         const noHistoryMessage = document.getElementById('noHistoryMessage');
+        const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+        const aiStatusBadge = document.getElementById('aiStatus');
+        const threatLevelBadge = document.getElementById('threatLevel');
         
+        // État global
         let conversationId = null;
+        let typingDelay = { min: 500, max: 1500 }; // Délai simulé de frappe (ms)
+        let threatLevel = 'low'; // Niveau de menace initial
+        let securityScore = 65; // Score de sécurité initial
         
         // Chargement de l'historique des conversations
         loadConversationHistory();
         
-        // Gestionnaire de soumission du formulaire
-        chatForm.addEventListener('submit', function(event) {
+        // Simuler une analyse initiale du niveau de menace
+        setTimeout(updateThreatLevel, 3000);
+        
+        // Initialiser les écouteurs d'événements
+        initEventListeners();
+        
+        /**
+         * Initialise les écouteurs d'événements pour l'interface
+         */
+        function initEventListeners() {
+            // Soumission du formulaire
+            chatForm.addEventListener('submit', handleChatFormSubmit);
+            
+            // Effacer l'historique des conversations
+            clearHistoryBtn.addEventListener('click', function() {
+                if (confirm('Voulez-vous vraiment effacer tout l\'historique des conversations ?')) {
+                    // Dans une implémentation complète, il faudrait appeler une API pour effacer l'historique
+                    conversationHistoryContainer.innerHTML = '';
+                    noHistoryMessage.style.display = 'block';
+                    showNotification('Historique des conversations effacé', 'info');
+                }
+            });
+            
+            // Focus sur le champ de saisie au chargement
+            userMessageInput.focus();
+            
+            // Raccourcis clavier
+            document.addEventListener('keydown', function(e) {
+                // Ctrl+/ pour afficher les commandes disponibles
+                if (e.ctrlKey && e.key === '/') {
+                    e.preventDefault();
+                    showCommandsHelp();
+                }
+            });
+        }
+        
+        /**
+         * Gère la soumission du formulaire de chat
+         */
+        function handleChatFormSubmit(event) {
             event.preventDefault();
             
             const userMessage = userMessageInput.value.trim();
             if (userMessage) {
+                // Vérifier s'il s'agit d'une commande spéciale
+                if (userMessage.startsWith('/')) {
+                    handleSpecialCommand(userMessage);
+                    return;
+                }
+                
+                // Ajouter le message de l'utilisateur à l'interface
                 addUserMessage(userMessage);
                 userMessageInput.value = '';
                 
-                // Afficher l'indicateur de chargement
+                // Simuler l'analyse de la requête (mise à jour du niveau de menace)
+                analyzeQuery(userMessage);
+                
+                // Afficher l'indicateur de frappe
                 showTypingIndicator();
                 
-                // Envoyer le message au serveur
-                sendMessageToBot(userMessage);
+                // Attendre un délai aléatoire pour simuler la frappe
+                const typingTime = Math.floor(Math.random() * (typingDelay.max - typingDelay.min)) + typingDelay.min;
+                setTimeout(() => {
+                    // Envoyer le message au serveur
+                    sendMessageToBot(userMessage);
+                }, typingTime);
             }
-        });
+        }
         
-        // Fonction pour ajouter un message de l'utilisateur
+        /**
+         * Traite les commandes spéciales commençant par "/"
+         */
+        function handleSpecialCommand(command) {
+            const cmd = command.toLowerCase();
+            
+            if (cmd === '/help' || cmd === '/aide') {
+                showCommandsHelp();
+                userMessageInput.value = '';
+            } 
+            else if (cmd === '/clear' || cmd === '/effacer') {
+                messagesContainer.innerHTML = '';
+                addSystemMessage('L\'historique de conversation a été effacé.');
+                userMessageInput.value = '';
+            }
+            else if (cmd === '/analyze' || cmd === '/analyser') {
+                userMessageInput.value = '';
+                addUserMessage(command);
+                showTypingIndicator();
+                
+                // Simuler une analyse de sécurité
+                setTimeout(() => {
+                    removeTypingIndicator();
+                    const securityReport = generateSecurityReport();
+                    addBotMessage(securityReport);
+                }, 2000);
+            }
+            else if (cmd === '/status' || cmd === '/statut') {
+                userMessageInput.value = '';
+                addUserMessage(command);
+                showTypingIndicator();
+                
+                // Simuler un rapport de statut
+                setTimeout(() => {
+                    removeTypingIndicator();
+                    const statusReport = `
+                        <div class="status-report">
+                            <h5 class="mb-3">État du système de cyberdéfense</h5>
+                            <ul class="list-group">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Module d'analyse IA
+                                    <span class="badge bg-success">Actif</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Niveau de menace
+                                    <span class="badge bg-${threatLevel === 'high' ? 'danger' : threatLevel === 'medium' ? 'warning' : 'info'}">${threatLevel.toUpperCase()}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Base de données des menaces
+                                    <span class="badge bg-success">À jour</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Score de sécurité
+                                    <span class="badge bg-${securityScore > 70 ? 'success' : securityScore > 50 ? 'warning' : 'danger'}">${securityScore}/100</span>
+                                </li>
+                            </ul>
+                        </div>
+                    `;
+                    addBotMessage(statusReport);
+                }, 1500);
+            }
+            else {
+                // Commande inconnue
+                addSystemMessage(`Commande inconnue: ${command}. Tapez /help pour voir les commandes disponibles.`);
+                userMessageInput.value = '';
+            }
+        }
+        
+        /**
+         * Affiche l'aide sur les commandes disponibles
+         */
+        function showCommandsHelp() {
+            const helpContent = `
+                <div class="command-help">
+                    <h5 class="mb-3">Commandes de l'Assistant de Cyberdéfense</h5>
+                    <ul class="list-group">
+                        <li class="list-group-item"><code>/help</code> ou <code>/aide</code> - Affiche cette aide</li>
+                        <li class="list-group-item"><code>/clear</code> ou <code>/effacer</code> - Efface la conversation actuelle</li>
+                        <li class="list-group-item"><code>/analyze</code> ou <code>/analyser</code> - Lance une analyse de sécurité</li>
+                        <li class="list-group-item"><code>/status</code> ou <code>/statut</code> - Affiche l'état du système</li>
+                    </ul>
+                    <p class="mt-3 mb-0">Vous pouvez également poser des questions en langage naturel sur la sécurité réseau.</p>
+                </div>
+            `;
+            addSystemMessage(helpContent);
+        }
+        
+        /**
+         * Génère un rapport de sécurité fictif
+         */
+        function generateSecurityReport() {
+            return `
+                <div class="security-report">
+                    <h5 class="mb-3">Rapport d'Analyse de Sécurité</h5>
+                    
+                    <div class="mb-3">
+                        <h6>Score Global: ${securityScore}/100</h6>
+                        <div class="progress">
+                            <div class="progress-bar bg-${securityScore > 70 ? 'success' : securityScore > 50 ? 'warning' : 'danger'}" 
+                                role="progressbar" 
+                                style="width: ${securityScore}%" 
+                                aria-valuenow="${securityScore}" 
+                                aria-valuemin="0" 
+                                aria-valuemax="100">
+                                ${securityScore}%
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h6>Vulnérabilités détectées:</h6>
+                    <ul class="list-group mb-3">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Protocole WPA2 vulnérable à KRACK
+                            <span class="badge bg-warning">Moyen</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Plusieurs points d'accès avec le même SSID détectés
+                            <span class="badge bg-danger">Élevé</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            WPS activé sur le routeur principal
+                            <span class="badge bg-danger">Élevé</span>
+                        </li>
+                    </ul>
+                    
+                    <h6>Recommandations:</h6>
+                    <ol class="mb-0">
+                        <li>Mettre à jour le firmware du routeur pour corriger la vulnérabilité KRACK</li>
+                        <li>Désactiver WPS sur tous les appareils réseau</li>
+                        <li>Vérifier et identifier les points d'accès potentiellement malveillants</li>
+                        <li>Migrer vers WPA3 si votre matériel le supporte</li>
+                    </ol>
+                </div>
+            `;
+        }
+        
+        /**
+         * Analyse une requête utilisateur pour mettre à jour le niveau de menace
+         */
+        function analyzeQuery(query) {
+            // Mots-clés de sécurité qui pourraient indiquer des préoccupations élevées
+            const highSecurityKeywords = ['piratage', 'hacked', 'compromis', 'attack', 'attaque', 'evil twin', 'krack'];
+            const mediumSecurityKeywords = ['vulnérabilité', 'faiblesse', 'security', 'sécurité', 'wep', 'wpa'];
+            
+            // Vérifier si la requête contient des mots-clés de haute sécurité
+            if (highSecurityKeywords.some(keyword => query.toLowerCase().includes(keyword))) {
+                updateThreatLevel('high');
+            } 
+            // Vérifier si la requête contient des mots-clés de sécurité moyenne
+            else if (mediumSecurityKeywords.some(keyword => query.toLowerCase().includes(keyword))) {
+                updateThreatLevel('medium');
+            }
+        }
+        
+        /**
+         * Met à jour le niveau de menace affiché
+         */
+        function updateThreatLevel(level) {
+            if (level) {
+                threatLevel = level;
+            } else {
+                // Simulation aléatoire du niveau de menace pour la démo
+                const rand = Math.random();
+                if (rand < 0.7) {
+                    threatLevel = 'low';
+                } else if (rand < 0.9) {
+                    threatLevel = 'medium';
+                } else {
+                    threatLevel = 'high';
+                }
+            }
+            
+            // Mettre à jour le badge
+            const threatText = threatLevel === 'high' ? 'Élevé' : threatLevel === 'medium' ? 'Moyen' : 'Faible';
+            const threatClass = threatLevel === 'high' ? 'bg-danger' : threatLevel === 'medium' ? 'bg-warning' : 'bg-dark';
+            
+            threatLevelBadge.className = `badge ${threatClass}`;
+            threatLevelBadge.innerHTML = `<i class="fas fa-signal me-1"></i> Niveau de menace: ${threatText}`;
+        }
+        
+        /**
+         * Ajoute un message de l'utilisateur dans l'interface
+         */
         function addUserMessage(message) {
             const messageElement = document.createElement('div');
             messageElement.classList.add('chat-message', 'user-message');
             messageElement.innerHTML = `
+                <div class="message-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
                 <div class="message-content">
                     <p>${escapeHtml(message)}</p>
                 </div>
@@ -245,7 +640,9 @@
             scrollToBottom();
         }
         
-        // Fonction pour ajouter un message du bot
+        /**
+         * Ajoute un message du bot dans l'interface
+         */
         function addBotMessage(message) {
             // Supprimer l'indicateur de chargement
             removeTypingIndicator();
@@ -253,6 +650,9 @@
             const messageElement = document.createElement('div');
             messageElement.classList.add('chat-message', 'bot-message');
             messageElement.innerHTML = `
+                <div class="message-avatar">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
                 <div class="message-content">
                     <p>${message}</p>
                 </div>
@@ -261,34 +661,61 @@
             scrollToBottom();
         }
         
-        // Fonction pour afficher l'indicateur de chargement
+        /**
+         * Ajoute un message système (neutres, informations)
+         */
+        function addSystemMessage(message) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('chat-message', 'system-message');
+            messageElement.innerHTML = `
+                <div class="message-content system-content">
+                    ${message}
+                </div>
+            `;
+            messagesContainer.appendChild(messageElement);
+            scrollToBottom();
+        }
+        
+        /**
+         * Affiche l'indicateur de chargement (trois points)
+         */
         function showTypingIndicator() {
             const indicatorElement = document.createElement('div');
-            indicatorElement.classList.add('typing-indicator');
-            indicatorElement.id = 'typingIndicator';
+            indicatorElement.classList.add('chat-message', 'bot-message');
             indicatorElement.innerHTML = `
-                <span></span>
-                <span></span>
-                <span></span>
+                <div class="message-avatar">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="typing-indicator" id="typingIndicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
             `;
             messagesContainer.appendChild(indicatorElement);
             scrollToBottom();
         }
         
-        // Fonction pour supprimer l'indicateur de chargement
+        /**
+         * Supprime l'indicateur de chargement
+         */
         function removeTypingIndicator() {
-            const indicator = document.getElementById('typingIndicator');
+            const indicator = document.querySelector('.bot-message:last-child .typing-indicator');
             if (indicator) {
-                indicator.remove();
+                indicator.closest('.chat-message').remove();
             }
         }
         
-        // Fonction pour faire défiler vers le bas
+        /**
+         * Fait défiler la fenêtre de chat vers le bas
+         */
         function scrollToBottom() {
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
         
-        // Fonction pour envoyer le message au serveur
+        /**
+         * Envoie un message au serveur backend
+         */
         function sendMessageToBot(message) {
             fetch('/api/chatbot', {
                 method: 'POST',
@@ -300,23 +727,30 @@
                     conversation_id: conversationId
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erreur serveur: ' + response.status);
+                }
+                return response.json();
+            })
             .then(data => {
                 addBotMessage(data.response);
                 conversationId = data.conversation_id;
                 
-                // Mettre à jour l'historique des conversations
-                if (!conversationId) {
-                    loadConversationHistory();
+                // Mettre à jour l'historique des conversations après la première réponse
+                if (!conversationId || message === 'Bonjour') {
+                    setTimeout(loadConversationHistory, 500);
                 }
             })
             .catch(error => {
                 console.error('Erreur lors de l\'envoi du message:', error);
-                addBotMessage('Désolé, une erreur s\'est produite. Veuillez réessayer.');
+                addBotMessage('Désolé, une erreur s\'est produite lors de la communication avec le serveur. Veuillez réessayer.');
             });
         }
         
-        // Fonction pour échapper les caractères HTML
+        /**
+         * Échappe les caractères HTML dangereux
+         */
         function escapeHtml(unsafe) {
             return unsafe
                 .replace(/&/g, "&amp;")
@@ -326,10 +760,17 @@
                 .replace(/'/g, "&#039;");
         }
         
-        // Fonction pour charger l'historique des conversations
+        /**
+         * Charge l'historique des conversations depuis le serveur
+         */
         function loadConversationHistory() {
             fetch('/api/chatbot/history')
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erreur serveur: ' + response.status);
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.length > 0) {
                     noHistoryMessage.style.display = 'none';
@@ -337,7 +778,7 @@
                     conversationHistoryContainer.innerHTML = '';
                     data.forEach(conversation => {
                         const conversationElement = document.createElement('div');
-                        conversationElement.classList.add('conversation-item', 'mb-2', 'p-2', 'border-bottom');
+                        conversationElement.classList.add('conversation-item');
                         
                         // Convertir le format de date YYYYMMDD en format plus lisible
                         const year = conversation.date.substring(0, 4);
@@ -370,13 +811,21 @@
             })
             .catch(error => {
                 console.error('Erreur lors du chargement de l\'historique:', error);
+                showNotification('Impossible de charger l\'historique des conversations', 'error');
             });
         }
         
-        // Fonction pour charger une conversation existante
+        /**
+         * Charge une conversation existante
+         */
         function loadConversation(id) {
             fetch(`/api/chatbot/conversation/${id}`)
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erreur serveur: ' + response.status);
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.length > 0) {
                     conversationId = id;
@@ -389,12 +838,98 @@
                         // Ajouter la réponse du bot
                         addBotMessage(message.response);
                     });
+                    
+                    showNotification('Conversation chargée avec succès', 'success');
                 }
             })
             .catch(error => {
                 console.error('Erreur lors du chargement de la conversation:', error);
+                showNotification('Impossible de charger la conversation', 'error');
             });
         }
+        
+        /**
+         * Affiche une notification à l'utilisateur
+         */
+        function showNotification(message, type = 'info') {
+            // Créer l'élément de notification
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.innerText = message;
+            
+            // Ajouter au DOM
+            document.body.appendChild(notification);
+            
+            // Animation d'entrée
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 10);
+            
+            // Animation de sortie
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }
     });
+
+    // Ajouter des styles dynamiquement pour les notifications
+    (function() {
+        const style = document.createElement('style');
+        style.textContent = `
+            .notification {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                padding: 12px 20px;
+                border-radius: 4px;
+                color: white;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+                transform: translateY(100px);
+                opacity: 0;
+                transition: all 0.3s ease;
+                z-index: 1000;
+            }
+            .notification.show {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            .notification-info {
+                background-color: #0d6efd;
+            }
+            .notification-success {
+                background-color: #198754;
+            }
+            .notification-warning {
+                background-color: #ffc107;
+                color: #212529;
+            }
+            .notification-error {
+                background-color: #dc3545;
+            }
+            .system-content {
+                background-color: #f8f9fa;
+                border: 1px solid #dee2e6;
+                width: 100%;
+                text-align: center;
+                box-shadow: none;
+            }
+            .status-report, .security-report, .command-help {
+                background-color: #f8f9fa;
+                border-radius: 4px;
+                padding: 0.5rem;
+                border-left: 4px solid #0d6efd;
+            }
+            .security-report {
+                border-left-color: #dc3545;
+            }
+            .command-help {
+                border-left-color: #6c757d;
+            }
+        `;
+        document.head.appendChild(style);
+    })();
 </script>
 {% endblock %}
