@@ -1,0 +1,901 @@
+{% extends "layout.html" %}
+
+{% block title %}Gestion des Clones IA{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-robot me-2"></i>Gestion des Clones IA
+                    </h5>
+                    <button class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#createCloneModal">
+                        <i class="fas fa-plus me-1"></i>Nouveau Clone
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Clones IA</strong> - Les clones IA sont des instances autonomes qui analysent et optimisent votre réseau en continu. Chaque clone a une spécialité différente et peut fonctionner en parallèle avec les autres.
+                    </div>
+
+                    <!-- Tableau de bord des clones actifs -->
+                    <h5 class="mb-3">Clones Actifs</h5>
+                    {% if clones.active %}
+                        <div class="row">
+                            {% for clone in clones.active %}
+                                <div class="col-md-4 mb-4">
+                                    <div class="card h-100 border-{{ clone.type == 'auto_repair' and 'primary' or clone.type == 'security_optimizer' and 'danger' or 'warning' }}">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <h6 class="mb-0">
+                                                <i class="fas fa-robot me-2"></i>{{ clone.name or clone.id }}
+                                            </h6>
+                                            <span class="badge bg-success pulse-animation">Actif</span>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between mb-3">
+                                                <span class="badge bg-{{ clone.type == 'auto_repair' and 'primary' or clone.type == 'security_optimizer' and 'danger' or 'warning' }}">
+                                                    {{ clone.type|replace('_', ' ')|capitalize }}
+                                                </span>
+                                                <small class="text-muted">ID: {{ clone.id }}</small>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <div class="mb-1 d-flex justify-content-between">
+                                                    <span>Progression du scan:</span>
+                                                    <span>{{ clone.scan_progress }}%</span>
+                                                </div>
+                                                <div class="progress" style="height: 8px;">
+                                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-{{ clone.type == 'auto_repair' and 'primary' or clone.type == 'security_optimizer' and 'danger' or 'warning' }}" role="progressbar" style="width: {{ clone.scan_progress }}%;" aria-valuenow="{{ clone.scan_progress }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                                </div>
+                                            </div>
+
+                                            <div class="clone-stats mb-3">
+                                                <div class="row text-center">
+                                                    <div class="col-4">
+                                                        <div class="stat-value">{{ clone.detected_errors_count }}</div>
+                                                        <div class="stat-label">Erreurs</div>
+                                                    </div>
+                                                    <div class="col-4">
+                                                        <div class="stat-value">{{ clone.corrections_count }}</div>
+                                                        <div class="stat-label">Corrections</div>
+                                                    </div>
+                                                    <div class="col-4">
+                                                        <div class="stat-value">{{ clone.scan_count }}</div>
+                                                        <div class="stat-label">Scans</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <ul class="list-group list-group-flush mb-3">
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <span><i class="fas fa-calendar-alt me-2"></i>Créé le:</span>
+                                                    <span>{{ clone.created_at|datetime }}</span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <span><i class="fas fa-clock me-2"></i>Dernière activité:</span>
+                                                    <span>{{ clone.last_activity_at|datetime }}</span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <span><i class="fas fa-sync-alt me-2"></i>Intervalle de scan:</span>
+                                                    <span>{{ clone.scan_interval }} min</span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <span><i class="fas fa-magic me-2"></i>Auto-correction:</span>
+                                                    <span>
+                                                        {% if clone.auto_correct %}
+                                                            <i class="fas fa-check text-success"></i>
+                                                        {% else %}
+                                                            <i class="fas fa-times text-danger"></i>
+                                                        {% endif %}
+                                                    </span>
+                                                </li>
+                                            </ul>
+
+                                            <div class="clone-actions d-flex justify-content-between">
+                                                <button class="btn btn-primary clone-status-btn" data-clone-id="{{ clone.id }}" data-bs-toggle="modal" data-bs-target="#cloneStatusModal">
+                                                    <i class="fas fa-info-circle me-1"></i>Statut
+                                                </button>
+                                                <button class="btn btn-warning clone-auto-correct-btn" data-clone-id="{{ clone.id }}">
+                                                    <i class="fas fa-magic me-1"></i>Correction
+                                                </button>
+                                                <button class="btn btn-outline-danger clone-stop-btn" data-clone-id="{{ clone.id }}">
+                                                    <i class="fas fa-stop me-1"></i>Arrêter
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Aucun clone IA n'est actuellement actif.
+                        </div>
+                        <div class="text-center my-4">
+                            <button class="btn btn-lg btn-primary" data-bs-toggle="modal" data-bs-target="#createCloneModal">
+                                <i class="fas fa-plus me-2"></i>Créer votre premier clone IA
+                            </button>
+                        </div>
+                    {% endif %}
+
+                    <!-- Historique des clones -->
+                    {% if clones.history %}
+                        <h5 class="mt-5 mb-3">Historique des Clones</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nom</th>
+                                        <th>Type</th>
+                                        <th>Créé le</th>
+                                        <th>Arrêté le</th>
+                                        <th>Durée d'activité</th>
+                                        <th>Erreurs détectées</th>
+                                        <th>Corrections</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for clone in clones.history %}
+                                        <tr>
+                                            <td>
+                                                <span class="d-inline-block text-truncate" style="max-width: 150px;" title="{{ clone.id }}">
+                                                    {{ clone.id }}
+                                                </span>
+                                            </td>
+                                            <td>{{ clone.name or 'Non nommé' }}</td>
+                                            <td>
+                                                <span class="badge bg-{{ clone.type == 'auto_repair' and 'primary' or clone.type == 'security_optimizer' and 'danger' or 'warning' }}">
+                                                    {{ clone.type|replace('_', ' ')|capitalize }}
+                                                </span>
+                                            </td>
+                                            <td>{{ clone.created_at|datetime }}</td>
+                                            <td>{{ clone.stopped_at|datetime }}</td>
+                                            <td>{{ (clone.stopped_at - clone.created_at).total_seconds() // 60 }} minutes</td>
+                                            <td>{{ clone.detected_errors_count }}</td>
+                                            <td>{{ clone.corrections_count }}</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary clone-recreate-btn" data-clone-type="{{ clone.type }}" data-clone-config="{{ clone.config|tojson|escape }}">
+                                                    <i class="fas fa-clone me-1"></i>Recréer
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-secondary clone-details-btn" data-clone-id="{{ clone.id }}" data-bs-toggle="modal" data-bs-target="#cloneDetailsModal">
+                                                    <i class="fas fa-info-circle me-1"></i>Détails
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+
+                    <!-- Comparaison des types de clones -->
+                    <h5 class="mt-5 mb-3">Types de Clones IA</h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Type de Clone</th>
+                                    <th>Description</th>
+                                    <th>Spécialité</th>
+                                    <th>Utilisation recommandée</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-primary">Auto-réparation</span>
+                                    </td>
+                                    <td>Détecte et répare automatiquement les problèmes réseau</td>
+                                    <td>Correction d'erreurs, rétablissement des connexions</td>
+                                    <td>Pour une maintenance générale et proactive du réseau</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-danger">Optimiseur de sécurité</span>
+                                    </td>
+                                    <td>Se concentre sur l'identification et la résolution des vulnérabilités de sécurité</td>
+                                    <td>Analyse des failles, détection d'intrusion, renforcement des protocoles</td>
+                                    <td>Pour les réseaux nécessitant une sécurité renforcée</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-warning">Optimiseur de performance</span>
+                                    </td>
+                                    <td>Analyse et optimise les performances du réseau</td>
+                                    <td>Réduction de la latence, optimisation de la bande passante</td>
+                                    <td>Pour les réseaux avec des besoins élevés en performance</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modales -->
+<!-- Modal de création de clone -->
+<div class="modal fade" id="createCloneModal" tabindex="-1" aria-labelledby="createCloneModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createCloneModalLabel">Créer un nouveau clone IA</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createCloneForm">
+                    <div class="mb-3">
+                        <label for="cloneType" class="form-label">Type de clone</label>
+                        <select class="form-select" id="cloneType" name="cloneType" required>
+                            <option value="auto_repair">Auto-réparation</option>
+                            <option value="security_optimizer">Optimiseur de sécurité</option>
+                            <option value="performance_tuner">Optimiseur de performance</option>
+                        </select>
+                        <div class="form-text">
+                            <span id="cloneTypeDescription">
+                                Détecte et répare automatiquement les problèmes réseau.
+                            </span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="cloneName" class="form-label">Nom du clone (optionnel)</label>
+                        <input type="text" class="form-control" id="cloneName" name="cloneName" placeholder="Ex: Clone de maintenance">
+                    </div>
+                    <div class="mb-3">
+                        <label for="scanInterval" class="form-label">Intervalle de scan (minutes)</label>
+                        <input type="number" class="form-control" id="scanInterval" name="scanInterval" min="5" max="60" value="15">
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="autoCorrect" name="autoCorrect">
+                        <label class="form-check-label" for="autoCorrect">Correction automatique</label>
+                        <div class="form-text">
+                            Si activé, le clone appliquera automatiquement les corrections sans intervention manuelle.
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="focusAreas" class="form-label">Zones de focus (optionnel)</label>
+                        <select class="form-select" id="focusAreas" name="focusAreas" multiple>
+                            <option value="wifi">Réseaux WiFi</option>
+                            <option value="devices">Appareils connectés</option>
+                            <option value="protocols">Protocoles réseau</option>
+                            <option value="encryption">Chiffrement et sécurité</option>
+                            <option value="performance">Performance</option>
+                        </select>
+                        <div class="form-text">
+                            Maintenez Ctrl (ou Cmd) pour sélectionner plusieurs zones. Si rien n'est sélectionné, le clone analysera toutes les zones.
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="createCloneSubmitBtn">Créer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de statut du clone -->
+<div class="modal fade" id="cloneStatusModal" tabindex="-1" aria-labelledby="cloneStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cloneStatusModalLabel">Statut du Clone IA</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="cloneStatusContent">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                        <p class="mt-2">Récupération des données du clone...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                <button type="button" class="btn btn-primary" id="refreshCloneStatusBtn">
+                    <i class="fas fa-sync-alt me-1"></i>Actualiser
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de détails du clone historique -->
+<div class="modal fade" id="cloneDetailsModal" tabindex="-1" aria-labelledby="cloneDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cloneDetailsModalLabel">Détails du Clone IA</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="cloneDetailsContent">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                        <p class="mt-2">Récupération des détails du clone...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+.pulse-animation {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+    }
+}
+
+.clone-stats .stat-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.clone-stats .stat-label {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestionnaire pour le type de clone
+    const cloneTypeSelect = document.getElementById('cloneType');
+    const cloneTypeDescription = document.getElementById('cloneTypeDescription');
+    
+    if (cloneTypeSelect && cloneTypeDescription) {
+        cloneTypeSelect.addEventListener('change', function() {
+            switch(this.value) {
+                case 'auto_repair':
+                    cloneTypeDescription.textContent = 'Détecte et répare automatiquement les problèmes réseau.';
+                    break;
+                case 'security_optimizer':
+                    cloneTypeDescription.textContent = 'Se concentre sur l\'optimisation de la sécurité du réseau et des appareils.';
+                    break;
+                case 'performance_tuner':
+                    cloneTypeDescription.textContent = 'Optimise les performances du réseau et réduit la latence.';
+                    break;
+            }
+        });
+    }
+
+    // Gestion de la création d'un clone
+    const createCloneSubmitBtn = document.getElementById('createCloneSubmitBtn');
+    if (createCloneSubmitBtn) {
+        createCloneSubmitBtn.addEventListener('click', function() {
+            const cloneType = document.getElementById('cloneType').value;
+            const cloneName = document.getElementById('cloneName').value;
+            const scanInterval = document.getElementById('scanInterval').value;
+            const autoCorrect = document.getElementById('autoCorrect').checked;
+            
+            // Récupérer les zones de focus sélectionnées
+            const focusAreas = Array.from(document.getElementById('focusAreas').selectedOptions).map(option => option.value);
+
+            // Configuration personnalisée pour le clone
+            const customConfig = {
+                name: cloneName || null,
+                scan_interval: parseInt(scanInterval),
+                auto_correct: autoCorrect,
+                focus_areas: focusAreas.length > 0 ? focusAreas : null
+            };
+
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Création en cours...';
+
+            fetch('/api/ai-clone/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    clone_type: cloneType,
+                    custom_config: customConfig
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                this.disabled = false;
+                this.innerHTML = 'Créer';
+                
+                if (data.success) {
+                    showNotification('Clone IA créé avec succès', 'success');
+                    // Fermer le modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('createCloneModal'));
+                    modal.hide();
+                    // Recharger la page après un court délai
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    showNotification('Erreur lors de la création du clone: ' + data.error, 'danger');
+                }
+            })
+            .catch(error => {
+                this.disabled = false;
+                this.innerHTML = 'Créer';
+                
+                console.error('Erreur:', error);
+                showNotification('Une erreur est survenue lors de la création du clone', 'danger');
+            });
+        });
+    }
+
+    // Gestion des boutons d'arrêt de clone
+    const cloneStopButtons = document.querySelectorAll('.clone-stop-btn');
+    cloneStopButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const cloneId = this.getAttribute('data-clone-id');
+            
+            if (confirm('Êtes-vous sûr de vouloir arrêter ce clone IA ?')) {
+                this.disabled = true;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Arrêt...';
+                
+                fetch(`/api/ai-clone/${cloneId}/stop`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification('Clone arrêté avec succès', 'success');
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        this.disabled = false;
+                        this.innerHTML = '<i class="fas fa-stop me-1"></i>Arrêter';
+                        showNotification('Erreur lors de l\'arrêt du clone: ' + data.message, 'danger');
+                    }
+                })
+                .catch(error => {
+                    this.disabled = false;
+                    this.innerHTML = '<i class="fas fa-stop me-1"></i>Arrêter';
+                    console.error('Erreur:', error);
+                    showNotification('Une erreur est survenue', 'danger');
+                });
+            }
+        });
+    });
+
+    // Gestion des boutons de correction automatique
+    const cloneAutoCorrectButtons = document.querySelectorAll('.clone-auto-correct-btn');
+    cloneAutoCorrectButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const cloneId = this.getAttribute('data-clone-id');
+            
+            // Désactiver le bouton pendant le processus
+            this.disabled = true;
+            const originalHTML = this.innerHTML;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Correction en cours...';
+            
+            fetch(`/api/ai-clone/${cloneId}/auto-correct`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Réactiver le bouton
+                this.disabled = false;
+                this.innerHTML = originalHTML;
+                
+                if (data.success) {
+                    showNotification('Corrections appliquées: ' + data.changes_count, 'success');
+                    // Actualiser après quelques secondes
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+                } else {
+                    showNotification('Aucune correction nécessaire ou erreur: ' + data.message, 'info');
+                }
+            })
+            .catch(error => {
+                // Réactiver le bouton en cas d'erreur
+                this.disabled = false;
+                this.innerHTML = originalHTML;
+                
+                console.error('Erreur:', error);
+                showNotification('Une erreur est survenue', 'danger');
+            });
+        });
+    });
+
+    // Gestion des boutons de statut du clone
+    const cloneStatusButtons = document.querySelectorAll('.clone-status-btn');
+    cloneStatusButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const cloneId = this.getAttribute('data-clone-id');
+            const statusContent = document.getElementById('cloneStatusContent');
+            
+            // Afficher le spinner de chargement
+            statusContent.innerHTML = `
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Chargement...</span>
+                    </div>
+                    <p class="mt-2">Récupération des données du clone...</p>
+                </div>
+            `;
+            
+            // Mettre à jour le titre du modal
+            document.getElementById('cloneStatusModalLabel').textContent = `Statut du Clone IA (${cloneId})`;
+            
+            // Charger les données du clone
+            fetch(`/api/ai-clone/${cloneId}/status`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const clone = data.status;
+                        
+                        // Fonction d'aide pour déterminer la couleur en fonction du type de clone
+                        function getCloneTypeColor(type) {
+                            switch (type) {
+                                case 'auto_repair':
+                                    return 'primary';
+                                case 'security_optimizer':
+                                    return 'danger';
+                                case 'performance_tuner':
+                                    return 'warning';
+                                default:
+                                    return 'secondary';
+                            }
+                        }
+                        
+                        // Mettre à jour le contenu avec les données du clone
+                        statusContent.innerHTML = `
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-${getCloneTypeColor(clone.type)} text-white">
+                                            <h6 class="mb-0">Informations générales</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item d-flex justify-content-between">
+                                                    <span>ID:</span>
+                                                    <span class="text-monospace">${clone.id}</span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between">
+                                                    <span>Nom:</span>
+                                                    <span>${clone.name || 'Non nommé'}</span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between">
+                                                    <span>Type:</span>
+                                                    <span>
+                                                        <span class="badge bg-${getCloneTypeColor(clone.type)}">
+                                                            ${clone.type.replace('_', ' ').charAt(0).toUpperCase() + clone.type.replace('_', ' ').slice(1)}
+                                                        </span>
+                                                    </span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between">
+                                                    <span>Créé le:</span>
+                                                    <span>${new Date(clone.created_at).toLocaleString()}</span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between">
+                                                    <span>Dernière activité:</span>
+                                                    <span>${new Date(clone.last_activity_at).toLocaleString()}</span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between">
+                                                    <span>État:</span>
+                                                    <span>
+                                                        <span class="badge bg-success">Actif</span>
+                                                    </span>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-${getCloneTypeColor(clone.type)} text-white">
+                                            <h6 class="mb-0">Configuration</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item d-flex justify-content-between">
+                                                    <span>Intervalle de scan:</span>
+                                                    <span>${clone.scan_interval} minutes</span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between">
+                                                    <span>Auto-correction:</span>
+                                                    <span>
+                                                        ${clone.auto_correct ? 
+                                                            '<i class="fas fa-check text-success"></i> Activée' : 
+                                                            '<i class="fas fa-times text-danger"></i> Désactivée'
+                                                        }
+                                                    </span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between">
+                                                    <span>Zones de focus:</span>
+                                                    <span>
+                                                        ${clone.focus_areas && clone.focus_areas.length > 0 ? 
+                                                            clone.focus_areas.map(area => `<span class="badge bg-info me-1">${area}</span>`).join('') : 
+                                                            'Toutes les zones'
+                                                        }
+                                                    </span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between">
+                                                    <span>Progression du scan:</span>
+                                                    <span>${clone.scan_progress}%</span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between">
+                                                    <span>Nombre de scans:</span>
+                                                    <span>${clone.scan_count}</span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between">
+                                                    <span>Prochain scan:</span>
+                                                    <span>${new Date(clone.next_scan_at).toLocaleString()}</span>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mt-3">
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header bg-${getCloneTypeColor(clone.type)} text-white">
+                                            <h6 class="mb-0">Statistiques</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row text-center">
+                                                <div class="col-md-3 mb-3">
+                                                    <div class="card bg-light">
+                                                        <div class="card-body">
+                                                            <h3 class="text-primary">${clone.detected_errors_count}</h3>
+                                                            <small class="text-muted">Erreurs détectées</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 mb-3">
+                                                    <div class="card bg-light">
+                                                        <div class="card-body">
+                                                            <h3 class="text-success">${clone.corrections_count}</h3>
+                                                            <small class="text-muted">Corrections appliquées</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 mb-3">
+                                                    <div class="card bg-light">
+                                                        <div class="card-body">
+                                                            <h3 class="text-warning">${clone.pending_fixes_count || 0}</h3>
+                                                            <small class="text-muted">Corrections en attente</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 mb-3">
+                                                    <div class="card bg-light">
+                                                        <div class="card-body">
+                                                            <h3 class="text-info">${clone.improvement_score || 0}%</h3>
+                                                            <small class="text-muted">Amélioration globale</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            ${clone.recent_activities && clone.recent_activities.length > 0 ? `
+                                                <h6 class="mt-4 mb-3">Activités récentes</h6>
+                                                <div class="table-responsive">
+                                                    <table class="table table-sm">
+                                                        <thead class="table-light">
+                                                            <tr>
+                                                                <th>Date</th>
+                                                                <th>Type</th>
+                                                                <th>Description</th>
+                                                                <th>Statut</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            ${clone.recent_activities.map(activity => `
+                                                                <tr>
+                                                                    <td>${new Date(activity.timestamp).toLocaleString()}</td>
+                                                                    <td>${activity.type}</td>
+                                                                    <td>${activity.description}</td>
+                                                                    <td>
+                                                                        <span class="badge bg-${
+                                                                            activity.status === 'success' ? 'success' : 
+                                                                            activity.status === 'error' ? 'danger' : 
+                                                                            activity.status === 'warning' ? 'warning' : 'info'
+                                                                        }">
+                                                                            ${activity.status}
+                                                                        </span>
+                                                                    </td>
+                                                                </tr>
+                                                            `).join('')}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            ` : `
+                                                <div class="alert alert-info mt-4">
+                                                    <i class="fas fa-info-circle me-2"></i>
+                                                    Aucune activité récente pour ce clone.
+                                                </div>
+                                            `}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Configurer le bouton d'actualisation
+                        const refreshBtn = document.getElementById('refreshCloneStatusBtn');
+                        refreshBtn.setAttribute('data-clone-id', cloneId);
+                    } else {
+                        statusContent.innerHTML = `
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                Erreur lors de la récupération des données du clone: ${data.error}
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    statusContent.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            Une erreur est survenue lors de la récupération des données du clone.
+                        </div>
+                    `;
+                });
+        });
+    });
+
+    // Gestion du bouton d'actualisation du statut du clone
+    const refreshCloneStatusBtn = document.getElementById('refreshCloneStatusBtn');
+    if (refreshCloneStatusBtn) {
+        refreshCloneStatusBtn.addEventListener('click', function() {
+            const cloneId = this.getAttribute('data-clone-id');
+            if (cloneId) {
+                // Trouver et cliquer sur le bouton de statut correspondant
+                const statusBtn = document.querySelector(`.clone-status-btn[data-clone-id="${cloneId}"]`);
+                if (statusBtn) {
+                    statusBtn.click();
+                }
+            }
+        });
+    }
+
+    // Gestion des boutons de recréation de clone
+    const cloneRecreateButtons = document.querySelectorAll('.clone-recreate-btn');
+    cloneRecreateButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const cloneType = this.getAttribute('data-clone-type');
+            const cloneConfig = JSON.parse(this.getAttribute('data-clone-config'));
+            
+            if (confirm('Voulez-vous recréer ce clone avec la même configuration ?')) {
+                this.disabled = true;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Recréation...';
+                
+                fetch('/api/ai-clone/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        clone_type: cloneType,
+                        custom_config: cloneConfig
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification('Clone recréé avec succès', 'success');
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        this.disabled = false;
+                        this.innerHTML = '<i class="fas fa-clone me-1"></i>Recréer';
+                        showNotification('Erreur lors de la recréation du clone: ' + data.error, 'danger');
+                    }
+                })
+                .catch(error => {
+                    this.disabled = false;
+                    this.innerHTML = '<i class="fas fa-clone me-1"></i>Recréer';
+                    console.error('Erreur:', error);
+                    showNotification('Une erreur est survenue', 'danger');
+                });
+            }
+        });
+    });
+
+    // Gestion des boutons de détails du clone
+    const cloneDetailsButtons = document.querySelectorAll('.clone-details-btn');
+    cloneDetailsButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const cloneId = this.getAttribute('data-clone-id');
+            const detailsContent = document.getElementById('cloneDetailsContent');
+            
+            // Afficher le spinner de chargement
+            detailsContent.innerHTML = `
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Chargement...</span>
+                    </div>
+                    <p class="mt-2">Récupération des détails du clone...</p>
+                </div>
+            `;
+            
+            // Mettre à jour le titre du modal
+            document.getElementById('cloneDetailsModalLabel').textContent = `Détails du Clone IA (${cloneId})`;
+            
+            // Simuler la récupération des détails (à remplacer par un appel API réel)
+            setTimeout(() => {
+                detailsContent.innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Les détails historiques complets du clone ${cloneId} seront disponibles dans une version future.
+                    </div>
+                `;
+            }, 1000);
+        });
+    });
+
+    // Fonction d'affichage des notifications
+    function showNotification(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `toast align-items-center text-white bg-${type} border-0`;
+        toast.setAttribute('role', 'alert');
+        toast.setAttribute('aria-live', 'assertive');
+        toast.setAttribute('aria-atomic', 'true');
+        
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        `;
+        
+        const toastContainer = document.querySelector('.toast-container');
+        if (!toastContainer) {
+            const container = document.createElement('div');
+            container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+            document.body.appendChild(container);
+            container.appendChild(toast);
+        } else {
+            toastContainer.appendChild(toast);
+        }
+        
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+    }
+});
+</script>
+{% endblock %}
