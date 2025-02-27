@@ -319,6 +319,9 @@
 <script type="application/json" id="vulnerability-stats-data">
     {{ optimization_results.vulnerability_statistics|tojson }}
 </script>
+<script type="application/json" id="security-dimensions-data">
+    {{ wifi_analysis.security_dimensions|tojson }}
+</script>
 
 <!-- Notre script d'analyse IA -->
 <script src="{{ url_for('static', filename='js/ai_analysis.js') }}"></script>

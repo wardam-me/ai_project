@@ -339,12 +339,16 @@ class SecurityAI:
         
         self.save_trends()
         
+        # Générer les données du graphique radar
+        security_dimensions = self._generate_security_dimensions(network_scores)
+        
         # Résultat final
         result = {
             'overall_score': overall_score,
             'networks_analyzed': len(networks),
             'network_scores': network_scores,
             'security_levels': security_levels,
+            'security_dimensions': security_dimensions,
             'recommendations': recommendations,
             'timestamp': datetime.now().isoformat()
         }
@@ -444,6 +448,110 @@ class SecurityAI:
         })
         
         return recommendations
+    
+    def _generate_security_dimensions(self, network_scores: List[Dict[str, Any]]) -> Dict[str, float]:
+        """
+        Génère les données pour le graphique radar des dimensions de sécurité
+        
+        Args:
+            network_scores: Scores de sécurité des réseaux
+            
+        Returns:
+            Dict[str, float]: Scores pour chaque dimension de sécurité
+        """
+        if not network_scores:
+            return {
+                "encryption": 0.0,
+                "authentication": 0.0,
+                "protocol": 0.0,
+                "password": 0.0,
+                "privacy": 0.0
+            }
+        
+        # Initialisation des scores
+        dimensions = {
+            "encryption": 0,  # Force du chiffrement
+            "authentication": 0,  # Méthodes d'authentification
+            "protocol": 0,  # Version du protocole (WPA, WPA2, WPA3)
+            "password": 0,  # Estimation de la robustesse des mots de passe
+            "privacy": 0    # Protection de la vie privée (difussion SSID, etc.)
+        }
+        
+        # Évaluation de l'encryption
+        encryption_scores = {
+            'AES': 90,
+            'CCMP': 90,
+            'GCMP': 95,
+            'TKIP': 40,
+            None: 0
+        }
+        
+        # Évaluation de l'authentification
+        auth_scores = {
+            'ENTERPRISE': 90,
+            'SAE': 95,
+            'OWE': 85,
+            'PSK': 70,
+            None: 0
+        }
+        
+        # Évaluation du protocole
+        protocol_scores = {
+            'OPEN': 0,
+            'WEP': 10,
+            'WPA': 30,
+            'WPA2': 80,
+            'WPA2-Enterprise': 90,
+            'WPA3': 95,
+            'WPA3-Enterprise': 99
+        }
+        
+        # Calcul des scores pour chaque dimension
+        for network in network_scores:
+            security_type = network.get('security_type', 'OPEN')
+            encryption = network.get('encryption')
+            authentication = network.get('authentication')
+            
+            # Contribution au score d'encryption
+            dimensions["encryption"] += encryption_scores.get(encryption, 0)
+            
+            # Contribution au score d'authentification
+            dimensions["authentication"] += auth_scores.get(authentication, 0)
+            
+            # Contribution au score de protocole
+            dimensions["protocol"] += protocol_scores.get(security_type, 0)
+            
+            # Estimation basique de la robustesse du mot de passe (simulation)
+            # En réalité, on n'a pas accès au mot de passe
+            if security_type in ['OPEN', 'WEP']:
+                dimensions["password"] += 0
+            elif security_type == 'WPA':
+                dimensions["password"] += 50
+            elif security_type == 'WPA2':
+                dimensions["password"] += 70
+            elif security_type == 'WPA3':
+                dimensions["password"] += 90
+            
+            # Estimation de la confidentialité
+            # Basée sur le type de réseau et le protocole
+            if security_type == 'OPEN':
+                dimensions["privacy"] += 0
+            elif security_type == 'WEP':
+                dimensions["privacy"] += 20
+            elif security_type == 'WPA':
+                dimensions["privacy"] += 40
+            elif security_type == 'WPA2':
+                dimensions["privacy"] += 70
+            elif 'Enterprise' in security_type:
+                dimensions["privacy"] += 90
+            elif security_type == 'WPA3':
+                dimensions["privacy"] += 85
+        
+        # Calcul des moyennes
+        for dimension in dimensions:
+            dimensions[dimension] = dimensions[dimension] / len(network_scores)
+        
+        return dimensions
 
 # Point d'entrée pour les tests
 if __name__ == "__main__":
