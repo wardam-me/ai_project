@@ -1,0 +1,1375 @@
+{% extends "layout.html" %}
+
+{% block title %}Administration Centrale - NetSecure Pro{% endblock %}
+
+{% block content %}
+<div class="container-fluid admin-dashboard">
+    <div class="row">
+        <!-- Sidebar de navigation admin -->
+        <div class="col-md-2 admin-sidebar bg-dark text-light">
+            <div class="text-center p-3 border-bottom border-secondary">
+                <h4>Administration</h4>
+                <span class="badge bg-danger">Accès Total</span>
+            </div>
+            <ul class="nav flex-column mt-3">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#dashboard" data-bs-toggle="tab">
+                        <i class="fas fa-tachometer-alt"></i> Tableau de bord
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#users" data-bs-toggle="tab">
+                        <i class="fas fa-users"></i> Utilisateurs
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#security" data-bs-toggle="tab">
+                        <i class="fas fa-shield-alt"></i> Sécurité
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#clones" data-bs-toggle="tab">
+                        <i class="fas fa-robot"></i> Gestion IA
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#analytics" data-bs-toggle="tab">
+                        <i class="fas fa-chart-line"></i> Analytique
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#logs" data-bs-toggle="tab">
+                        <i class="fas fa-list-alt"></i> Journaux
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#settings" data-bs-toggle="tab">
+                        <i class="fas fa-cogs"></i> Paramètres
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-danger" href="#restricted" data-bs-toggle="tab">
+                        <i class="fas fa-lock"></i> Zone restreinte
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="mt-5 p-3 border-top border-secondary">
+                <div class="admin-status">
+                    <small class="text-muted">Mode administrateur</small>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="adminModeSwitch" checked>
+                        <label class="form-check-label" for="adminModeSwitch">Actif</label>
+                    </div>
+                </div>
+                
+                <div class="demo-mode mt-3">
+                    <small class="text-muted">Mode démo</small>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="demoModeSwitch">
+                        <label class="form-check-label" for="demoModeSwitch">Inactif</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Contenu principal -->
+        <div class="col-md-10 admin-content">
+            <div class="tab-content">
+                <!-- Tableau de bord principal -->
+                <div class="tab-pane fade show active" id="dashboard">
+                    <div class="admin-header d-flex justify-content-between align-items-center p-3">
+                        <h2><i class="fas fa-tachometer-alt"></i> Tableau de bord d'administration</h2>
+                        <div>
+                            <span class="badge bg-primary me-2">Administrateur</span>
+                            <span class="badge bg-success">Connecté</span>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-3">
+                            <div class="card text-white bg-primary mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">Utilisateurs</h5>
+                                    <p class="card-text display-4">{{ users_count }}</p>
+                                    <small>Dernière inscription: {{ last_registration }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-white bg-success mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">Réseaux analysés</h5>
+                                    <p class="card-text display-4">{{ networks_count }}</p>
+                                    <small>Dernière analyse: {{ last_analysis }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-white bg-warning mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">Clones IA actifs</h5>
+                                    <p class="card-text display-4">{{ active_clones }}</p>
+                                    <small>Total créé: {{ total_clones }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-white bg-danger mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">Vulnérabilités</h5>
+                                    <p class="card-text display-4">{{ vulnerabilities_count }}</p>
+                                    <small>Critique: {{ critical_vulnerabilities }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Activité système</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="systemActivityChart" height="250"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Ressources système</h5>
+                                </div>
+                                <div class="card-body">
+                                    <h6>Utilisation CPU</h6>
+                                    <div class="progress mb-3">
+                                        <div class="progress-bar bg-primary" role="progressbar" style="width: {{ cpu_usage }}%">
+                                            {{ cpu_usage }}%
+                                        </div>
+                                    </div>
+                                    
+                                    <h6>Mémoire</h6>
+                                    <div class="progress mb-3">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ memory_usage }}%">
+                                            {{ memory_usage }}%
+                                        </div>
+                                    </div>
+                                    
+                                    <h6>Stockage</h6>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: {{ storage_usage }}%">
+                                            {{ storage_usage }}%
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-3">
+                                        <small class="text-muted">Dernier relevé: {{ last_resource_check }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Gestion des utilisateurs -->
+                <div class="tab-pane fade" id="users">
+                    <div class="admin-header d-flex justify-content-between align-items-center p-3">
+                        <h2><i class="fas fa-users"></i> Gestion des utilisateurs</h2>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                            <i class="fas fa-plus"></i> Ajouter un utilisateur
+                        </button>
+                    </div>
+                    
+                    <div class="card mt-3">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="usersTable">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Nom d'utilisateur</th>
+                                            <th>Email</th>
+                                            <th>Rôle</th>
+                                            <th>Date d'inscription</th>
+                                            <th>Statut</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for user in users %}
+                                        <tr>
+                                            <td>{{ user.id }}</td>
+                                            <td>{{ user.username }}</td>
+                                            <td>{{ user.email }}</td>
+                                            <td>
+                                                {% if user.is_admin %}
+                                                <span class="badge bg-danger">Admin</span>
+                                                {% elif user.is_demo %}
+                                                <span class="badge bg-warning">Démo</span>
+                                                {% else %}
+                                                <span class="badge bg-info">Utilisateur</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ user.created_at|format_datetime }}</td>
+                                            <td>
+                                                {% if user.is_active %}
+                                                <span class="badge bg-success">Actif</span>
+                                                {% else %}
+                                                <span class="badge bg-secondary">Inactif</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <button class="btn btn-sm btn-info" onclick="editUser({{ user.id }})">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-warning" onclick="resetUserPassword({{ user.id }})">
+                                                        <i class="fas fa-key"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-danger" onclick="toggleUserStatus({{ user.id }})">
+                                                        <i class="fas fa-power-off"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Gestion de la sécurité -->
+                <div class="tab-pane fade" id="security">
+                    <div class="admin-header d-flex justify-content-between align-items-center p-3">
+                        <h2><i class="fas fa-shield-alt"></i> Gestion de la sécurité</h2>
+                        <button class="btn btn-danger" id="securityScanBtn">
+                            <i class="fas fa-search"></i> Scan complet
+                        </button>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h5>Paramètres de sécurité</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form id="securitySettingsForm">
+                                        <div class="mb-3">
+                                            <label class="form-label">Niveau de sécurité global</label>
+                                            <select class="form-select" id="securityLevel">
+                                                <option value="low" {% if security_level == 'low' %}selected{% endif %}>Basique</option>
+                                                <option value="medium" {% if security_level == 'medium' %}selected{% endif %}>Intermédiaire</option>
+                                                <option value="high" {% if security_level == 'high' %}selected{% endif %}>Élevé</option>
+                                                <option value="extreme" {% if security_level == 'extreme' %}selected{% endif %}>Extrême</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Authentification à deux facteurs</label>
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="twoFactorAuth" {% if two_factor_auth %}checked{% endif %}>
+                                                <label class="form-check-label" for="twoFactorAuth">Activée</label>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Durée maximum de session (minutes)</label>
+                                            <input type="number" class="form-control" id="sessionDuration" value="{{ session_duration }}">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Détection d'intrusion</label>
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="intrusionDetection" {% if intrusion_detection %}checked{% endif %}>
+                                                <label class="form-check-label" for="intrusionDetection">Activée</label>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Journal d'audit</label>
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="auditLog" {% if audit_log %}checked{% endif %}>
+                                                <label class="form-check-label" for="auditLog">Activé</label>
+                                            </div>
+                                        </div>
+                                        
+                                        <button type="submit" class="btn btn-primary">Enregistrer les paramètres</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h5>Dernières alertes de sécurité</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Type</th>
+                                                    <th>Description</th>
+                                                    <th>Sévérité</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for alert in security_alerts %}
+                                                <tr>
+                                                    <td>{{ alert.timestamp|format_datetime }}</td>
+                                                    <td>{{ alert.type }}</td>
+                                                    <td>{{ alert.description }}</td>
+                                                    <td>
+                                                        {% if alert.severity == 'critical' %}
+                                                        <span class="badge bg-danger">Critique</span>
+                                                        {% elif alert.severity == 'high' %}
+                                                        <span class="badge bg-warning">Haute</span>
+                                                        {% elif alert.severity == 'medium' %}
+                                                        <span class="badge bg-info">Moyenne</span>
+                                                        {% else %}
+                                                        <span class="badge bg-success">Basse</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Actions de sécurité</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-warning" id="resetPermissionsBtn">
+                                            <i class="fas fa-sync"></i> Réinitialiser les permissions
+                                        </button>
+                                        <button class="btn btn-danger" id="revokeSessionsBtn">
+                                            <i class="fas fa-ban"></i> Révoquer toutes les sessions
+                                        </button>
+                                        <button class="btn btn-info" id="backupDbBtn">
+                                            <i class="fas fa-database"></i> Sauvegarder la base de données
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Gestion des clones IA -->
+                <div class="tab-pane fade" id="clones">
+                    <div class="admin-header d-flex justify-content-between align-items-center p-3">
+                        <h2><i class="fas fa-robot"></i> Gestion des clones IA</h2>
+                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createCloneModal">
+                            <i class="fas fa-plus"></i> Créer un clone
+                        </button>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Clones IA actifs</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover" id="clonesTable">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Type</th>
+                                                    <th>Statut</th>
+                                                    <th>Créé le</th>
+                                                    <th>Performance</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for clone in active_clone_list %}
+                                                <tr>
+                                                    <td>{{ clone.id[:8] }}</td>
+                                                    <td>{{ clone.type }}</td>
+                                                    <td>
+                                                        {% if clone.status == 'running' %}
+                                                        <span class="badge bg-success">Actif</span>
+                                                        {% elif clone.status == 'paused' %}
+                                                        <span class="badge bg-warning">En pause</span>
+                                                        {% else %}
+                                                        <span class="badge bg-secondary">Inactif</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>{{ clone.created_at|format_datetime }}</td>
+                                                    <td>
+                                                        <div class="progress">
+                                                            <div class="progress-bar bg-info" role="progressbar" style="width: {{ clone.performance }}%">
+                                                                {{ clone.performance }}%
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="btn-group">
+                                                            <button class="btn btn-sm btn-info" onclick="viewCloneDetails('{{ clone.id }}')">
+                                                                <i class="fas fa-eye"></i>
+                                                            </button>
+                                                            <button class="btn btn-sm btn-warning" onclick="pauseClone('{{ clone.id }}')">
+                                                                <i class="fas fa-pause"></i>
+                                                            </button>
+                                                            <button class="btn btn-sm btn-danger" onclick="stopClone('{{ clone.id }}')">
+                                                                <i class="fas fa-stop"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h5>Performances IA</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="aiPerformanceChart" height="250"></canvas>
+                                </div>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Configuration IA</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form id="aiConfigForm">
+                                        <div class="mb-3">
+                                            <label class="form-label">Mode d'apprentissage</label>
+                                            <select class="form-select" id="learningMode">
+                                                <option value="passive">Passif</option>
+                                                <option value="active">Actif</option>
+                                                <option value="supervised">Supervisé</option>
+                                                <option value="autonomous" selected>Autonome</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Limite de ressources (% CPU)</label>
+                                            <input type="range" class="form-range" id="resourceLimit" min="10" max="90" value="50">
+                                            <div class="text-center" id="resourceLimitValue">50%</div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Intervalle de scan (secondes)</label>
+                                            <input type="number" class="form-control" id="scanInterval" value="60">
+                                        </div>
+                                        
+                                        <button type="submit" class="btn btn-primary">Appliquer</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Analytique -->
+                <div class="tab-pane fade" id="analytics">
+                    <div class="admin-header d-flex justify-content-between align-items-center p-3">
+                        <h2><i class="fas fa-chart-line"></i> Analytique</h2>
+                        <div class="btn-group">
+                            <button class="btn btn-outline-primary" id="exportAnalyticsBtn">
+                                <i class="fas fa-download"></i> Exporter
+                            </button>
+                            <button class="btn btn-outline-secondary" id="refreshAnalyticsBtn">
+                                <i class="fas fa-sync"></i> Actualiser
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h5>Activité utilisateur</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="userActivityChart" height="250"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h5>Statistiques de sécurité</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="securityStatsChart" height="250"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h5>Tendances mensuelles</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="monthlyTrendsChart" height="250"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h5>Répartition des vulnérabilités</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="vulnerabilityDistributionChart" height="250"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Journaux -->
+                <div class="tab-pane fade" id="logs">
+                    <div class="admin-header d-flex justify-content-between align-items-center p-3">
+                        <h2><i class="fas fa-list-alt"></i> Journaux système</h2>
+                        <div class="btn-group">
+                            <button class="btn btn-outline-primary" id="exportLogsBtn">
+                                <i class="fas fa-download"></i> Exporter
+                            </button>
+                            <button class="btn btn-outline-danger" id="clearLogsBtn">
+                                <i class="fas fa-trash"></i> Effacer
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <div class="row align-items-center">
+                                <div class="col-md-4">
+                                    <h5>Journaux du système</h5>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="d-flex">
+                                        <select class="form-select me-2" id="logTypeFilter">
+                                            <option value="all">Tous les types</option>
+                                            <option value="info">Information</option>
+                                            <option value="warning">Avertissement</option>
+                                            <option value="error">Erreur</option>
+                                            <option value="security">Sécurité</option>
+                                        </select>
+                                        <input type="text" class="form-control" id="logSearchInput" placeholder="Rechercher...">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="log-container bg-dark text-light p-3" style="height: 500px; overflow-y: auto; font-family: monospace;">
+                                {% for log in system_logs %}
+                                <div class="log-entry log-{{ log.level }}">
+                                    <span class="log-timestamp">{{ log.timestamp }}</span>
+                                    <span class="log-level level-{{ log.level }}">{{ log.level }}</span>
+                                    <span class="log-module">{{ log.module }}</span>
+                                    <span class="log-message">{{ log.message }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Paramètres -->
+                <div class="tab-pane fade" id="settings">
+                    <div class="admin-header d-flex justify-content-between align-items-center p-3">
+                        <h2><i class="fas fa-cogs"></i> Paramètres système</h2>
+                        <button class="btn btn-primary" id="saveSettingsBtn">
+                            <i class="fas fa-save"></i> Enregistrer
+                        </button>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h5>Configuration générale</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form id="generalSettingsForm">
+                                        <div class="mb-3">
+                                            <label class="form-label">Nom de l'application</label>
+                                            <input type="text" class="form-control" id="appName" value="{{ app_name }}">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Langue par défaut</label>
+                                            <select class="form-select" id="defaultLanguage">
+                                                <option value="fr" {% if default_language == 'fr' %}selected{% endif %}>Français</option>
+                                                <option value="en" {% if default_language == 'en' %}selected{% endif %}>English</option>
+                                                <option value="ar" {% if default_language == 'ar' %}selected{% endif %}>العربية</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Timezone</label>
+                                            <select class="form-select" id="timezone">
+                                                <option value="Europe/Paris" {% if timezone == 'Europe/Paris' %}selected{% endif %}>Europe/Paris</option>
+                                                <option value="UTC" {% if timezone == 'UTC' %}selected{% endif %}>UTC</option>
+                                                <option value="America/New_York" {% if timezone == 'America/New_York' %}selected{% endif %}>America/New_York</option>
+                                                <option value="Asia/Tokyo" {% if timezone == 'Asia/Tokyo' %}selected{% endif %}>Asia/Tokyo</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Mode maintenance</label>
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="maintenanceMode" {% if maintenance_mode %}checked{% endif %}>
+                                                <label class="form-check-label" for="maintenanceMode">Activé</label>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Niveau de log</label>
+                                            <select class="form-select" id="logLevel">
+                                                <option value="debug" {% if log_level == 'debug' %}selected{% endif %}>Debug</option>
+                                                <option value="info" {% if log_level == 'info' %}selected{% endif %}>Info</option>
+                                                <option value="warning" {% if log_level == 'warning' %}selected{% endif %}>Warning</option>
+                                                <option value="error" {% if log_level == 'error' %}selected{% endif %}>Error</option>
+                                            </select>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h5>Configuration avancée</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form id="advancedSettingsForm">
+                                        <div class="mb-3">
+                                            <label class="form-label">Intervalle de sauvegarde automatique (minutes)</label>
+                                            <input type="number" class="form-control" id="autoSaveInterval" value="{{ auto_save_interval }}">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Limite de données (MB)</label>
+                                            <input type="number" class="form-control" id="dataLimit" value="{{ data_limit }}">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Taille max des journaux (MB)</label>
+                                            <input type="number" class="form-control" id="maxLogSize" value="{{ max_log_size }}">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Port du serveur</label>
+                                            <input type="number" class="form-control" id="serverPort" value="5000" disabled>
+                                            <small class="text-muted">Fixé à 5000 pour compatibilité</small>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Compression des données</label>
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="dataCompression" {% if data_compression %}checked{% endif %}>
+                                                <label class="form-check-label" for="dataCompression">Activée</label>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Actions système</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-warning" id="clearCacheBtn">
+                                            <i class="fas fa-broom"></i> Vider le cache
+                                        </button>
+                                        <button class="btn btn-info" id="optimizeDbBtn">
+                                            <i class="fas fa-database"></i> Optimiser la base de données
+                                        </button>
+                                        <button class="btn btn-danger" id="rebootSystemBtn">
+                                            <i class="fas fa-power-off"></i> Redémarrer le système
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Zone restreinte -->
+                <div class="tab-pane fade" id="restricted">
+                    <div class="admin-header d-flex justify-content-between align-items-center p-3 bg-danger text-white">
+                        <h2><i class="fas fa-lock"></i> Zone restreinte - Accès absolu</h2>
+                        <span class="badge bg-warning">Accès administrateur uniquement</span>
+                    </div>
+                    
+                    <div class="alert alert-danger mt-3">
+                        <strong>Attention !</strong> Cette zone donne accès à des fonctionnalités à haut risque. Toutes les actions sont journalisées et irréversibles.
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="card mb-3 border-danger">
+                                <div class="card-header bg-danger text-white">
+                                    <h5>Opérations sensibles</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-outline-danger" id="resetAllDataBtn" data-bs-toggle="modal" data-bs-target="#confirmResetModal">
+                                            <i class="fas fa-trash-alt"></i> Réinitialiser toutes les données
+                                        </button>
+                                        <button class="btn btn-outline-danger" id="resetUserPermissionsBtn" data-bs-toggle="modal" data-bs-target="#confirmPermissionsModal">
+                                            <i class="fas fa-user-lock"></i> Réinitialiser les permissions utilisateur
+                                        </button>
+                                        <button class="btn btn-outline-danger" id="shutdownBtn" data-bs-toggle="modal" data-bs-target="#confirmShutdownModal">
+                                            <i class="fas fa-power-off"></i> Arrêter l'application
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card mb-3 border-danger">
+                                <div class="card-header bg-danger text-white">
+                                    <h5>Configuration avancée</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Base de données</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="databaseUri" value="{{ database_uri }}" readonly>
+                                            <button class="btn btn-outline-secondary" type="button" id="editDatabaseUri">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Configuration debug</label>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="debugMode" checked disabled>
+                                            <label class="form-check-label" for="debugMode">Mode debug</label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Exécution de commande système</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="systemCommand" placeholder="Commande à exécuter...">
+                                            <button class="btn btn-outline-danger" type="button" id="executeCommandBtn">
+                                                <i class="fas fa-terminal"></i> Exécuter
+                                            </button>
+                                        </div>
+                                        <div class="mt-2 p-2 bg-dark text-light" id="commandOutput" style="max-height: 150px; overflow-y: auto; font-family: monospace;">
+                                            # Sortie de commande s'affichera ici
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card border-danger">
+                                <div class="card-header bg-danger text-white">
+                                    <h5>Journal d'audit administrateur</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Administrateur</th>
+                                                    <th>Action</th>
+                                                    <th>IP</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for action in admin_audit_log %}
+                                                <tr>
+                                                    <td>{{ action.timestamp|format_datetime }}</td>
+                                                    <td>{{ action.admin_username }}</td>
+                                                    <td>{{ action.action }}</td>
+                                                    <td>{{ action.ip_address }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour confirmation de réinitialisation des données -->
+<div class="modal fade" id="confirmResetModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Confirmer la réinitialisation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-danger fw-bold">ATTENTION : Cette action est irréversible !</p>
+                <p>Vous êtes sur le point de réinitialiser toutes les données de l'application. Cette action supprimera définitivement :</p>
+                <ul>
+                    <li>Tous les comptes utilisateurs (sauf le compte administrateur principal)</li>
+                    <li>Toutes les analyses de sécurité</li>
+                    <li>Toutes les données de réseau</li>
+                    <li>Tous les clones IA et leurs données</li>
+                </ul>
+                <p>Pour confirmer, veuillez saisir "RÉINITIALISER" ci-dessous :</p>
+                <input type="text" class="form-control" id="resetConfirmInput">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-danger" id="confirmResetBtn" disabled>Réinitialiser</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour création de clone IA -->
+<div class="modal fade" id="createCloneModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Créer un nouveau clone IA</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createCloneForm">
+                    <div class="mb-3">
+                        <label class="form-label">Type de clone</label>
+                        <select class="form-select" id="cloneType">
+                            <option value="auto_repair">Auto-réparation</option>
+                            <option value="security_optimizer">Optimiseur de sécurité</option>
+                            <option value="performance_tuner">Optimiseur de performance</option>
+                            <option value="custom">Personnalisé</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Priorité</label>
+                        <select class="form-select" id="clonePriority">
+                            <option value="low">Basse</option>
+                            <option value="normal" selected>Normale</option>
+                            <option value="high">Haute</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Permissions</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="clonePermNetwork" checked>
+                            <label class="form-check-label" for="clonePermNetwork">Analyse réseau</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="clonePermRepair" checked>
+                            <label class="form-check-label" for="clonePermRepair">Réparation automatique</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="clonePermNotify" checked>
+                            <label class="form-check-label" for="clonePermNotify">Notifications</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="clonePermSystem">
+                            <label class="form-check-label" for="clonePermSystem">Accès système (risqué)</label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3" id="customConfigSection" style="display: none;">
+                        <label class="form-label">Configuration personnalisée (JSON)</label>
+                        <textarea class="form-control" id="customConfig" rows="5"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-success" id="createCloneBtn">Créer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour l'ajout d'un utilisateur -->
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ajouter un utilisateur</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addUserForm">
+                    <div class="mb-3">
+                        <label class="form-label">Nom d'utilisateur</label>
+                        <input type="text" class="form-control" id="newUsername" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" id="newEmail" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Mot de passe</label>
+                        <input type="password" class="form-control" id="newPassword" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Type de compte</label>
+                        <select class="form-select" id="accountType">
+                            <option value="user">Utilisateur standard</option>
+                            <option value="admin">Administrateur</option>
+                            <option value="demo">Démo (restrictions)</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="addUserBtn">Ajouter</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<script>
+// Initialisation des graphiques
+document.addEventListener('DOMContentLoaded', function() {
+    // Graphique d'activité système
+    const systemActivityCtx = document.getElementById('systemActivityChart');
+    if (systemActivityCtx) {
+        const systemActivityChart = new Chart(systemActivityCtx.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'],
+                datasets: [{
+                    label: 'Analyses',
+                    data: [65, 59, 80, 81, 56, 55, 40, 55, 78, 90, 85, 95],
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    tension: 0.3
+                }, {
+                    label: 'Utilisateurs actifs',
+                    data: [28, 48, 40, 19, 86, 27, 90, 102, 110, 120, 115, 130],
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    tension: 0.3
+                }, {
+                    label: 'Détections IA',
+                    data: [12, 19, 3, 5, 2, 3, 20, 33, 45, 37, 50, 60],
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Activité système 2024-2025'
+                    }
+                }
+            }
+        });
+    }
+    
+    // Graphique de performance IA
+    const aiPerformanceCtx = document.getElementById('aiPerformanceChart');
+    if (aiPerformanceCtx) {
+        const aiPerformanceChart = new Chart(aiPerformanceCtx.getContext('2d'), {
+            type: 'radar',
+            data: {
+                labels: ['Précision', 'Vitesse', 'Fiabilité', 'Adaptation', 'Efficacité'],
+                datasets: [{
+                    label: 'Actuel',
+                    data: [85, 72, 90, 68, 78],
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                }, {
+                    label: 'Objectif',
+                    data: [95, 85, 95, 80, 90],
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Performance des clones IA'
+                    }
+                },
+                scales: {
+                    r: {
+                        min: 0,
+                        max: 100
+                    }
+                }
+            }
+        });
+    }
+    
+    // Autres graphiques pour les onglets analytique
+    const userActivityCtx = document.getElementById('userActivityChart');
+    if (userActivityCtx) {
+        const userActivityChart = new Chart(userActivityCtx.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+                datasets: [{
+                    label: 'Connexions',
+                    data: [65, 59, 80, 81, 56, 55, 40],
+                    backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Activité utilisateur par jour'
+                    }
+                }
+            }
+        });
+    }
+    
+    const securityStatsCtx = document.getElementById('securityStatsChart');
+    if (securityStatsCtx) {
+        const securityStatsChart = new Chart(securityStatsCtx.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: ['Semaine 1', 'Semaine 2', 'Semaine 3', 'Semaine 4'],
+                datasets: [{
+                    label: 'Vulnérabilités détectées',
+                    data: [12, 19, 8, 5],
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    tension: 0.3
+                }, {
+                    label: 'Vulnérabilités corrigées',
+                    data: [7, 15, 6, 4],
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Statistiques de sécurité du mois'
+                    }
+                }
+            }
+        });
+    }
+    
+    const monthlyTrendsCtx = document.getElementById('monthlyTrendsChart');
+    if (monthlyTrendsCtx) {
+        const monthlyTrendsChart = new Chart(monthlyTrendsCtx.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'],
+                datasets: [{
+                    label: 'Score de sécurité moyen',
+                    data: [65, 70, 67, 72, 75, 79, 81, 82, 85, 89, 90, 92],
+                    borderColor: 'rgba(153, 102, 255, 1)',
+                    backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Tendance du score de sécurité'
+                    }
+                },
+                scales: {
+                    y: {
+                        min: 50,
+                        max: 100
+                    }
+                }
+            }
+        });
+    }
+    
+    const vulnerabilityDistributionCtx = document.getElementById('vulnerabilityDistributionChart');
+    if (vulnerabilityDistributionCtx) {
+        const vulnerabilityDistributionChart = new Chart(vulnerabilityDistributionCtx.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Critique', 'Haute', 'Moyenne', 'Basse'],
+                datasets: [{
+                    data: [15, 30, 45, 10],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.7)',
+                        'rgba(255, 159, 64, 0.7)',
+                        'rgba(255, 205, 86, 0.7)',
+                        'rgba(75, 192, 192, 0.7)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Distribution des vulnérabilités'
+                    }
+                }
+            }
+        });
+    }
+    
+    // Gestionnaire pour l'intervalle de ressources
+    const resourceLimit = document.getElementById('resourceLimit');
+    const resourceLimitValue = document.getElementById('resourceLimitValue');
+    if (resourceLimit && resourceLimitValue) {
+        resourceLimit.addEventListener('input', function() {
+            resourceLimitValue.textContent = this.value + '%';
+        });
+    }
+    
+    // Gestion du mode Démo/Admin
+    const demoModeSwitch = document.getElementById('demoModeSwitch');
+    const adminModeSwitch = document.getElementById('adminModeSwitch');
+    if (demoModeSwitch && adminModeSwitch) {
+        demoModeSwitch.addEventListener('change', function() {
+            if (this.checked) {
+                adminModeSwitch.checked = false;
+                // Ajouter ici la logique pour activer le mode démo
+                showToast("Mode démo activé - Certaines fonctionnalités sont restreintes", "warning");
+            }
+        });
+        
+        adminModeSwitch.addEventListener('change', function() {
+            if (this.checked) {
+                demoModeSwitch.checked = false;
+                // Ajouter ici la logique pour activer le mode admin
+                showToast("Mode administrateur activé - Accès complet", "success");
+            } else {
+                // Si on désactive le mode admin sans activer le mode démo, réactiver admin
+                if (!demoModeSwitch.checked) {
+                    this.checked = true;
+                    showToast("Le mode administrateur ne peut pas être désactivé directement", "warning");
+                }
+            }
+        });
+    }
+    
+    // Initialisation du type de clone (affichage conditionnel)
+    const cloneType = document.getElementById('cloneType');
+    const customConfigSection = document.getElementById('customConfigSection');
+    if (cloneType && customConfigSection) {
+        cloneType.addEventListener('change', function() {
+            if (this.value === 'custom') {
+                customConfigSection.style.display = 'block';
+            } else {
+                customConfigSection.style.display = 'none';
+            }
+        });
+    }
+    
+    // Gestion de la réinitialisation
+    const resetConfirmInput = document.getElementById('resetConfirmInput');
+    const confirmResetBtn = document.getElementById('confirmResetBtn');
+    if (resetConfirmInput && confirmResetBtn) {
+        resetConfirmInput.addEventListener('input', function() {
+            confirmResetBtn.disabled = this.value !== 'RÉINITIALISER';
+        });
+    }
+    
+    // Fonctions pour les actions des clones IA
+    window.viewCloneDetails = function(cloneId) {
+        // Afficher les détails du clone
+        showToast(`Affichage des détails du clone ${cloneId}`, "info");
+    };
+    
+    window.pauseClone = function(cloneId) {
+        // Mettre en pause le clone
+        showToast(`Clone ${cloneId} mis en pause`, "warning");
+    };
+    
+    window.stopClone = function(cloneId) {
+        // Arrêter le clone
+        showToast(`Clone ${cloneId} arrêté`, "danger");
+    };
+    
+    // Fonctions pour les actions des utilisateurs
+    window.editUser = function(userId) {
+        // Editer un utilisateur
+        showToast(`Édition de l'utilisateur #${userId}`, "info");
+    };
+    
+    window.resetUserPassword = function(userId) {
+        // Réinitialiser le mot de passe
+        showToast(`Mot de passe réinitialisé pour l'utilisateur #${userId}`, "warning");
+    };
+    
+    window.toggleUserStatus = function(userId) {
+        // Activer/désactiver un utilisateur
+        showToast(`Statut de l'utilisateur #${userId} modifié`, "success");
+    };
+    
+    // Fonction pour afficher des toasts
+    window.showToast = function(message, type = "info") {
+        // Créer un élément toast
+        const toastContainer = document.createElement('div');
+        toastContainer.className = 'position-fixed bottom-0 end-0 p-3';
+        toastContainer.style.zIndex = '1050';
+        
+        const toastEl = document.createElement('div');
+        toastEl.className = `toast align-items-center text-white bg-${type} border-0`;
+        toastEl.setAttribute('role', 'alert');
+        toastEl.setAttribute('aria-live', 'assertive');
+        toastEl.setAttribute('aria-atomic', 'true');
+        
+        const toastContent = document.createElement('div');
+        toastContent.className = 'd-flex';
+        
+        const toastBody = document.createElement('div');
+        toastBody.className = 'toast-body';
+        toastBody.textContent = message;
+        
+        const toastClose = document.createElement('button');
+        toastClose.type = 'button';
+        toastClose.className = 'btn-close btn-close-white me-2 m-auto';
+        toastClose.setAttribute('data-bs-dismiss', 'toast');
+        toastClose.setAttribute('aria-label', 'Close');
+        
+        toastContent.appendChild(toastBody);
+        toastContent.appendChild(toastClose);
+        toastEl.appendChild(toastContent);
+        toastContainer.appendChild(toastEl);
+        
+        document.body.appendChild(toastContainer);
+        
+        const toast = new bootstrap.Toast(toastEl);
+        toast.show();
+        
+        // Supprimer le toast après disparition
+        toastEl.addEventListener('hidden.bs.toast', function() {
+            document.body.removeChild(toastContainer);
+        });
+    };
+    
+    // Initialisation des événements formulaires
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Afficher un toast de confirmation
+            showToast("Formulaire soumis avec succès", "success");
+            
+            // Si c'est un modal, le fermer
+            const modal = bootstrap.Modal.getInstance(this.closest('.modal'));
+            if (modal) modal.hide();
+        });
+    });
+    
+    // Boutons avec actions spécifiques
+    document.querySelectorAll('button[id$="Btn"]').forEach(button => {
+        button.addEventListener('click', function(e) {
+            if (this.id === 'addUserBtn') {
+                showToast("Utilisateur ajouté avec succès", "success");
+            } else if (this.id === 'createCloneBtn') {
+                showToast("Nouveau clone IA créé", "success");
+            } else if (this.id === 'saveSettingsBtn') {
+                showToast("Paramètres enregistrés", "success");
+            } else if (this.id === 'securityScanBtn') {
+                showToast("Scan de sécurité lancé", "info");
+            } else if (this.id === 'executeCommandBtn') {
+                const commandOutput = document.getElementById('commandOutput');
+                const systemCommand = document.getElementById('systemCommand');
+                
+                if (commandOutput && systemCommand) {
+                    commandOutput.innerHTML += `<div>$ ${systemCommand.value}</div>`;
+                    commandOutput.innerHTML += `<div class="text-success">Commande exécutée en mode simulation</div>`;
+                    commandOutput.scrollTop = commandOutput.scrollHeight;
+                }
+                
+                showToast("Commande exécutée", "warning");
+            } else if (this.id === 'clearCacheBtn') {
+                showToast("Cache vidé avec succès", "success");
+            } else if (this.id === 'optimizeDbBtn') {
+                showToast("Base de données optimisée", "success");
+            } else if (this.id === 'rebootSystemBtn') {
+                showToast("Redémarrage programmé", "warning");
+            } else if (this.id === 'resetPermissionsBtn') {
+                showToast("Permissions réinitialisées", "warning");
+            } else if (this.id === 'revokeSessionsBtn') {
+                showToast("Sessions révoquées", "warning");
+            } else if (this.id === 'backupDbBtn') {
+                showToast("Sauvegarde de la base de données en cours", "info");
+            } else if (this.id === 'exportLogsBtn') {
+                showToast("Journaux exportés", "success");
+            } else if (this.id === 'clearLogsBtn') {
+                showToast("Journaux effacés", "warning");
+            } else if (this.id === 'exportAnalyticsBtn') {
+                showToast("Analytique exportée", "success");
+            } else if (this.id === 'refreshAnalyticsBtn') {
+                showToast("Données analytiques actualisées", "info");
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

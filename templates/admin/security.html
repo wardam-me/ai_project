@@ -1,0 +1,551 @@
+{% extends "layout.html" %}
+
+{% block title %}Gestion de Sécurité - NetSecure Pro{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar de navigation admin -->
+        <div class="col-md-2 admin-sidebar bg-dark text-light">
+            <div class="text-center p-3 border-bottom border-secondary">
+                <h4>Administration</h4>
+                <span class="badge bg-danger">Accès Total</span>
+            </div>
+            <ul class="nav flex-column mt-3">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin_dashboard') }}">
+                        <i class="fas fa-tachometer-alt"></i> Tableau de bord
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin_users') }}">
+                        <i class="fas fa-users"></i> Utilisateurs
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('admin_security') }}">
+                        <i class="fas fa-shield-alt"></i> Sécurité
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin_ai_management') }}">
+                        <i class="fas fa-robot"></i> Gestion IA
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin_system') }}">
+                        <i class="fas fa-server"></i> Système
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <!-- Contenu principal -->
+        <div class="col-md-10 admin-content">
+            <div class="admin-header d-flex justify-content-between align-items-center p-3">
+                <h2><i class="fas fa-shield-alt"></i> Gestion de la sécurité</h2>
+                <div>
+                    <button class="btn btn-warning me-2" id="securityScanBtn">
+                        <i class="fas fa-search"></i> Scan rapide
+                    </button>
+                    <button class="btn btn-danger" id="deepScanBtn">
+                        <i class="fas fa-biohazard"></i> Scan approfondi
+                    </button>
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5>Tableau de bord de sécurité</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-md-4 mb-3">
+                                    <div class="security-gauge">
+                                        <div class="gauge-title">Score global</div>
+                                        <div class="gauge-value 
+                                            {% if network_stats.global_score >= 80 %}text-success
+                                            {% elif network_stats.global_score >= 60 %}text-warning
+                                            {% else %}text-danger{% endif %}">
+                                            {{ network_stats.global_score }}<small>%</small>
+                                        </div>
+                                        <div class="gauge-label 
+                                            {% if network_stats.global_score >= 80 %}text-success
+                                            {% elif network_stats.global_score >= 60 %}text-warning
+                                            {% else %}text-danger{% endif %}">
+                                            {% if network_stats.global_score >= 80 %}Bon
+                                            {% elif network_stats.global_score >= 60 %}Moyen
+                                            {% else %}Risqué{% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <div class="security-gauge">
+                                        <div class="gauge-title">Vulnérabilités</div>
+                                        <div class="gauge-value 
+                                            {% if network_stats.vulnerabilities.total <= 5 %}text-success
+                                            {% elif network_stats.vulnerabilities.total <= 15 %}text-warning
+                                            {% else %}text-danger{% endif %}">
+                                            {{ network_stats.vulnerabilities.total }}
+                                        </div>
+                                        <div class="gauge-label 
+                                            {% if network_stats.vulnerabilities.total <= 5 %}text-success
+                                            {% elif network_stats.vulnerabilities.total <= 15 %}text-warning
+                                            {% else %}text-danger{% endif %}">
+                                            {% if network_stats.vulnerabilities.total <= 5 %}Faible
+                                            {% elif network_stats.vulnerabilities.total <= 15 %}Modéré
+                                            {% else %}Élevé{% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <div class="security-gauge">
+                                        <div class="gauge-title">Appareils</div>
+                                        <div class="gauge-value 
+                                            {% if network_stats.secure_devices_percent >= 80 %}text-success
+                                            {% elif network_stats.secure_devices_percent >= 60 %}text-warning
+                                            {% else %}text-danger{% endif %}">
+                                            {{ network_stats.secure_devices_percent }}<small>%</small>
+                                        </div>
+                                        <div class="gauge-label 
+                                            {% if network_stats.secure_devices_percent >= 80 %}text-success
+                                            {% elif network_stats.secure_devices_percent >= 60 %}text-warning
+                                            {% else %}text-danger{% endif %}">
+                                            Sécurisés
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3">
+                                <h6>Distribution de la sécurité</h6>
+                                <div class="security-distribution d-flex">
+                                    <div class="progress flex-grow-1" style="height: 25px;">
+                                        <div class="progress-bar bg-success" role="progressbar" 
+                                             style="width: {{ network_stats.security_distribution.high }}%" 
+                                             aria-valuenow="{{ network_stats.security_distribution.high }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                            {{ network_stats.security_distribution.high }}%
+                                        </div>
+                                        <div class="progress-bar bg-warning" role="progressbar" 
+                                             style="width: {{ network_stats.security_distribution.medium }}%" 
+                                             aria-valuenow="{{ network_stats.security_distribution.medium }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                            {{ network_stats.security_distribution.medium }}%
+                                        </div>
+                                        <div class="progress-bar bg-danger" role="progressbar" 
+                                             style="width: {{ network_stats.security_distribution.low }}%" 
+                                             aria-valuenow="{{ network_stats.security_distribution.low }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                            {{ network_stats.security_distribution.low }}%
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="legend d-flex justify-content-between mt-1">
+                                    <small><span class="badge bg-success">Élevée</span> {{ network_stats.security_distribution.high }}%</small>
+                                    <small><span class="badge bg-warning">Moyenne</span> {{ network_stats.security_distribution.medium }}%</small>
+                                    <small><span class="badge bg-danger">Faible</span> {{ network_stats.security_distribution.low }}%</small>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <h6>Vulnérabilités par sévérité</h6>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <div>Critique</div>
+                                    <div class="badge bg-danger">{{ network_stats.vulnerabilities.critical }}</div>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <div>Élevée</div>
+                                    <div class="badge bg-warning">{{ network_stats.vulnerabilities.high }}</div>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <div>Moyenne</div>
+                                    <div class="badge bg-info">{{ network_stats.vulnerabilities.medium }}</div>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <div>Faible</div>
+                                    <div class="badge bg-success">{{ network_stats.vulnerabilities.low }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Analyse du réseau WiFi</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <h6>Sécurité du WiFi</h6>
+                                <div class="progress mb-1">
+                                    <div class="progress-bar bg-primary" role="progressbar" 
+                                         style="width: {{ network_stats.wifi_security_score }}%" 
+                                         aria-valuenow="{{ network_stats.wifi_security_score }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100">
+                                        {{ network_stats.wifi_security_score }}%
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-3">
+                                    <h6>Distribution des protocoles</h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <div>WPA3</div>
+                                                <div class="badge bg-success">{{ network_stats.protocols.wpa3 }}</div>
+                                            </div>
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <div>WPA2</div>
+                                                <div class="badge bg-info">{{ network_stats.protocols.wpa2 }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <div>WPA</div>
+                                                <div class="badge bg-warning">{{ network_stats.protocols.wpa }}</div>
+                                            </div>
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <div>WEP/Ouvert</div>
+                                                <div class="badge bg-danger">{{ network_stats.protocols.wep_open }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-3">
+                                    <h6>Recommandations de sécurité WiFi</h6>
+                                    <ul class="list-group">
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Utiliser WPA3 avec chiffrement fort
+                                            <span class="badge bg-primary rounded-pill">Priorité élevée</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Désactiver WPS sur tous les routeurs
+                                            <span class="badge bg-primary rounded-pill">Priorité élevée</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Changer les mots de passe par défaut
+                                            <span class="badge bg-warning rounded-pill">Priorité moyenne</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between">
+                            <h5>Appareils vulnérables</h5>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-outline-primary active" data-sort="security">Par sécurité</button>
+                                <button class="btn btn-sm btn-outline-primary" data-sort="type">Par type</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Appareil</th>
+                                            <th>Type</th>
+                                            <th>Score</th>
+                                            <th>Vulnérabilités</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for device in device_scores %}
+                                        <tr>
+                                            <td>{{ device.name }}</td>
+                                            <td>{{ device.type }}</td>
+                                            <td>
+                                                <div class="progress">
+                                                    <div class="progress-bar 
+                                                        {% if device.security_score >= 80 %}bg-success
+                                                        {% elif device.security_score >= 60 %}bg-warning
+                                                        {% else %}bg-danger{% endif %}" 
+                                                        role="progressbar" 
+                                                        style="width: {{ device.security_score }}%" 
+                                                        aria-valuenow="{{ device.security_score }}" 
+                                                        aria-valuemin="0" 
+                                                        aria-valuemax="100">
+                                                        {{ device.security_score }}%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-{{ 'success' if device.security_issues|length == 0 else 'danger' }}">
+                                                    {{ device.security_issues|length }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-sm btn-info" onclick="viewDeviceDetails('{{ device.mac_address }}')">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5>Tendances de sécurité</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="securityTrendsChart" height="200"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Actions de sécurité recommandées</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="list-group">
+                                <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">Mettre à jour le firmware des routeurs</h6>
+                                        <small class="text-danger">Critique</small>
+                                    </div>
+                                    <p class="mb-1">Des vulnérabilités ont été détectées dans les versions actuelles du firmware.</p>
+                                    <small>Impact estimé: +15 points de sécurité</small>
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">Activation de l'isolation des clients WiFi</h6>
+                                        <small class="text-warning">Élevée</small>
+                                    </div>
+                                    <p class="mb-1">Empêche les communications entre les appareils connectés au même réseau WiFi.</p>
+                                    <small>Impact estimé: +10 points de sécurité</small>
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">Configuration d'un réseau invité séparé</h6>
+                                        <small class="text-info">Moyenne</small>
+                                    </div>
+                                    <p class="mb-1">Sépare le trafic des invités du réseau principal pour améliorer la sécurité.</p>
+                                    <small>Impact estimé: +8 points de sécurité</small>
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">Mise à jour des appareils IoT</h6>
+                                        <small class="text-primary">Standard</small>
+                                    </div>
+                                    <p class="mb-1">Plusieurs appareils IoT n'ont pas les dernières mises à jour de sécurité.</p>
+                                    <small>Impact estimé: +5 points de sécurité</small>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de détails d'appareil -->
+<div class="modal fade" id="deviceDetailsModal" tabindex="-1" aria-labelledby="deviceDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deviceDetailsModalLabel">Détails de l'appareil</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="deviceDetailsContent">
+                <!-- Le contenu sera chargé dynamiquement par JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                <button type="button" class="btn btn-primary" id="applyFixesBtn">Appliquer les correctifs</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Graphique des tendances de sécurité
+    var ctx = document.getElementById('securityTrendsChart').getContext('2d');
+    var securityTrendsChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['1 Sept', '2 Sept', '3 Sept', '4 Sept', '5 Sept', '6 Sept', '7 Sept', 'Aujourd\'hui'],
+            datasets: [{
+                label: 'Score de sécurité global',
+                data: [65, 68, 72, 75, 71, 74, 79, {{ network_stats.global_score }}],
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 2,
+                tension: 0.4
+            }, {
+                label: 'Vulnérabilités',
+                data: [24, 22, 19, 17, 18, 15, 12, {{ network_stats.vulnerabilities.total }}],
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 2,
+                tension: 0.4
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top'
+                }
+            }
+        }
+    });
+    
+    // Fonction pour afficher les détails d'un appareil
+    function viewDeviceDetails(macAddress) {
+        // Dans une implémentation réelle, on chargerait les données via une requête AJAX
+        // Pour cette démo, on affiche simplement un message dans le modal
+        document.getElementById('deviceDetailsContent').innerHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Informations de l'appareil</h5>
+                    <p><strong>Nom:</strong> Appareil-${macAddress.substring(0, 5)}</p>
+                    <p><strong>Adresse MAC:</strong> ${macAddress}</p>
+                    <p><strong>Type:</strong> Routeur</p>
+                    <p><strong>Fabricant:</strong> Generic Inc.</p>
+                    <p><strong>Dernière activité:</strong> Il y a 5 minutes</p>
+                </div>
+                <div class="col-md-6">
+                    <h5>Statut de sécurité</h5>
+                    <div class="mb-3">
+                        <label>Score de sécurité</label>
+                        <div class="progress">
+                            <div class="progress-bar bg-warning" role="progressbar" style="width: 65%" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100">65%</div>
+                        </div>
+                    </div>
+                    <p><span class="badge bg-warning">3 vulnérabilités détectées</span></p>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-12">
+                    <h5>Vulnérabilités détectées</h5>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Problème</th>
+                                <th>Sévérité</th>
+                                <th>Impact</th>
+                                <th>Solution</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Firmware obsolète</td>
+                                <td><span class="badge bg-danger">Critique</span></td>
+                                <td>Vulnérable aux exploits récents</td>
+                                <td>Mettre à jour vers la dernière version</td>
+                            </tr>
+                            <tr>
+                                <td>WPS activé</td>
+                                <td><span class="badge bg-warning">Élevé</span></td>
+                                <td>Vulnérable aux attaques de force brute</td>
+                                <td>Désactiver WPS dans les paramètres</td>
+                            </tr>
+                            <tr>
+                                <td>Mots de passe par défaut</td>
+                                <td><span class="badge bg-warning">Élevé</span></td>
+                                <td>Accès non autorisé facilité</td>
+                                <td>Changer les identifiants par défaut</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+        
+        var modal = new bootstrap.Modal(document.getElementById('deviceDetailsModal'));
+        modal.show();
+    }
+    
+    // Gestionnaire pour le bouton d'application des correctifs
+    document.getElementById('applyFixesBtn').addEventListener('click', function() {
+        alert('Dans une implémentation réelle, cette action appliquerait des correctifs automatiques aux vulnérabilités détectées.');
+        
+        // Fermer le modal
+        var modal = bootstrap.Modal.getInstance(document.getElementById('deviceDetailsModal'));
+        modal.hide();
+    });
+    
+    // Gestionnaire pour le bouton de scan rapide
+    document.getElementById('securityScanBtn').addEventListener('click', function() {
+        alert('Scan rapide de sécurité lancé. Dans une implémentation réelle, cela analyserait tous les appareils sur le réseau.');
+    });
+    
+    // Gestionnaire pour le bouton de scan approfondi
+    document.getElementById('deepScanBtn').addEventListener('click', function() {
+        alert('Scan approfondi de sécurité lancé. Dans une implémentation réelle, cela effectuerait une analyse complète de toutes les vulnérabilités potentielles.');
+    });
+    
+    // Gestionnaires pour les boutons de tri des appareils
+    document.querySelectorAll('[data-sort]').forEach(button => {
+        button.addEventListener('click', function() {
+            // Retirer la classe active de tous les boutons
+            document.querySelectorAll('[data-sort]').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Ajouter la classe active au bouton cliqué
+            this.classList.add('active');
+            
+            // Dans une implémentation réelle, on trierait le tableau ici
+            alert(`Tri des appareils par ${this.getAttribute('data-sort')}`);
+        });
+    });
+</script>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .security-gauge {
+        text-align: center;
+        padding: 10px;
+        border-radius: 5px;
+        background-color: #f8f9fa;
+    }
+    
+    .gauge-title {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-bottom: 5px;
+    }
+    
+    .gauge-value {
+        font-size: 2.5rem;
+        font-weight: bold;
+        line-height: 1;
+    }
+    
+    .gauge-value small {
+        font-size: 1rem;
+    }
+    
+    .gauge-label {
+        font-size: 0.85rem;
+        font-weight: 500;
+        margin-top: 5px;
+    }
+</style>
+{% endblock %}
