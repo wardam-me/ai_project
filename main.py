@@ -17,6 +17,7 @@ from flask_login import (
 )
 from flask_socketio import SocketIO, emit
 from werkzeug.security import generate_password_hash, check_password_hash
+from memory_monitor import MemoryMonitor
 
 from app import app, db, socketio, login_manager
 from forms import LoginForm, RegistrationForm, SaveTopologyForm
@@ -1007,7 +1008,17 @@ def erreur_serveur(error):
     db.session.rollback()
     return render_template('500.html'), 500
 
+# Route pour obtenir les statistiques mémoire
+@app.route('/api/memory-stats')
+@login_required
+def memory_stats():
+    """Récupère les statistiques d'utilisation de la mémoire"""
+    memory_info = MemoryMonitor.log_memory_usage()
+    return jsonify(memory_info)
+
 # Point d'entrée principal
 if __name__ == '__main__':
+    # Log initial de l'utilisation de la mémoire au démarrage
+    MemoryMonitor.log_memory_usage()
     # Démarrer l'application avec Socket.IO
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)
