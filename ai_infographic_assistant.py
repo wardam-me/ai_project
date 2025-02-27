@@ -1,325 +1,485 @@
 """
-Module d'intégration entre le générateur d'infographies et le module IA
-Ce module permet d'enrichir les infographies avec des analyses IA et des recommandations intelligentes
+Module d'assistance IA pour enrichir les données des infographies de sécurité
 """
-
 import logging
 import os
 import json
-import time
+from typing import Dict, List, Any, Optional
 from datetime import datetime
-from typing import Dict, List, Any, Optional, Tuple
 
-from module_IA import SecurityAI, NetworkOptimizer, AICloneManager
-
-# Configuration du logger
-logging.basicConfig(level=logging.INFO)
+# Configuration du logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+# Import conditionnel du module IA si disponible
+AI_MODULE_AVAILABLE = False
+SecurityAnalysisAI = None
+
+try:
+    from module_IA import SecurityAnalysisAI
+    AI_MODULE_AVAILABLE = True
+    logger.info("Module SecurityAnalysisAI importé avec succès")
+except ImportError:
+    # Classe simulée pour éviter les erreurs
+    class SecurityAnalysisAI:
+        def __init__(self):
+            logger.warning("Utilisation d'une classe SecurityAnalysisAI simulée")
+        
+        def is_available(self):
+            return False
+        
+        # Méthodes simulées pour éviter les erreurs
+        def generate_recommendation_insight(self, rec):
+            return "Insight simulé pour les recommandations de sécurité"
+            
+        def analyze_device_security(self, device_type, device_name, security_score):
+            return f"Analyse simulée pour l'appareil {device_name}"
+            
+        def predict_security_trend(self, trend_data):
+            return [{"date": "Futur", "score": 75, "predicted": True}]
+            
+        def generate_network_security_analysis(self, overall_score, device_count, rec_count):
+            return "Analyse simulée du réseau"
+            
+        def analyze_protocol_security(self, protocol_name, security_score):
+            return f"Analyse simulée du protocole {protocol_name}"
+            
+        def generate_protocol_recommendation(self, rec):
+            return "Recommandation simulée pour les protocoles"
+            
+        def generate_protocol_comparison(self, protocol_names):
+            return {"summary": "Comparaison simulée", "protocols": {}}
+            
+        def analyze_vulnerability(self, vuln_id, vuln_title, vuln_severity):
+            return f"Analyse simulée de la vulnérabilité {vuln_id}"
+            
+        def generate_remediation_recommendation(self, title, difficulty):
+            return "Recommandation simulée pour la remédiation"
+            
+        def analyze_vulnerability_trend(self, date, count, description):
+            return "Analyse simulée des tendances de vulnérabilité"
+            
+        def generate_advanced_security_recommendations(self, total_vulns, critical_vulns):
+            return [{"title": "Recommandation simulée", "description": "Description", "ai_confidence": 90}]
+            
+        def generate_network_highlight(self, data):
+            return "Point fort simulé pour le réseau"
+            
+        def generate_protocol_highlight(self, data):
+            return "Point fort simulé pour les protocoles"
+            
+        def generate_vulnerability_highlight(self, data):
+            return "Point fort simulé pour les vulnérabilités"
+    
+    logger.warning("Module module_IA non disponible, utilisation d'une version simulée")
 
 class AIInfographicAssistant:
     """
-    Assistant IA pour l'enrichissement des infographies et rapports
-    Cette classe fait le pont entre le générateur d'infographies et les modules d'IA
+    Assistant d'infographie alimenté par l'IA pour enrichir les données
+    et améliorer les rapports de sécurité
     """
     
-    def __init__(self):
-        """Initialisation de l'assistant d'infographie IA"""
-        self.security_ai = SecurityAI()
-        self.network_optimizer = NetworkOptimizer()
-        self.clone_manager = AICloneManager()
-        self.active_clone_id = None
-        self.infographic_insights = {}
-        self.last_analysis_time = None
-        logger.info("Assistant IA pour infographies initialisé")
-    
-    def create_assistant_clone(self, report_type: str) -> str:
+    def __init__(self, use_cache: bool = True, cache_dir: str = 'config'):
         """
-        Crée un clone IA spécialisé pour assister à la génération d'un type de rapport spécifique
+        Initialise l'assistant d'infographie IA
         
         Args:
-            report_type: Type de rapport ('network', 'protocol', 'vulnerability')
+            use_cache: Utiliser le cache pour les requêtes fréquentes (par défaut: True)
+            cache_dir: Répertoire où stocker les données en cache
+        """
+        self.use_cache = use_cache
+        self.cache_dir = cache_dir
+        self.cache_file = os.path.join(cache_dir, 'ai_insights_cache.json')
+        self.security_ai = None
+        self.cache = {}
+        
+        # Initialiser le module IA si disponible
+        if AI_MODULE_AVAILABLE:
+            try:
+                self.security_ai = SecurityAnalysisAI()
+                logger.info("Module IA chargé avec succès")
+            except Exception as e:
+                logger.error(f"Erreur lors de l'initialisation du module IA: {e}")
+        else:
+            logger.warning("Module IA non disponible, fonctionnant en mode dégradé")
+        
+        # Charger le cache si existant et demandé
+        if use_cache:
+            self._load_cache()
+    
+    def _load_cache(self) -> None:
+        """Charge le cache depuis le fichier"""
+        if os.path.exists(self.cache_file):
+            try:
+                with open(self.cache_file, 'r', encoding='utf-8') as f:
+                    self.cache = json.load(f)
+                logger.info(f"Cache chargé depuis {self.cache_file}")
+            except Exception as e:
+                logger.error(f"Erreur lors du chargement du cache: {e}")
+                self.cache = {}
+    
+    def _save_cache(self) -> None:
+        """Enregistre le cache dans le fichier"""
+        try:
+            os.makedirs(self.cache_dir, exist_ok=True)
+            with open(self.cache_file, 'w', encoding='utf-8') as f:
+                json.dump(self.cache, f, indent=2, ensure_ascii=False)
+            logger.info(f"Cache enregistré dans {self.cache_file}")
+        except Exception as e:
+            logger.error(f"Erreur lors de l'enregistrement du cache: {e}")
+    
+    def _get_cache_key(self, data_type: str, data_hash: str) -> str:
+        """
+        Génère une clé de cache unique pour les données
+        
+        Args:
+            data_type: Type de données (network, protocol, vulnerability)
+            data_hash: Hash ou identifiant unique des données
             
         Returns:
-            str: ID du clone créé
+            str: Clé de cache
         """
-        # Configuration personnalisée selon le type de rapport
-        custom_config = {
-            'name': f"Assistant d'Infographie {report_type.capitalize()}",
-            'purpose': f"Génération automatisée de rapports {report_type}",
-            'auto_delete': True,  # Le clone sera supprimé après utilisation
-            'duration': 600,  # Durée de vie de 10 minutes
-            'specialization': report_type
-        }
+        return f"{data_type}_{data_hash}"
+    
+    def _generate_data_hash(self, data: Dict[str, Any]) -> str:
+        """
+        Génère un hash simple pour les données
         
-        # Type de clone selon le rapport
-        clone_type = 'security_optimizer'
-        if report_type == 'vulnerability':
-            clone_type = 'auto_repair'
-        elif report_type == 'protocol':
-            clone_type = 'performance_tuner'
+        Args:
+            data: Données à hasher
+            
+        Returns:
+            str: Hash des données (simplifié)
+        """
+        # Version simplifiée, en production utiliser un hash plus robuste
+        try:
+            # Utiliser uniquement quelques champs clés pour le hash
+            key_items = []
+            
+            if 'report_id' in data:
+                key_items.append(f"id:{data['report_id']}")
+            
+            if 'generated_at' in data:
+                key_items.append(f"date:{data['generated_at']}")
+            
+            if 'devices' in data and isinstance(data['devices'], list):
+                key_items.append(f"devices:{len(data['devices'])}")
+            
+            if 'vulnerabilities' in data and isinstance(data['vulnerabilities'], list):
+                key_items.append(f"vulns:{len(data['vulnerabilities'])}")
+            
+            # Si aucune clé spécifique n'est trouvée, utiliser un timestamp
+            if not key_items:
+                key_items.append(f"ts:{datetime.now().timestamp()}")
+            
+            return "_".join(key_items)
+        except Exception as e:
+            logger.error(f"Erreur lors de la génération du hash: {e}")
+            return f"fallback_{datetime.now().timestamp()}"
+    
+    def is_available(self) -> bool:
+        """
+        Vérifie si l'assistant IA est disponible et fonctionnel
         
-        # Créer le clone
-        clone_id = self.clone_manager.create_clone(clone_type, custom_config)
-        self.active_clone_id = clone_id
-        logger.info(f"Clone IA créé pour le rapport {report_type}: {clone_id}")
-        
-        return clone_id
+        Returns:
+            bool: True si l'assistant est disponible, False sinon
+        """
+        return self.security_ai is not None and AI_MODULE_AVAILABLE
     
     def enrich_network_security_data(self, network_data: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Enrichit les données de sécurité réseau avec des insights d'IA
+        Enrichit les données de sécurité réseau avec des insights IA
         
         Args:
-            network_data: Données réseau de base
+            network_data: Données de sécurité réseau
             
         Returns:
-            Dict: Données réseau enrichies avec analyses IA
+            Dict[str, Any]: Données enrichies
         """
-        # Créer un clone dédié si nécessaire
-        if not self.active_clone_id:
-            self.create_assistant_clone('network')
+        if not self.is_available():
+            logger.warning("Module IA non disponible, données non enrichies")
+            return network_data
         
-        # Marquer le début de l'analyse
-        start_time = time.time()
-        
-        # Obtenir des prédictions de vulnérabilités
-        vulnerabilities = self.network_optimizer.predict_network_vulnerabilities(network_data)
-        
-        # Obtenir des recommandations d'optimisation
-        optimization_recs = self.network_optimizer.optimize_network_security(network_data)
-        
-        # Enrichir les données avec ces informations
-        enriched_data = network_data.copy()
-        enriched_data['ai_analysis'] = {
-            'predicted_vulnerabilities': vulnerabilities,
-            'optimization_recommendations': optimization_recs,
-            'timestamp': datetime.now().isoformat(),
-            'analysis_duration': time.time() - start_time
-        }
-        
-        # Stocker les insights pour référence future
-        self.infographic_insights['network'] = {
-            'timestamp': datetime.now().isoformat(),
-            'data_size': len(json.dumps(enriched_data)),
-            'vulnerabilities_count': len(vulnerabilities),
-            'recommendations_count': sum(len(recs) for recs in optimization_recs.values())
-        }
-        
-        self.last_analysis_time = datetime.now().isoformat()
-        logger.info(f"Données réseau enrichies avec {len(vulnerabilities)} vulnérabilités prédites")
-        
-        return enriched_data
+        try:
+            # Vérifier le cache
+            data_hash = self._generate_data_hash(network_data)
+            cache_key = self._get_cache_key('network', data_hash)
+            
+            if self.use_cache and cache_key in self.cache:
+                logger.info(f"Utilisation des données en cache pour {cache_key}")
+                return self.cache[cache_key]
+            
+            # Créer une copie pour ne pas modifier l'original
+            enriched_data = network_data.copy()
+            
+            # Enrichir les recommandations
+            if 'recommendations' in enriched_data and isinstance(enriched_data['recommendations'], list):
+                for i, rec in enumerate(enriched_data['recommendations']):
+                    if i < len(enriched_data['recommendations']):
+                        ai_insight = self.security_ai.generate_recommendation_insight(rec)
+                        if ai_insight:
+                            enriched_data['recommendations'][i]['ai_insight'] = ai_insight
+            
+            # Enrichir les données des appareils
+            if 'devices' in enriched_data and isinstance(enriched_data['devices'], list):
+                for i, device in enumerate(enriched_data['devices']):
+                    if i < len(enriched_data['devices']):
+                        device_type = device.get('type', '')
+                        device_name = device.get('name', '')
+                        security_score = device.get('security_score', 0)
+                        
+                        ai_insight = self.security_ai.analyze_device_security(
+                            device_type, device_name, security_score
+                        )
+                        
+                        if ai_insight:
+                            enriched_data['devices'][i]['ai_security_analysis'] = ai_insight
+            
+            # Ajouter des tendances de sécurité prédictives
+            if 'security_trend' in enriched_data:
+                predictive_trend = self.security_ai.predict_security_trend(enriched_data['security_trend'])
+                if predictive_trend:
+                    enriched_data['predictive_security_trend'] = predictive_trend
+            
+            # Ajouter une analyse globale
+            enriched_data['ai_analysis'] = self.security_ai.generate_network_security_analysis(
+                enriched_data.get('overall_score', 0),
+                len(enriched_data.get('devices', [])),
+                len(enriched_data.get('recommendations', []))
+            )
+            
+            # Sauvegarder dans le cache
+            if self.use_cache:
+                self.cache[cache_key] = enriched_data
+                self._save_cache()
+            
+            logger.info("Données de sécurité réseau enrichies avec succès")
+            return enriched_data
+            
+        except Exception as e:
+            logger.error(f"Erreur lors de l'enrichissement des données réseau: {e}")
+            return network_data
     
     def enrich_protocol_analysis_data(self, protocol_data: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Enrichit les données d'analyse de protocole avec des insights d'IA
+        Enrichit les données d'analyse de protocole avec des insights IA
         
         Args:
-            protocol_data: Données d'analyse de protocole de base
+            protocol_data: Données d'analyse de protocole
             
         Returns:
-            Dict: Données d'analyse de protocole enrichies avec analyses IA
+            Dict[str, Any]: Données enrichies
         """
-        # Créer un clone dédié si nécessaire
-        if not self.active_clone_id:
-            self.create_assistant_clone('protocol')
+        if not self.is_available():
+            logger.warning("Module IA non disponible, données non enrichies")
+            return protocol_data
         
-        # Analyser les réseaux WiFi avec l'IA de sécurité
-        networks = protocol_data.get('networks', [])
-        if networks:
-            wifi_analysis = self.security_ai.analyze_wifi_security(networks)
-        else:
-            wifi_analysis = {'message': 'Aucun réseau WiFi trouvé pour l\'analyse'}
-        
-        # Enrichir les données avec ces informations
-        enriched_data = protocol_data.copy()
-        enriched_data['ai_analysis'] = {
-            'wifi_security_analysis': wifi_analysis,
-            'security_dimensions': wifi_analysis.get('security_dimensions', {}),
-            'recommendations': wifi_analysis.get('recommendations', []),
-            'timestamp': datetime.now().isoformat()
-        }
-        
-        # Stocker les insights pour référence future
-        self.infographic_insights['protocol'] = {
-            'timestamp': datetime.now().isoformat(),
-            'networks_analyzed': len(networks),
-            'security_score': wifi_analysis.get('overall_score', 0),
-            'recommendations_count': len(wifi_analysis.get('recommendations', []))
-        }
-        
-        self.last_analysis_time = datetime.now().isoformat()
-        logger.info(f"Données de protocole enrichies avec analyse de {len(networks)} réseaux")
-        
-        return enriched_data
+        try:
+            # Vérifier le cache
+            data_hash = self._generate_data_hash(protocol_data)
+            cache_key = self._get_cache_key('protocol', data_hash)
+            
+            if self.use_cache and cache_key in self.cache:
+                logger.info(f"Utilisation des données en cache pour {cache_key}")
+                return self.cache[cache_key]
+            
+            # Créer une copie pour ne pas modifier l'original
+            enriched_data = protocol_data.copy()
+            
+            # Enrichir les protocoles
+            if 'protocols' in enriched_data and isinstance(enriched_data['protocols'], list):
+                for i, protocol in enumerate(enriched_data['protocols']):
+                    if i < len(enriched_data['protocols']):
+                        protocol_name = protocol.get('name', '')
+                        security_score = protocol.get('security', 0)
+                        
+                        ai_insight = self.security_ai.analyze_protocol_security(
+                            protocol_name, security_score
+                        )
+                        
+                        if ai_insight:
+                            enriched_data['protocols'][i]['ai_security_analysis'] = ai_insight
+            
+            # Enrichir les recommandations
+            if 'recommendations' in enriched_data and isinstance(enriched_data['recommendations'], list):
+                for i, rec in enumerate(enriched_data['recommendations']):
+                    if i < len(enriched_data['recommendations']):
+                        ai_insight = self.security_ai.generate_protocol_recommendation(rec)
+                        if ai_insight:
+                            enriched_data['recommendations'][i]['ai_insight'] = ai_insight
+            
+            # Ajouter une analyse comparative des protocoles
+            if 'protocols' in enriched_data and isinstance(enriched_data['protocols'], list):
+                protocol_comparison = self.security_ai.generate_protocol_comparison(
+                    [p.get('name', '') for p in enriched_data['protocols']]
+                )
+                if protocol_comparison:
+                    enriched_data['ai_protocol_comparison'] = protocol_comparison
+            
+            # Sauvegarder dans le cache
+            if self.use_cache:
+                self.cache[cache_key] = enriched_data
+                self._save_cache()
+            
+            logger.info("Données d'analyse de protocole enrichies avec succès")
+            return enriched_data
+            
+        except Exception as e:
+            logger.error(f"Erreur lors de l'enrichissement des données de protocole: {e}")
+            return protocol_data
     
     def enrich_vulnerability_data(self, vulnerability_data: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Enrichit les données de vulnérabilité avec des insights d'IA
+        Enrichit les données de vulnérabilité avec des insights IA
         
         Args:
-            vulnerability_data: Données de vulnérabilité de base
+            vulnerability_data: Données de vulnérabilité
             
         Returns:
-            Dict: Données de vulnérabilité enrichies avec analyses IA
+            Dict[str, Any]: Données enrichies
         """
-        # Créer un clone dédié si nécessaire
-        if not self.active_clone_id:
-            self.create_assistant_clone('vulnerability')
+        if not self.is_available():
+            logger.warning("Module IA non disponible, données non enrichies")
+            return vulnerability_data
         
-        # Utiliser l'AIErrorHandler pour générer des solutions
-        error_handler = self.clone_manager.active_clones[self.active_clone_id]['error_handler']
-        
-        # Détecter les vulnérabilités comme des erreurs
-        networks = vulnerability_data.get('networks', [])
-        logs = vulnerability_data.get('logs', [])
-        detected_errors = error_handler.detect_errors(
-            network_data={'networks': networks},
-            logs=logs
-        )
-        
-        # Générer des solutions pour ces vulnérabilités
-        proposed_solutions = error_handler.generate_solutions(detected_errors)
-        
-        # Enrichir les données avec ces informations
-        enriched_data = vulnerability_data.copy()
-        enriched_data['ai_analysis'] = {
-            'detected_vulnerabilities': detected_errors,
-            'proposed_solutions': proposed_solutions,
-            'error_statistics': error_handler.get_error_statistics(),
-            'timestamp': datetime.now().isoformat()
-        }
-        
-        # Stocker les insights pour référence future
-        self.infographic_insights['vulnerability'] = {
-            'timestamp': datetime.now().isoformat(),
-            'vulnerabilities_detected': len(detected_errors),
-            'solutions_proposed': len(proposed_solutions),
-            'severity_distribution': {
-                severity: sum(1 for e in detected_errors if e.get('severity') == severity)
-                for severity in ['critical', 'high', 'medium', 'low']
-            }
-        }
-        
-        self.last_analysis_time = datetime.now().isoformat()
-        logger.info(f"Données de vulnérabilité enrichies avec {len(detected_errors)} vulnérabilités détectées")
-        
-        return enriched_data
+        try:
+            # Vérifier le cache
+            data_hash = self._generate_data_hash(vulnerability_data)
+            cache_key = self._get_cache_key('vulnerability', data_hash)
+            
+            if self.use_cache and cache_key in self.cache:
+                logger.info(f"Utilisation des données en cache pour {cache_key}")
+                return self.cache[cache_key]
+            
+            # Créer une copie pour ne pas modifier l'original
+            enriched_data = vulnerability_data.copy()
+            
+            # Enrichir les vulnérabilités critiques
+            if 'critical_vulnerabilities' in enriched_data and isinstance(enriched_data['critical_vulnerabilities'], list):
+                for i, vuln in enumerate(enriched_data['critical_vulnerabilities']):
+                    if i < len(enriched_data['critical_vulnerabilities']):
+                        vuln_id = vuln.get('id', '')
+                        vuln_title = vuln.get('title', '')
+                        vuln_severity = vuln.get('severity', 'medium')
+                        
+                        ai_insights = self.security_ai.analyze_vulnerability(
+                            vuln_id, vuln_title, vuln_severity
+                        )
+                        
+                        if ai_insights:
+                            enriched_data['critical_vulnerabilities'][i]['ai_insights'] = ai_insights
+            
+            # Enrichir le plan de remédiation
+            if 'remediation_plan' in enriched_data and isinstance(enriched_data['remediation_plan'], list):
+                for i, step in enumerate(enriched_data['remediation_plan']):
+                    if i < len(enriched_data['remediation_plan']):
+                        title = step.get('title', '')
+                        difficulty = step.get('difficulty', 'medium')
+                        
+                        ai_recommendation = self.security_ai.generate_remediation_recommendation(
+                            title, difficulty
+                        )
+                        
+                        if ai_recommendation:
+                            enriched_data['remediation_plan'][i]['ai_recommendation'] = ai_recommendation
+            
+            # Enrichir la chronologie de découverte
+            if 'discovery_timeline' in enriched_data and isinstance(enriched_data['discovery_timeline'], list):
+                for i, entry in enumerate(enriched_data['discovery_timeline']):
+                    if i < len(enriched_data['discovery_timeline']) and i % 2 == 0:  # Une entrée sur deux pour limiter
+                        date = entry.get('date', '')
+                        count = entry.get('vulnerabilities', 0)
+                        description = entry.get('description', '')
+                        
+                        ai_insights = self.security_ai.analyze_vulnerability_trend(
+                            date, count, description
+                        )
+                        
+                        if ai_insights:
+                            enriched_data['discovery_timeline'][i]['ai_insights'] = ai_insights
+            
+            # Ajouter des recommandations avancées
+            enriched_data['ai_advanced_recommendations'] = self.security_ai.generate_advanced_security_recommendations(
+                enriched_data.get('summary', {}).get('total', 0),
+                enriched_data.get('summary', {}).get('critical', 0)
+            )
+            
+            # Sauvegarder dans le cache
+            if self.use_cache:
+                self.cache[cache_key] = enriched_data
+                self._save_cache()
+            
+            logger.info("Données de vulnérabilité enrichies avec succès")
+            return enriched_data
+            
+        except Exception as e:
+            logger.error(f"Erreur lors de l'enrichissement des données de vulnérabilité: {e}")
+            return vulnerability_data
     
-    def get_custom_visualization_data(self, report_type: str) -> Dict[str, Any]:
+    def generate_ai_highlight(self, data_type: str, data: Dict[str, Any]) -> Optional[str]:
         """
-        Génère des données personnalisées pour les visualisations avancées
+        Génère un point fort/insight principal sur les données pour mettre en avant
         
         Args:
-            report_type: Type de rapport ('network', 'protocol', 'vulnerability')
+            data_type: Type de données (network, protocol, vulnerability)
+            data: Données à analyser
             
         Returns:
-            Dict: Données personnalisées pour les visualisations
+            Optional[str]: Insight principal ou None si non disponible
         """
-        # Utilisons le clone actif pour générer des visualisations personnalisées
-        if not self.active_clone_id:
-            self.create_assistant_clone(report_type)
+        if not self.is_available():
+            return None
         
-        # Base de données pour les visualisations
-        visualization_data = {
-            'timestamp': datetime.now().isoformat(),
-            'title': f"Visualisation IA pour {report_type.capitalize()}",
-            'charts': []
+        try:
+            if data_type == 'network':
+                return self.security_ai.generate_network_highlight(data)
+            elif data_type == 'protocol':
+                return self.security_ai.generate_protocol_highlight(data)
+            elif data_type == 'vulnerability':
+                return self.security_ai.generate_vulnerability_highlight(data)
+            else:
+                logger.warning(f"Type de données non pris en charge: {data_type}")
+                return None
+        except Exception as e:
+            logger.error(f"Erreur lors de la génération du point fort: {e}")
+            return None
+    
+    def clear_cache(self) -> bool:
+        """
+        Efface le cache d'insights IA
+        
+        Returns:
+            bool: True si le cache a été effacé avec succès, False sinon
+        """
+        try:
+            self.cache = {}
+            if os.path.exists(self.cache_file):
+                os.remove(self.cache_file)
+            logger.info("Cache effacé avec succès")
+            return True
+        except Exception as e:
+            logger.error(f"Erreur lors de l'effacement du cache: {e}")
+            return False
+    
+    def get_cache_stats(self) -> Dict[str, Any]:
+        """
+        Renvoie des statistiques sur le cache
+        
+        Returns:
+            Dict[str, Any]: Statistiques du cache
+        """
+        stats = {
+            'cache_size': len(self.cache),
+            'cache_file_exists': os.path.exists(self.cache_file),
+            'cache_types': {}
         }
         
-        # Ajouter des visualisations spécifiques selon le type de rapport
-        if report_type == 'network':
-            visualization_data['charts'].extend([
-                {
-                    'type': 'radar',
-                    'title': 'Analyse multidimensionnelle de la sécurité',
-                    'data': {
-                        'labels': ['Chiffrement', 'Authentification', 'Protocole', 'Mot de passe', 'Confidentialité', 'Intégrité'],
-                        'datasets': [
-                            {'values': [85, 70, 90, 60, 75, 80], 'label': 'Niveau actuel'},
-                            {'values': [95, 90, 95, 85, 90, 90], 'label': 'Niveau optimal'}
-                        ]
-                    }
-                },
-                {
-                    'type': 'timeline',
-                    'title': 'Évolution des menaces détectées',
-                    'data': {
-                        'labels': ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
-                        'datasets': [
-                            {'values': [5, 7, 3, 8, 4, 2], 'label': 'Menaces critiques'},
-                            {'values': [12, 15, 10, 18, 14, 8], 'label': 'Menaces totales'}
-                        ]
-                    }
-                }
-            ])
-        elif report_type == 'protocol':
-            visualization_data['charts'].extend([
-                {
-                    'type': 'comparison',
-                    'title': 'Comparaison des protocoles de sécurité',
-                    'data': {
-                        'protocols': ['WEP', 'WPA', 'WPA2', 'WPA3'],
-                        'metrics': [
-                            {'name': 'Sécurité globale', 'values': [10, 40, 75, 95]},
-                            {'name': 'Résistance aux attaques', 'values': [5, 35, 70, 90]},
-                            {'name': 'Performance', 'values': [80, 75, 70, 85]}
-                        ]
-                    }
-                },
-                {
-                    'type': 'vulnerabilities',
-                    'title': 'Vulnérabilités par protocole',
-                    'data': {
-                        'protocols': ['WEP', 'WPA', 'WPA2', 'WPA3'],
-                        'vulnerability_types': ['Brute force', 'Man-in-the-middle', 'Déauthentification', 'Autre'],
-                        'matrix': [
-                            [80, 60, 40, 30],  # WEP
-                            [40, 50, 35, 20],  # WPA
-                            [15, 30, 25, 10],  # WPA2
-                            [5, 10, 5, 5]      # WPA3
-                        ]
-                    }
-                }
-            ])
-        elif report_type == 'vulnerability':
-            visualization_data['charts'].extend([
-                {
-                    'type': 'severity',
-                    'title': 'Distribution des vulnérabilités par sévérité',
-                    'data': {
-                        'labels': ['Critique', 'Élevée', 'Moyenne', 'Faible'],
-                        'values': [5, 10, 15, 5],
-                        'colors': ['#ff3b30', '#ff9500', '#ffcc00', '#5ac8fa']
-                    }
-                },
-                {
-                    'type': 'remediation',
-                    'title': 'Plan de remédiation intelligent',
-                    'data': {
-                        'steps': [
-                            {'title': 'Mise à jour des firmwares', 'difficulty': 'Facile', 'impact': 'Élevé', 'time': '1-2h'},
-                            {'title': 'Renforcement des mots de passe', 'difficulty': 'Facile', 'impact': 'Moyen', 'time': '30min'},
-                            {'title': 'Configuration du chiffrement avancé', 'difficulty': 'Moyen', 'impact': 'Élevé', 'time': '1h'},
-                            {'title': 'Mise en place de l\'authentification à deux facteurs', 'difficulty': 'Moyen', 'impact': 'Élevé', 'time': '2h'},
-                            {'title': 'Segmentation du réseau', 'difficulty': 'Difficile', 'impact': 'Très élevé', 'time': '3-4h'}
-                        ]
-                    }
-                }
-            ])
+        # Compter les types de données en cache
+        for key in self.cache.keys():
+            data_type = key.split('_')[0] if '_' in key else 'unknown'
+            if data_type in stats['cache_types']:
+                stats['cache_types'][data_type] += 1
+            else:
+                stats['cache_types'][data_type] = 1
         
-        return visualization_data
-    
-    def cleanup_resources(self):
-        """Nettoie les ressources utilisées par l'assistant"""
-        if self.active_clone_id:
-            try:
-                self.clone_manager.stop_clone(self.active_clone_id)
-                logger.info(f"Clone IA {self.active_clone_id} arrêté et nettoyé")
-            except Exception as e:
-                logger.error(f"Erreur lors du nettoyage du clone IA {self.active_clone_id}: {e}")
-            
-            self.active_clone_id = None
-
-# Instance globale pour l'utilisation dans l'application
-ai_assistant = AIInfographicAssistant()
+        return stats

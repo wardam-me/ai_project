@@ -18,16 +18,18 @@ import numpy as np
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.patches import Patch
 
-# Import conditionnel pour éviter les dépendances circulaires
-ai_assistant = None
-try:
-    from ai_infographic_assistant import ai_assistant
-except ImportError:
-    logger.warning("Module ai_infographic_assistant non disponible, fonctionnalités IA limitées")
-
 # Configuration du logger
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Import conditionnel pour éviter les dépendances circulaires
+ai_assistant = None
+try:
+    from ai_infographic_assistant import AIInfographicAssistant
+    ai_assistant = AIInfographicAssistant()
+    logger.info("Module d'assistance IA chargé avec succès")
+except ImportError:
+    logger.warning("Module ai_infographic_assistant non disponible, fonctionnalités IA limitées")
 
 # Constantes pour les chemins de fichiers
 EXPORT_DIR = os.path.join("static", "exports")
@@ -76,7 +78,8 @@ class InfographicGenerator:
         output_filename: Optional[str] = None,
         format: str = 'png',
         dpi: int = 150,
-        interactive: bool = False
+        interactive: bool = False,
+        use_ai: bool = True
     ) -> str:
         """
         Génère une infographie complète de sécurité réseau
@@ -88,10 +91,19 @@ class InfographicGenerator:
             format: Format de sortie (png, pdf, svg, html)
             dpi: Résolution en points par pouce (pour PNG et PDF)
             interactive: Inclure des éléments interactifs (pour PDF et HTML)
+            use_ai: Utiliser l'IA pour enrichir les données (si disponible)
             
         Returns:
             str: Chemin vers le fichier infographique généré
         """
+        # Enrichissement des données avec l'IA si disponible
+        if use_ai and ai_assistant is not None:
+            try:
+                network_data = ai_assistant.enrich_network_security_data(network_data)
+                logger.info("Données enrichies avec l'IA pour le rapport de sécurité réseau")
+            except Exception as e:
+                logger.error(f"Erreur lors de l'enrichissement IA des données: {e}")
+        
         # Valider le format
         format = format.lower()
         if format not in ['png', 'pdf', 'svg', 'html']:
@@ -179,7 +191,8 @@ class InfographicGenerator:
         output_filename: Optional[str] = None,
         format: str = 'png',
         dpi: int = 150,
-        interactive: bool = False
+        interactive: bool = False,
+        use_ai: bool = True
     ) -> str:
         """
         Génère une infographie d'analyse de protocole WiFi
@@ -190,10 +203,18 @@ class InfographicGenerator:
             format: Format de sortie (png, pdf, svg, html)
             dpi: Résolution en points par pouce (pour PNG et PDF)
             interactive: Inclure des éléments interactifs (pour PDF et HTML)
+            use_ai: Utiliser l'IA pour enrichir les données (si disponible)
             
         Returns:
             str: Chemin vers le fichier infographique généré
         """
+        # Enrichissement des données avec l'IA si disponible
+        if use_ai and ai_assistant is not None:
+            try:
+                protocol_data = ai_assistant.enrich_protocol_analysis_data(protocol_data)
+                logger.info("Données enrichies avec l'IA pour le rapport d'analyse de protocole")
+            except Exception as e:
+                logger.error(f"Erreur lors de l'enrichissement IA des données: {e}")
         # Valider le format
         format = format.lower()
         if format not in ['png', 'pdf', 'svg', 'html']:
@@ -278,7 +299,8 @@ class InfographicGenerator:
         output_filename: Optional[str] = None,
         format: str = 'png',
         dpi: int = 150,
-        interactive: bool = False
+        interactive: bool = False,
+        use_ai: bool = True
     ) -> str:
         """
         Génère une infographie détaillée des vulnérabilités
@@ -289,10 +311,19 @@ class InfographicGenerator:
             format: Format de sortie (png, pdf, svg, html)
             dpi: Résolution en points par pouce (pour PNG et PDF)
             interactive: Inclure des éléments interactifs (pour PDF et HTML)
+            use_ai: Utiliser l'IA pour enrichir les données (si disponible)
             
         Returns:
             str: Chemin vers le fichier infographique généré
         """
+        # Enrichissement des données avec l'IA si disponible
+        if use_ai and ai_assistant is not None:
+            try:
+                vulnerability_data = ai_assistant.enrich_vulnerability_data(vulnerability_data)
+                logger.info("Données enrichies avec l'IA pour le rapport de vulnérabilités")
+            except Exception as e:
+                logger.error(f"Erreur lors de l'enrichissement IA des données: {e}")
+                
         # Valider le format
         format = format.lower()
         if format not in ['png', 'pdf', 'svg', 'html']:
