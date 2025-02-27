@@ -4,19 +4,34 @@ English translation file
 
 translations = {
     # General texts
-    "app_name": "WiFi Analyzer",
-    "app_description": "Real-time analysis of available networks",
+    "app_name": "NetSecure Pro",
+    "app_description": "Network Security Analysis",
     "error_not_found": "Page not found. Return to home.",
     "error_server": "Server error. Please try again later.",
     
+    # Home page specific texts
+    "home_title": "Secure your network with NetSecure Pro",
+    "home_subtitle": "A comprehensive solution to analyze, visualize and secure all devices connected to your network.",
+    "access_dashboard": "Access dashboard",
+    "create_account": "Create account",
+    "login": "Login",
+    
     # Navigation
     "nav_home": "Home",
+    "nav_dashboard": "Dashboard",
     "nav_security_report": "Security Reports",
     "nav_assistant": "Assistant",
     "nav_language": "Language",
     "nav_recommendations": "Recommendations",
     "nav_device_security": "Device Security",
     "nav_network_topology": "Network Topology",
+    "nav_security_game": "Gamified Security",
+    "nav_analysis": "Analysis",
+    "nav_vulnerabilities": "Vulnerabilities",
+    "nav_protocols": "Protocols",
+    "nav_ai_analysis": "Advanced AI Analysis",
+    "register": "Register",
+    "footer_rights": "All rights reserved.",
     
     # Home page
     "best_network": "Best Recommended Network",

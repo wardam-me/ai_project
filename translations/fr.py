@@ -4,19 +4,34 @@ Fichier de traduction française
 
 translations = {
     # Textes généraux
-    "app_name": "Analyseur WiFi",
-    "app_description": "Analyse en temps réel des réseaux disponibles",
+    "app_name": "NetSecure Pro",
+    "app_description": "Analyse de Sécurité Réseau",
     "error_not_found": "Page non trouvée. Retournez à l'accueil.",
     "error_server": "Erreur serveur. Veuillez réessayer plus tard.",
     
+    # Textes spécifiques à la page d'accueil
+    "home_title": "Sécurisez votre réseau avec NetSecure Pro",
+    "home_subtitle": "Une solution complète pour analyser, visualiser et sécuriser tous les appareils connectés à votre réseau.",
+    "access_dashboard": "Accéder au tableau de bord",
+    "create_account": "Créer un compte",
+    "login": "Connexion",
+    
     # Navigation
     "nav_home": "Accueil",
+    "nav_dashboard": "Tableau de bord",
     "nav_security_report": "Rapports de Sécurité",
     "nav_assistant": "Assistant",
     "nav_language": "Langue",
     "nav_recommendations": "Recommandations",
     "nav_device_security": "Sécurité Appareils",
     "nav_network_topology": "Topologie Réseau",
+    "nav_security_game": "Sécurité Gamifiée",
+    "nav_analysis": "Analyses",
+    "nav_vulnerabilities": "Vulnérabilités",
+    "nav_protocols": "Protocoles",
+    "nav_ai_analysis": "Analyse IA avancée",
+    "register": "Inscription",
+    "footer_rights": "Tous droits réservés.",
     
     # Page d'accueil
     "best_network": "Meilleur Réseau Recommandé",

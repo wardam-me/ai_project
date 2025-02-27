@@ -6,18 +6,21 @@ import os
 import json
 import logging
 import random
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import wraps
 
 from flask import (
     Flask, render_template, request, redirect, url_for, flash, jsonify,
-    session, abort, current_app
+    session, abort, current_app, g
 )
 from flask_login import (
     LoginManager, current_user, login_user, logout_user, login_required
 )
 from flask_socketio import SocketIO, emit
 from werkzeug.security import generate_password_hash, check_password_hash
+
+# Importer les fonctions de traduction
+from translations import setup_babel, get_translation, switch_language
 from memory_monitor import MemoryMonitor
 
 from app import app, db, socketio, login_manager
@@ -40,6 +43,9 @@ security_scoring = DeviceSecurityScoring()
 assistant_securite = AssistantSecurite()
 security_ai = SecurityAI()
 network_optimizer = NetworkOptimizer()
+
+# Configuration de Babel pour les traductions
+setup_babel(app)
 
 # Contexte global pour tous les templates
 @app.context_processor
@@ -1020,6 +1026,8 @@ def memory_stats():
     memory_info = MemoryMonitor.log_memory_usage()
     return jsonify(memory_info)
 
+# Route pour le radar de sécurité (supprimée car définie plus bas)
+
 # Nouvelle route pour l'analyse IA
 @app.route('/ai-analysis')
 @login_required
@@ -1222,6 +1230,33 @@ def security_radar():
         historical_data=historical_data,
         networks=test_networks
     )
+
+# Route pour changer de langue
+@app.route('/change-language/<lang>')
+def change_language(lang):
+    """Change la langue de l'interface"""
+    if switch_language(lang):
+        # Rediriger vers la page précédente si disponible
+        next_page = request.args.get('next') or request.referrer or url_for('accueil')
+        return redirect(next_page)
+    else:
+        # Si la langue n'est pas valide, rester sur la même page
+        return redirect(request.referrer or url_for('accueil'))
+
+# Contexte global pour tous les templates - Langue actuelle
+@app.context_processor
+def inject_language():
+    """Injecte la langue actuelle dans tous les templates"""
+    from translations import get_language_info
+    
+    # Récupérer les informations sur la langue
+    lang_info = get_language_info()
+    
+    return {
+        'current_language': lang_info['current'],
+        'available_languages': lang_info['available'],
+        'get_translation': get_translation
+    }
 
 # Point d'entrée principal
 if __name__ == '__main__':
