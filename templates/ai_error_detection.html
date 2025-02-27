@@ -1,0 +1,750 @@
+{% extends "layout.html" %}
+
+{% block title %}Détection Automatique d'Erreurs IA{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-robot me-2"></i>Détection Automatique d'Erreurs IA
+                    </h5>
+                    <div>
+                        <button id="refreshErrorsBtn" class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="Actualiser les erreurs">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                        <button id="createCloneBtn" class="btn btn-sm btn-success ms-2" data-bs-toggle="modal" data-bs-target="#createCloneModal">
+                            <i class="fas fa-plus me-1"></i>Nouveau Clone
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Système de détection IA</strong> - Le système utilise l'intelligence artificielle pour détecter et corriger automatiquement les erreurs et vulnérabilités réseau.
+                    </div>
+
+                    <!-- Statistiques des erreurs -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h3 class="text-primary">{{ detected_errors|length }}</h3>
+                                    <small class="text-muted">Erreurs détectées</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h3 class="text-warning">{{ error_stats.unresolved|default(0) }}</h3>
+                                    <small class="text-muted">Erreurs non résolues</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h3 class="text-success">{{ error_stats.fixed|default(0) }}</h3>
+                                    <small class="text-muted">Erreurs corrigées</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h3 class="text-info">{{ clones.active|default([])|length }}</h3>
+                                    <small class="text-muted">Clones actifs</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Onglets -->
+                    <ul class="nav nav-tabs mb-3" id="errorTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="errors-tab" data-bs-toggle="tab" data-bs-target="#errors" type="button" role="tab" aria-controls="errors" aria-selected="true">
+                                <i class="fas fa-exclamation-triangle me-2"></i>Erreurs Détectées
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="solutions-tab" data-bs-toggle="tab" data-bs-target="#solutions" type="button" role="tab" aria-controls="solutions" aria-selected="false">
+                                <i class="fas fa-tools me-2"></i>Solutions Proposées
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="clones-tab" data-bs-toggle="tab" data-bs-target="#clones" type="button" role="tab" aria-controls="clones" aria-selected="false">
+                                <i class="fas fa-robot me-2"></i>Clones IA
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="stats-tab" data-bs-toggle="tab" data-bs-target="#stats" type="button" role="tab" aria-controls="stats" aria-selected="false">
+                                <i class="fas fa-chart-pie me-2"></i>Statistiques
+                            </button>
+                        </li>
+                    </ul>
+
+                    <!-- Contenu des onglets -->
+                    <div class="tab-content" id="errorTabsContent">
+                        <!-- Onglet des erreurs détectées -->
+                        <div class="tab-pane fade show active" id="errors" role="tabpanel" aria-labelledby="errors-tab">
+                            {% if detected_errors %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Type</th>
+                                                <th>Description</th>
+                                                <th>Sévérité</th>
+                                                <th>Appareil</th>
+                                                <th>Détecté</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for error in detected_errors %}
+                                                <tr>
+                                                    <td>
+                                                        <span class="badge bg-{{ error.type|lower == 'security' and 'danger' or error.type|lower == 'performance' and 'warning' or 'info' }}">
+                                                            {{ error.type }}
+                                                        </span>
+                                                    </td>
+                                                    <td>{{ error.description }}</td>
+                                                    <td>
+                                                        {% if error.severity == 'high' %}
+                                                            <span class="text-danger"><i class="fas fa-exclamation-circle me-1"></i>Élevée</span>
+                                                        {% elif error.severity == 'medium' %}
+                                                            <span class="text-warning"><i class="fas fa-exclamation me-1"></i>Moyenne</span>
+                                                        {% else %}
+                                                            <span class="text-info"><i class="fas fa-info-circle me-1"></i>Faible</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% if error.device_mac %}
+                                                            <a href="#" class="device-link" data-mac="{{ error.device_mac }}">
+                                                                {{ error.device_name or error.device_mac }}
+                                                            </a>
+                                                        {% else %}
+                                                            <span class="text-muted">Réseau entier</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>{{ error.detected_at|datetime }}</td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-primary fix-error-btn" data-error-id="{{ error.id }}">
+                                                            <i class="fas fa-magic me-1"></i>Corriger
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-success">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    Aucune erreur détectée sur votre réseau. Tout semble fonctionner correctement !
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Onglet des solutions proposées -->
+                        <div class="tab-pane fade" id="solutions" role="tabpanel" aria-labelledby="solutions-tab">
+                            {% if solutions %}
+                                <div class="list-group">
+                                    {% for solution in solutions %}
+                                        <div class="list-group-item list-group-item-action">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h5 class="mb-1">{{ solution.title }}</h5>
+                                                <small class="text-{{ solution.complexity == 'simple' and 'success' or solution.complexity == 'moderate' and 'warning' or 'danger' }}">
+                                                    {{ solution.complexity|capitalize }}
+                                                </small>
+                                            </div>
+                                            <p class="mb-1">{{ solution.description }}</p>
+                                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                                <small class="text-muted">Résout {{ solution.fixes|length }} problème(s)</small>
+                                                <div>
+                                                    <button class="btn btn-sm btn-outline-secondary details-btn" data-solution-id="{{ solution.id }}" data-bs-toggle="modal" data-bs-target="#solutionDetailsModal">
+                                                        <i class="fas fa-info-circle me-1"></i>Détails
+                                                    </button>
+                                                    <button class="btn btn-sm btn-success apply-solution-btn" data-solution-id="{{ solution.id }}">
+                                                        <i class="fas fa-check me-1"></i>Appliquer
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Aucune solution n'est proposée actuellement.
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Onglet des clones IA -->
+                        <div class="tab-pane fade" id="clones" role="tabpanel" aria-labelledby="clones-tab">
+                            {% if clones and clones.active %}
+                                <div class="row">
+                                    {% for clone in clones.active %}
+                                        <div class="col-md-6 mb-4">
+                                            <div class="card">
+                                                <div class="card-header d-flex justify-content-between align-items-center">
+                                                    <h6 class="mb-0">
+                                                        <i class="fas fa-robot me-2"></i>{{ clone.name or clone.id }}
+                                                    </h6>
+                                                    <span class="badge bg-success">Actif</span>
+                                                </div>
+                                                <div class="card-body">
+                                                    <p><strong>Type:</strong> {{ clone.type|capitalize }}</p>
+                                                    <p><strong>Créé:</strong> {{ clone.created_at|datetime }}</p>
+                                                    <p><strong>Erreurs détectées:</strong> {{ clone.detected_errors_count }}</p>
+                                                    <p><strong>Corrections appliquées:</strong> {{ clone.corrections_count }}</p>
+                                                    <p><strong>Dernière activité:</strong> {{ clone.last_activity_at|datetime }}</p>
+                                                    
+                                                    <div class="progress mb-3">
+                                                        <div class="progress-bar" role="progressbar" style="width: {{ clone.scan_progress }}%;" aria-valuenow="{{ clone.scan_progress }}" aria-valuemin="0" aria-valuemax="100">{{ clone.scan_progress }}%</div>
+                                                    </div>
+                                                    
+                                                    <div class="d-flex justify-content-between">
+                                                        <button class="btn btn-primary clone-auto-correct-btn" data-clone-id="{{ clone.id }}">
+                                                            <i class="fas fa-magic me-1"></i>Correction Auto
+                                                        </button>
+                                                        <button class="btn btn-outline-danger clone-stop-btn" data-clone-id="{{ clone.id }}">
+                                                            <i class="fas fa-stop me-1"></i>Arrêter
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                {% if clones.history %}
+                                    <h5 class="mt-4 mb-3">Historique des clones</h5>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Type</th>
+                                                    <th>Créé le</th>
+                                                    <th>Arrêté le</th>
+                                                    <th>Corrections</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for clone in clones.history %}
+                                                    <tr>
+                                                        <td>{{ clone.id }}</td>
+                                                        <td>{{ clone.type|capitalize }}</td>
+                                                        <td>{{ clone.created_at|datetime }}</td>
+                                                        <td>{{ clone.stopped_at|datetime }}</td>
+                                                        <td>{{ clone.corrections_count }}</td>
+                                                        <td>
+                                                            <button class="btn btn-sm btn-outline-secondary clone-restore-btn" data-clone-id="{{ clone.id }}">
+                                                                <i class="fas fa-redo me-1"></i>Recréer
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    Aucun clone IA n'est actuellement actif.
+                                </div>
+                                <div class="text-center mt-3">
+                                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createCloneModal">
+                                        <i class="fas fa-plus me-2"></i>Créer un nouveau clone IA
+                                    </button>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Onglet des statistiques -->
+                        <div class="tab-pane fade" id="stats" role="tabpanel" aria-labelledby="stats-tab">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card mb-4">
+                                        <div class="card-header">
+                                            <h6 class="mb-0">Distribution des erreurs par type</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <canvas id="errorTypeChart" width="400" height="300"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card mb-4">
+                                        <div class="card-header">
+                                            <h6 class="mb-0">Distribution des erreurs par sévérité</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <canvas id="errorSeverityChart" width="400" height="300"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6 class="mb-0">Performance des clones IA</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <canvas id="clonePerformanceChart" width="800" height="300"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modales -->
+<!-- Modal de création de clone -->
+<div class="modal fade" id="createCloneModal" tabindex="-1" aria-labelledby="createCloneModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createCloneModalLabel">Créer un nouveau clone IA</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createCloneForm">
+                    <div class="mb-3">
+                        <label for="cloneType" class="form-label">Type de clone</label>
+                        <select class="form-select" id="cloneType" name="cloneType" required>
+                            <option value="auto_repair">Auto-réparation</option>
+                            <option value="security_optimizer">Optimiseur de sécurité</option>
+                            <option value="performance_tuner">Optimiseur de performance</option>
+                        </select>
+                        <div class="form-text">
+                            <span id="cloneTypeDescription">
+                                Détecte et répare automatiquement les problèmes réseau.
+                            </span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="cloneName" class="form-label">Nom du clone (optionnel)</label>
+                        <input type="text" class="form-control" id="cloneName" name="cloneName" placeholder="Ex: Clone de maintenance">
+                    </div>
+                    <div class="mb-3">
+                        <label for="scanInterval" class="form-label">Intervalle de scan (minutes)</label>
+                        <input type="number" class="form-control" id="scanInterval" name="scanInterval" min="5" max="60" value="15">
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="autoCorrect" name="autoCorrect">
+                        <label class="form-check-label" for="autoCorrect">Correction automatique</label>
+                        <div class="form-text">
+                            Si activé, le clone appliquera automatiquement les corrections sans intervention manuelle.
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="createCloneSubmitBtn">Créer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de détails de solution -->
+<div class="modal fade" id="solutionDetailsModal" tabindex="-1" aria-labelledby="solutionDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="solutionDetailsModalLabel">Détails de la solution</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="solutionDetailsContent">
+                <!-- Contenu dynamique ici -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                <button type="button" class="btn btn-success" id="applySolutionDetailBtn">Appliquer cette solution</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Création des graphiques de statistiques
+    if (document.getElementById('errorTypeChart')) {
+        const errorTypeData = {
+            labels: [
+                {% for type, count in error_stats.types.items() %}
+                '{{ type|capitalize }}',
+                {% endfor %}
+            ],
+            datasets: [{
+                label: 'Nombre d\'erreurs',
+                data: [
+                    {% for type, count in error_stats.types.items() %}
+                    {{ count }},
+                    {% endfor %}
+                ],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.7)',
+                    'rgba(54, 162, 235, 0.7)',
+                    'rgba(255, 206, 86, 0.7)',
+                    'rgba(75, 192, 192, 0.7)',
+                    'rgba(153, 102, 255, 0.7)'
+                ],
+                borderWidth: 1
+            }]
+        };
+
+        const errorTypeChart = new Chart(
+            document.getElementById('errorTypeChart').getContext('2d'),
+            {
+                type: 'pie',
+                data: errorTypeData,
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Types d\'erreurs'
+                        }
+                    }
+                }
+            }
+        );
+    }
+
+    if (document.getElementById('errorSeverityChart')) {
+        const errorSeverityData = {
+            labels: [
+                {% for severity, count in error_stats.severity.items() %}
+                '{{ severity|capitalize }}',
+                {% endfor %}
+            ],
+            datasets: [{
+                label: 'Nombre d\'erreurs',
+                data: [
+                    {% for severity, count in error_stats.severity.items() %}
+                    {{ count }},
+                    {% endfor %}
+                ],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.7)',
+                    'rgba(255, 159, 64, 0.7)',
+                    'rgba(75, 192, 192, 0.7)'
+                ],
+                borderWidth: 1
+            }]
+        };
+
+        const errorSeverityChart = new Chart(
+            document.getElementById('errorSeverityChart').getContext('2d'),
+            {
+                type: 'doughnut',
+                data: errorSeverityData,
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Sévérité des erreurs'
+                        }
+                    }
+                }
+            }
+        );
+    }
+
+    if (document.getElementById('clonePerformanceChart')) {
+        // Données fictives pour le graphique de performance des clones
+        const labels = [];
+        const detectedData = [];
+        const correctedData = [];
+
+        {% for clone in clones.active %}
+            labels.push('{{ clone.name or clone.id }}');
+            detectedData.push({{ clone.detected_errors_count }});
+            correctedData.push({{ clone.corrections_count }});
+        {% endfor %}
+
+        const clonePerformanceData = {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Erreurs détectées',
+                    data: detectedData,
+                    backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Erreurs corrigées',
+                    data: correctedData,
+                    backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }
+            ]
+        };
+
+        const clonePerformanceChart = new Chart(
+            document.getElementById('clonePerformanceChart').getContext('2d'),
+            {
+                type: 'bar',
+                data: clonePerformanceData,
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Performance des clones IA'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            }
+        );
+    }
+
+    // Gestionnaire pour le type de clone
+    const cloneTypeSelect = document.getElementById('cloneType');
+    const cloneTypeDescription = document.getElementById('cloneTypeDescription');
+    
+    if (cloneTypeSelect && cloneTypeDescription) {
+        cloneTypeSelect.addEventListener('change', function() {
+            switch(this.value) {
+                case 'auto_repair':
+                    cloneTypeDescription.textContent = 'Détecte et répare automatiquement les problèmes réseau.';
+                    break;
+                case 'security_optimizer':
+                    cloneTypeDescription.textContent = 'Se concentre sur l\'optimisation de la sécurité du réseau et des appareils.';
+                    break;
+                case 'performance_tuner':
+                    cloneTypeDescription.textContent = 'Optimise les performances du réseau et réduit la latence.';
+                    break;
+            }
+        });
+    }
+
+    // Gestion de la création d'un clone
+    const createCloneSubmitBtn = document.getElementById('createCloneSubmitBtn');
+    if (createCloneSubmitBtn) {
+        createCloneSubmitBtn.addEventListener('click', function() {
+            const cloneType = document.getElementById('cloneType').value;
+            const cloneName = document.getElementById('cloneName').value;
+            const scanInterval = document.getElementById('scanInterval').value;
+            const autoCorrect = document.getElementById('autoCorrect').checked;
+
+            // Configuration personnalisée pour le clone
+            const customConfig = {
+                name: cloneName || null,
+                scan_interval: parseInt(scanInterval),
+                auto_correct: autoCorrect
+            };
+
+            fetch('/api/ai-clone/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    clone_type: cloneType,
+                    custom_config: customConfig
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('Clone IA créé avec succès', 'success');
+                    // Fermer le modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('createCloneModal'));
+                    modal.hide();
+                    // Recharger la page après un court délai
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    showNotification('Erreur lors de la création du clone: ' + data.error, 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                showNotification('Une erreur est survenue lors de la création du clone', 'danger');
+            });
+        });
+    }
+
+    // Gestion des boutons d'arrêt de clone
+    const cloneStopButtons = document.querySelectorAll('.clone-stop-btn');
+    cloneStopButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const cloneId = this.getAttribute('data-clone-id');
+            
+            if (confirm('Êtes-vous sûr de vouloir arrêter ce clone IA ?')) {
+                fetch(`/api/ai-clone/${cloneId}/stop`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification('Clone arrêté avec succès', 'success');
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        showNotification('Erreur lors de l\'arrêt du clone: ' + data.message, 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    showNotification('Une erreur est survenue', 'danger');
+                });
+            }
+        });
+    });
+
+    // Gestion des boutons de correction automatique
+    const cloneAutoCorrectButtons = document.querySelectorAll('.clone-auto-correct-btn');
+    cloneAutoCorrectButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const cloneId = this.getAttribute('data-clone-id');
+            
+            // Désactiver le bouton pendant le processus
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Correction en cours...';
+            
+            fetch(`/api/ai-clone/${cloneId}/auto-correct`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Réactiver le bouton
+                this.disabled = false;
+                this.innerHTML = '<i class="fas fa-magic me-1"></i>Correction Auto';
+                
+                if (data.success) {
+                    showNotification('Corrections appliquées: ' + data.changes_count, 'success');
+                    // Actualiser après quelques secondes
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+                } else {
+                    showNotification('Aucune correction nécessaire ou erreur: ' + data.message, 'info');
+                }
+            })
+            .catch(error => {
+                // Réactiver le bouton en cas d'erreur
+                this.disabled = false;
+                this.innerHTML = '<i class="fas fa-magic me-1"></i>Correction Auto';
+                
+                console.error('Erreur:', error);
+                showNotification('Une erreur est survenue', 'danger');
+            });
+        });
+    });
+
+    // Gestion des boutons de correction d'erreur individuelle
+    const fixErrorButtons = document.querySelectorAll('.fix-error-btn');
+    fixErrorButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const errorId = this.getAttribute('data-error-id');
+            
+            // Désactiver le bouton pendant le processus
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+            
+            // Dans une implémentation réelle, cela appellerait une API pour corriger l'erreur spécifique
+            // Simulation d'une requête API
+            setTimeout(() => {
+                // Réactiver le bouton
+                this.disabled = false;
+                this.innerHTML = '<i class="fas fa-check me-1"></i>Corrigé';
+                this.classList.remove('btn-primary');
+                this.classList.add('btn-success');
+                
+                showNotification('Erreur corrigée avec succès', 'success');
+            }, 1500);
+        });
+    });
+
+    // Bouton d'actualisation des erreurs
+    const refreshErrorsBtn = document.getElementById('refreshErrorsBtn');
+    if (refreshErrorsBtn) {
+        refreshErrorsBtn.addEventListener('click', function() {
+            // Ajouter une classe pour l'animation de rotation
+            this.querySelector('i').classList.add('fa-spin');
+            
+            // Simuler un temps de chargement
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        });
+    }
+
+    // Fonction d'affichage des notifications
+    function showNotification(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `toast align-items-center text-white bg-${type} border-0`;
+        toast.setAttribute('role', 'alert');
+        toast.setAttribute('aria-live', 'assertive');
+        toast.setAttribute('aria-atomic', 'true');
+        
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        `;
+        
+        const toastContainer = document.querySelector('.toast-container');
+        if (!toastContainer) {
+            const container = document.createElement('div');
+            container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+            document.body.appendChild(container);
+            container.appendChild(toast);
+        } else {
+            toastContainer.appendChild(toast);
+        }
+        
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+    }
+});
+</script>
+{% endblock %}
