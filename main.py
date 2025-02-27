@@ -44,6 +44,16 @@ network_optimizer = NetworkOptimizer()
 # Initialiser l'assistant intelligent
 security_assistant = SecurityAssistant(security_ai, network_optimizer, assistant_securite)
 
+# Décorateur pour vérifier si l'utilisateur est administrateur
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_admin:
+            flash('Accès refusé. Vous devez être administrateur pour accéder à cette page.', 'danger')
+            return redirect(url_for('dashboard'))
+        return f(*args, **kwargs)
+    return decorated_function
+
 # Contexte global pour tous les templates
 @app.context_processor
 def inject_now():
@@ -1548,6 +1558,102 @@ def ai_clones_dashboard():
         'ai_clones.html',
         clones=clones,
         clone_configs=clone_configs
+    )
+
+# Route d'administration centrale
+@app.route('/admin')
+@login_required
+@admin_required
+def admin_dashboard():
+    """Interface d'administration centrale avec accès complet au système"""
+    # Récupérer les statistiques du système
+    memory_stats = MemoryMonitor.get_memory_usage()
+    
+    # Récupérer les données IA
+    clones = ai_clone_manager.get_all_clones()
+    
+    # Récupérer les statistiques réseau
+    network_stats = security_scoring.get_network_security_status()
+    
+    # Récupérer les données de tous les utilisateurs
+    users = User.query.all()
+    
+    # Créer un jeu de données d'erreurs pour la démonstration
+    error_stats = AIErrorHandler().get_error_statistics()
+    
+    return render_template(
+        'admin/dashboard.html',
+        memory_stats=memory_stats,
+        clones=clones,
+        network_stats=network_stats,
+        users=users,
+        error_stats=error_stats
+    )
+
+@app.route('/admin/users')
+@login_required
+@admin_required
+def admin_users():
+    """Gestion des utilisateurs"""
+    users = User.query.all()
+    return render_template('admin/users.html', users=users)
+
+@app.route('/admin/toggle-admin/<int:user_id>', methods=['POST'])
+@login_required
+@admin_required
+def toggle_admin_status(user_id):
+    """Active ou désactive le statut administrateur d'un utilisateur"""
+    user = User.query.get_or_404(user_id)
+    
+    # Ne pas permettre à un admin de se rétrograder lui-même
+    if user.id == current_user.id:
+        flash('Vous ne pouvez pas modifier votre propre statut administrateur.', 'danger')
+        return redirect(url_for('admin_users'))
+    
+    user.is_admin = not user.is_admin
+    db.session.commit()
+    
+    action = "activé" if user.is_admin else "désactivé"
+    flash(f'Le statut administrateur de {user.username} a été {action}.', 'success')
+    return redirect(url_for('admin_users'))
+
+@app.route('/admin/system')
+@login_required
+@admin_required
+def admin_system():
+    """Gestion du système et surveillance des performances"""
+    memory_stats = MemoryMonitor.get_memory_usage()
+    return render_template('admin/system.html', memory_stats=memory_stats)
+
+@app.route('/admin/ai-management')
+@login_required
+@admin_required
+def admin_ai_management():
+    """Gestion avancée des modules d'intelligence artificielle"""
+    clones = ai_clone_manager.get_all_clones()
+    clone_configs = ai_clone_manager._load_clone_configs()
+    
+    return render_template(
+        'admin/ai_management.html',
+        clones=clones,
+        clone_configs=clone_configs
+    )
+
+@app.route('/admin/security')
+@login_required
+@admin_required
+def admin_security():
+    """Surveillance avancée de la sécurité et gestion des vulnérabilités"""
+    # Récupérer les statistiques réseau
+    network_stats = security_scoring.get_network_security_status()
+    
+    # Récupérer tous les appareils avec leurs scores
+    device_scores = security_scoring.get_all_device_scores()
+    
+    return render_template(
+        'admin/security.html',
+        network_stats=network_stats,
+        device_scores=device_scores
     )
 
 # Point d'entrée principal

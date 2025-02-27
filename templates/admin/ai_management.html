@@ -1,0 +1,571 @@
+{% extends "layout.html" %}
+
+{% block title %}Gestion des Modules IA - NetSecure Pro{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar de navigation admin -->
+        <div class="col-md-2 admin-sidebar bg-dark text-light">
+            <div class="text-center p-3 border-bottom border-secondary">
+                <h4>Administration</h4>
+                <span class="badge bg-danger">Accès Total</span>
+            </div>
+            <ul class="nav flex-column mt-3">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin_dashboard') }}">
+                        <i class="fas fa-tachometer-alt"></i> Tableau de bord
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin_users') }}">
+                        <i class="fas fa-users"></i> Utilisateurs
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin_security') }}">
+                        <i class="fas fa-shield-alt"></i> Sécurité
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('admin_ai_management') }}">
+                        <i class="fas fa-robot"></i> Gestion IA
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin_system') }}">
+                        <i class="fas fa-server"></i> Système
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <!-- Contenu principal -->
+        <div class="col-md-10 admin-content">
+            <div class="admin-header d-flex justify-content-between align-items-center p-3">
+                <h2><i class="fas fa-robot"></i> Gestion des modules d'intelligence artificielle</h2>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createCloneModal">
+                    <i class="fas fa-plus"></i> Créer un clone IA
+                </button>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-md-8">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5>Clones IA actifs</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Type</th>
+                                            <th>Status</th>
+                                            <th>Création</th>
+                                            <th>Dernière activité</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for clone in clones.active %}
+                                        <tr>
+                                            <td>{{ clone.id }}</td>
+                                            <td>
+                                                <span class="badge 
+                                                    {% if clone.type == 'auto_repair' %}bg-success
+                                                    {% elif clone.type == 'security_optimizer' %}bg-primary
+                                                    {% elif clone.type == 'performance_tuner' %}bg-info
+                                                    {% else %}bg-secondary{% endif %}">
+                                                    {% if clone.type == 'auto_repair' %}Réparation Auto
+                                                    {% elif clone.type == 'security_optimizer' %}Optimisation Sécurité
+                                                    {% elif clone.type == 'performance_tuner' %}Optimisation Performance
+                                                    {% else %}{{ clone.type }}{% endif %}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge 
+                                                    {% if clone.status == 'running' %}bg-success
+                                                    {% elif clone.status == 'paused' %}bg-warning
+                                                    {% elif clone.status == 'error' %}bg-danger
+                                                    {% else %}bg-secondary{% endif %}">
+                                                    {% if clone.status == 'running' %}Actif
+                                                    {% elif clone.status == 'paused' %}En pause
+                                                    {% elif clone.status == 'error' %}Erreur
+                                                    {% else %}{{ clone.status }}{% endif %}
+                                                </span>
+                                            </td>
+                                            <td>{{ clone.created_at | datetime }}</td>
+                                            <td>{{ clone.last_activity | datetime }}</td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <button class="btn btn-sm btn-info" onclick="viewCloneDetails('{{ clone.id }}')">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    {% if clone.status == 'running' %}
+                                                    <button class="btn btn-sm btn-warning" onclick="pauseClone('{{ clone.id }}')">
+                                                        <i class="fas fa-pause"></i>
+                                                    </button>
+                                                    {% elif clone.status == 'paused' %}
+                                                    <button class="btn btn-sm btn-success" onclick="resumeClone('{{ clone.id }}')">
+                                                        <i class="fas fa-play"></i>
+                                                    </button>
+                                                    {% endif %}
+                                                    <button class="btn btn-sm btn-danger" onclick="stopClone('{{ clone.id }}')">
+                                                        <i class="fas fa-stop"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Historique des clones IA</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Type</th>
+                                            <th>Créé le</th>
+                                            <th>Durée d'activité</th>
+                                            <th>Corrections</th>
+                                            <th>Arrêté le</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for clone in clones.historical %}
+                                        <tr>
+                                            <td>{{ clone.id }}</td>
+                                            <td>
+                                                <span class="badge 
+                                                    {% if clone.type == 'auto_repair' %}bg-success
+                                                    {% elif clone.type == 'security_optimizer' %}bg-primary
+                                                    {% elif clone.type == 'performance_tuner' %}bg-info
+                                                    {% else %}bg-secondary{% endif %}">
+                                                    {% if clone.type == 'auto_repair' %}Réparation Auto
+                                                    {% elif clone.type == 'security_optimizer' %}Optimisation Sécurité
+                                                    {% elif clone.type == 'performance_tuner' %}Optimisation Performance
+                                                    {% else %}{{ clone.type }}{% endif %}
+                                                </span>
+                                            </td>
+                                            <td>{{ clone.created_at | datetime }}</td>
+                                            <td>{{ clone.active_duration }}</td>
+                                            <td>{{ clone.fixes_applied }}</td>
+                                            <td>{{ clone.stopped_at | datetime }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5>Statistiques IA</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <div>Clones actifs</div>
+                                <div class="badge bg-success">{{ clones.active|length }}</div>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <div>Clones historiques</div>
+                                <div class="badge bg-info">{{ clones.historical|length }}</div>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <div>Corrections appliquées</div>
+                                <div class="badge bg-primary">{{ clones.total_fixes }}</div>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <div>Erreurs détectées</div>
+                                <div class="badge bg-warning">{{ clones.total_errors_detected }}</div>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <div>Temps actif cumulé</div>
+                                <div>{{ clones.total_active_time }}</div>
+                            </div>
+                            
+                            <hr>
+                            
+                            <h6>Répartition par type</h6>
+                            <canvas id="cloneTypesChart" height="150"></canvas>
+                            
+                            <hr>
+                            
+                            <h6>Activité journalière</h6>
+                            <canvas id="dailyActivityChart" height="150"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Configurations IA disponibles</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="list-group">
+                                {% for config_id, config in clone_configs.items() %}
+                                <div class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">{{ config.name }}</h6>
+                                        <small>Version {{ config.version }}</small>
+                                    </div>
+                                    <p class="mb-1">{{ config.description }}</p>
+                                    <div class="d-flex justify-content-between align-items-center mt-2">
+                                        <small class="text-muted">{{ config.resources }}</small>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="createCloneWithConfig('{{ config_id }}')">
+                                            Créer
+                                        </button>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de création de clone IA -->
+<div class="modal fade" id="createCloneModal" tabindex="-1" aria-labelledby="createCloneModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createCloneModalLabel">Créer un nouveau clone IA</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createCloneForm">
+                    <div class="mb-3">
+                        <label for="cloneType" class="form-label">Type de clone</label>
+                        <select class="form-select" id="cloneType" name="clone_type" onchange="updateIAModeSettings(this.value)">
+                            <option value="auto_repair">Réparation automatique</option>
+                            <option value="security_optimizer">Optimiseur de sécurité</option>
+                            <option value="performance_tuner">Optimiseur de performance</option>
+                            <option value="custom">Personnalisé</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="scanInterval" class="form-label">Intervalle de scan (secondes)</label>
+                        <input type="number" class="form-control" id="scanInterval" name="scan_interval" value="300">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="maxAutoFixes" class="form-label">Maximum de corrections automatiques</label>
+                        <input type="number" class="form-control" id="maxAutoFixes" name="max_auto_fixes" value="5">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Permissions</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="autoFixPermission" name="permissions" value="auto_fix" checked>
+                            <label class="form-check-label" for="autoFixPermission">
+                                Corrections automatiques
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="configChangePermission" name="permissions" value="config_change">
+                            <label class="form-check-label" for="configChangePermission">
+                                Modifications de configuration
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="networkScanPermission" name="permissions" value="network_scan" checked>
+                            <label class="form-check-label" for="networkScanPermission">
+                                Scans réseau
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div id="customConfigSection" style="display: none;">
+                        <div class="mb-3">
+                            <label for="customConfig" class="form-label">Configuration personnalisée (JSON)</label>
+                            <textarea class="form-control" id="customConfig" name="custom_config" rows="5"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="createCloneBtn">Créer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de détails du clone -->
+<div class="modal fade" id="cloneDetailsModal" tabindex="-1" aria-labelledby="cloneDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cloneDetailsModalLabel">Détails du clone IA</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="cloneDetailsContent">
+                <!-- Le contenu sera chargé dynamiquement par JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                <button type="button" class="btn btn-primary" id="updateCloneBtn">Mettre à jour</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Graphique de répartition des types de clones
+    var ctxTypes = document.getElementById('cloneTypesChart').getContext('2d');
+    var cloneTypesChart = new Chart(ctxTypes, {
+        type: 'doughnut',
+        data: {
+            labels: ['Réparation Auto', 'Optimisation Sécurité', 'Optimisation Performance', 'Autres'],
+            datasets: [{
+                data: [
+                    {{ clones.type_distribution.auto_repair|default(0) }}, 
+                    {{ clones.type_distribution.security_optimizer|default(0) }}, 
+                    {{ clones.type_distribution.performance_tuner|default(0) }}, 
+                    {{ clones.type_distribution.other|default(0) }}
+                ],
+                backgroundColor: [
+                    'rgba(40, 167, 69, 0.7)',
+                    'rgba(0, 123, 255, 0.7)',
+                    'rgba(23, 162, 184, 0.7)',
+                    'rgba(108, 117, 125, 0.7)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        boxWidth: 12
+                    }
+                }
+            }
+        }
+    });
+    
+    // Graphique d'activité journalière
+    var ctxActivity = document.getElementById('dailyActivityChart').getContext('2d');
+    var dailyActivityChart = new Chart(ctxActivity, {
+        type: 'bar',
+        data: {
+            labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+            datasets: [{
+                label: 'Corrections',
+                data: [12, 19, 8, 15, 10, 5, 7],
+                backgroundColor: 'rgba(40, 167, 69, 0.7)'
+            }, {
+                label: 'Scans',
+                data: [65, 59, 80, 81, 56, 25, 40],
+                backgroundColor: 'rgba(0, 123, 255, 0.7)'
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+    
+    // Fonction pour afficher les détails d'un clone
+    function viewCloneDetails(cloneId) {
+        // Dans une implémentation réelle, on chargerait les données via une requête AJAX
+        // Pour cette démo, on affiche simplement un message dans le modal
+        document.getElementById('cloneDetailsContent').innerHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Informations du clone</h5>
+                    <p><strong>ID:</strong> ${cloneId}</p>
+                    <p><strong>Type:</strong> Réparation automatique</p>
+                    <p><strong>Statut:</strong> <span class="badge bg-success">Actif</span></p>
+                    <p><strong>Créé le:</strong> 01/09/2023 10:15</p>
+                    <p><strong>Dernière activité:</strong> Il y a 5 minutes</p>
+                </div>
+                <div class="col-md-6">
+                    <h5>Statistiques d'activité</h5>
+                    <p><strong>Scans effectués:</strong> 125</p>
+                    <p><strong>Erreurs détectées:</strong> 17</p>
+                    <p><strong>Corrections appliquées:</strong> 12</p>
+                    <p><strong>Taux de succès:</strong> 85%</p>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-12">
+                    <h5>Historique des activités</h5>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Action</th>
+                                <th>Résultat</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>01/09/2023 15:30</td>
+                                <td>Scan de sécurité</td>
+                                <td><span class="badge bg-success">3 erreurs détectées</span></td>
+                            </tr>
+                            <tr>
+                                <td>01/09/2023 15:35</td>
+                                <td>Correction automatique</td>
+                                <td><span class="badge bg-success">2 erreurs corrigées</span></td>
+                            </tr>
+                            <tr>
+                                <td>01/09/2023 15:40</td>
+                                <td>Tentative de correction</td>
+                                <td><span class="badge bg-danger">Échec - permissions insuffisantes</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-12">
+                    <h5>Configuration</h5>
+                    <div class="bg-light p-2 rounded code-block">
+<pre>{
+  "type": "auto_repair",
+  "scan_interval": 300,
+  "max_auto_fixes": 5,
+  "permissions": ["auto_fix", "network_scan"],
+  "notification": true,
+  "log_level": "info"
+}</pre>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        var modal = new bootstrap.Modal(document.getElementById('cloneDetailsModal'));
+        modal.show();
+    }
+    
+    // Fonction pour mettre en pause un clone IA
+    function pauseClone(cloneId) {
+        // Dans une implémentation réelle, on enverrait une requête AJAX
+        alert(`Le clone ${cloneId} a été mis en pause.`);
+    }
+    
+    // Fonction pour reprendre un clone IA
+    function resumeClone(cloneId) {
+        // Dans une implémentation réelle, on enverrait une requête AJAX
+        alert(`Le clone ${cloneId} a repris son activité.`);
+    }
+    
+    // Fonction pour arrêter un clone IA
+    function stopClone(cloneId) {
+        if (confirm(`Êtes-vous sûr de vouloir arrêter le clone ${cloneId} ? Cette action est irréversible.`)) {
+            // Dans une implémentation réelle, on enverrait une requête AJAX
+            alert(`Le clone ${cloneId} a été arrêté.`);
+        }
+    }
+    
+    // Fonction pour créer un clone avec une configuration spécifique
+    function createCloneWithConfig(configId) {
+        alert(`Creation d'un clone avec la configuration ${configId}.`);
+        
+        // Ouvrir le modal et pré-remplir le formulaire
+        document.getElementById('cloneType').value = configId === 'auto_repair' ? 'auto_repair' : 
+                                                 configId === 'security_optimizer' ? 'security_optimizer' : 
+                                                 configId === 'performance_tuner' ? 'performance_tuner' : 'custom';
+        
+        updateIAModeSettings(document.getElementById('cloneType').value);
+        
+        var modal = new bootstrap.Modal(document.getElementById('createCloneModal'));
+        modal.show();
+    }
+    
+    // Fonction pour mettre à jour les paramètres en fonction du mode IA sélectionné
+    function updateIAModeSettings(mode) {
+        const customConfigSection = document.getElementById('customConfigSection');
+        
+        if (mode === 'custom') {
+            customConfigSection.style.display = 'block';
+            document.getElementById('customConfig').value = JSON.stringify({
+                type: "custom",
+                scan_interval: 300,
+                max_auto_fixes: 5,
+                permissions: ["auto_fix", "network_scan"],
+                notification: true,
+                log_level: "info",
+                custom_parameters: {
+                    // Paramètres personnalisés
+                }
+            }, null, 2);
+        } else {
+            customConfigSection.style.display = 'none';
+            
+            // Mettre à jour les valeurs par défaut en fonction du type
+            if (mode === 'auto_repair') {
+                document.getElementById('scanInterval').value = 300;
+                document.getElementById('maxAutoFixes').value = 5;
+                document.getElementById('autoFixPermission').checked = true;
+                document.getElementById('configChangePermission').checked = false;
+                document.getElementById('networkScanPermission').checked = true;
+            } else if (mode === 'security_optimizer') {
+                document.getElementById('scanInterval').value = 600;
+                document.getElementById('maxAutoFixes').value = 3;
+                document.getElementById('autoFixPermission').checked = false;
+                document.getElementById('configChangePermission').checked = true;
+                document.getElementById('networkScanPermission').checked = true;
+            } else if (mode === 'performance_tuner') {
+                document.getElementById('scanInterval').value = 900;
+                document.getElementById('maxAutoFixes').value = 2;
+                document.getElementById('autoFixPermission').checked = false;
+                document.getElementById('configChangePermission').checked = true;
+                document.getElementById('networkScanPermission').checked = true;
+            }
+        }
+    }
+    
+    // Gestionnaire pour le bouton de création de clone
+    document.getElementById('createCloneBtn').addEventListener('click', function() {
+        // Dans une implémentation réelle, on enverrait une requête AJAX
+        alert('Un nouveau clone IA a été créé avec succès.');
+        
+        // Fermer le modal
+        var modal = bootstrap.Modal.getInstance(document.getElementById('createCloneModal'));
+        modal.hide();
+    });
+    
+    // Gestionnaire pour le bouton de mise à jour de clone
+    document.getElementById('updateCloneBtn').addEventListener('click', function() {
+        // Dans une implémentation réelle, on enverrait une requête AJAX
+        alert('La configuration du clone a été mise à jour avec succès.');
+        
+        // Fermer le modal
+        var modal = bootstrap.Modal.getInstance(document.getElementById('cloneDetailsModal'));
+        modal.hide();
+    });
+</script>
+{% endblock %}

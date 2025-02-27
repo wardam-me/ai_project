@@ -1,0 +1,400 @@
+{% extends "layout.html" %}
+
+{% block title %}Gestion Système - NetSecure Pro{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar de navigation admin -->
+        <div class="col-md-2 admin-sidebar bg-dark text-light">
+            <div class="text-center p-3 border-bottom border-secondary">
+                <h4>Administration</h4>
+                <span class="badge bg-danger">Accès Total</span>
+            </div>
+            <ul class="nav flex-column mt-3">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin_dashboard') }}">
+                        <i class="fas fa-tachometer-alt"></i> Tableau de bord
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin_users') }}">
+                        <i class="fas fa-users"></i> Utilisateurs
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin_security') }}">
+                        <i class="fas fa-shield-alt"></i> Sécurité
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin_ai_management') }}">
+                        <i class="fas fa-robot"></i> Gestion IA
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('admin_system') }}">
+                        <i class="fas fa-server"></i> Système
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <!-- Contenu principal -->
+        <div class="col-md-10 admin-content">
+            <div class="admin-header d-flex justify-content-between align-items-center p-3">
+                <h2><i class="fas fa-server"></i> Gestion du système</h2>
+                <div>
+                    <button class="btn btn-warning me-2" id="restartSystemBtn">
+                        <i class="fas fa-sync"></i> Redémarrer
+                    </button>
+                    <button class="btn btn-danger" id="stopSystemBtn">
+                        <i class="fas fa-power-off"></i> Arrêter
+                    </button>
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between">
+                            <h5>Ressources système</h5>
+                            <button class="btn btn-sm btn-primary" id="refreshResourcesBtn">
+                                <i class="fas fa-sync-alt"></i> Actualiser
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <h6>Utilisation CPU</h6>
+                            <div class="progress mb-3">
+                                <div class="progress-bar bg-primary" role="progressbar" 
+                                     style="width: {{ memory_stats.cpu_percent }}%" 
+                                     aria-valuenow="{{ memory_stats.cpu_percent }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                    {{ memory_stats.cpu_percent }}%
+                                </div>
+                            </div>
+                            
+                            <h6>Mémoire ({{ memory_stats.used_memory }} / {{ memory_stats.total_memory }} Mo)</h6>
+                            <div class="progress mb-3">
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                     style="width: {{ memory_stats.memory_percent }}%" 
+                                     aria-valuenow="{{ memory_stats.memory_percent }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                    {{ memory_stats.memory_percent }}%
+                                </div>
+                            </div>
+                            
+                            <h6>Disque ({{ memory_stats.used_disk }} / {{ memory_stats.total_disk }} Go)</h6>
+                            <div class="progress">
+                                <div class="progress-bar bg-warning" role="progressbar" 
+                                     style="width: {{ memory_stats.disk_percent }}%" 
+                                     aria-valuenow="{{ memory_stats.disk_percent }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                    {{ memory_stats.disk_percent }}%
+                                </div>
+                            </div>
+
+                            <div class="mt-3">
+                                <h6>Processus en cours d'exécution: {{ memory_stats.running_processes }}</h6>
+                                <h6>Temps d'activité: {{ memory_stats.uptime }}</h6>
+                                <small class="text-muted">Dernière mise à jour: {{ memory_stats.last_update | datetime }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Configuration du système</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="systemConfigForm">
+                                <div class="mb-3">
+                                    <label class="form-label">Mode de débogage</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="debugMode" checked>
+                                        <label class="form-check-label" for="debugMode">Activé</label>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Niveau de journalisation</label>
+                                    <select class="form-select" id="logLevel">
+                                        <option value="debug">Debug</option>
+                                        <option value="info" selected>Info</option>
+                                        <option value="warning">Warning</option>
+                                        <option value="error">Error</option>
+                                        <option value="critical">Critical</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Port du serveur</label>
+                                    <input type="number" class="form-control" id="serverPort" value="5000">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Intervalle de sauvegarde automatique (minutes)</label>
+                                    <input type="number" class="form-control" id="autoSaveInterval" value="15">
+                                </div>
+                                
+                                <button type="button" class="btn btn-primary" id="saveSystemConfigBtn">Enregistrer les modifications</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5>Journaux système</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="btn-group mb-3" role="group">
+                                <button type="button" class="btn btn-outline-primary active" data-log-type="all">Tous</button>
+                                <button type="button" class="btn btn-outline-primary" data-log-type="error">Erreurs</button>
+                                <button type="button" class="btn btn-outline-primary" data-log-type="warning">Avertissements</button>
+                                <button type="button" class="btn btn-outline-primary" data-log-type="info">Info</button>
+                            </div>
+                            
+                            <div class="system-logs p-2 bg-dark text-light" style="height: 300px; overflow-y: auto; font-family: monospace; font-size: 0.85rem;">
+                                <div class="log-entry text-info">[INFO] 2023-09-01 10:15:32 - Démarrage du système NetSecure Pro v2.5.0</div>
+                                <div class="log-entry text-info">[INFO] 2023-09-01 10:15:33 - Chargement des modules...</div>
+                                <div class="log-entry text-info">[INFO] 2023-09-01 10:15:34 - Module réseau initialisé</div>
+                                <div class="log-entry text-warning">[WARN] 2023-09-01 10:15:35 - Délai d'attente dépassé pour la connexion au serveur DNS</div>
+                                <div class="log-entry text-info">[INFO] 2023-09-01 10:15:36 - Module de sécurité initialisé</div>
+                                <div class="log-entry text-danger">[ERROR] 2023-09-01 10:15:37 - Impossible de charger le modèle d'IA depuis le cache</div>
+                                <div class="log-entry text-info">[INFO] 2023-09-01 10:15:38 - Rechargement du modèle d'IA depuis le fichier source</div>
+                                <div class="log-entry text-info">[INFO] 2023-09-01 10:15:42 - Modèle d'IA chargé avec succès</div>
+                                <div class="log-entry text-warning">[WARN] 2023-09-01 10:15:43 - Utilisation élevée de la mémoire: 85%</div>
+                                <div class="log-entry text-info">[INFO] 2023-09-01 10:15:45 - Clone IA #12345 démarré</div>
+                                <div class="log-entry text-info">[INFO] 2023-09-01 10:15:50 - Serveur démarré sur le port 5000</div>
+                                <div class="log-entry text-info">[INFO] 2023-09-01 10:16:02 - Utilisateur admin@example.com connecté</div>
+                                <div class="log-entry text-info">[INFO] 2023-09-01 10:16:30 - Analyse réseau démarrée</div>
+                                <div class="log-entry text-danger">[ERROR] 2023-09-01 10:16:35 - Exception lors de l'analyse du réseau: Timeout</div>
+                                <div class="log-entry text-info">[INFO] 2023-09-01 10:16:40 - Nouvelle tentative d'analyse réseau</div>
+                                <div class="log-entry text-info">[INFO] 2023-09-01 10:16:45 - Analyse réseau terminée avec succès</div>
+                            </div>
+                            
+                            <div class="mt-2">
+                                <button class="btn btn-sm btn-primary" id="refreshLogsBtn">
+                                    <i class="fas fa-sync-alt"></i> Actualiser
+                                </button>
+                                <button class="btn btn-sm btn-secondary" id="downloadLogsBtn">
+                                    <i class="fas fa-download"></i> Télécharger
+                                </button>
+                                <button class="btn btn-sm btn-danger" id="clearLogsBtn">
+                                    <i class="fas fa-trash"></i> Effacer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Sauvegardes du système</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2 mb-3">
+                                <button class="btn btn-primary" id="createBackupBtn">
+                                    <i class="fas fa-save"></i> Créer une sauvegarde complète
+                                </button>
+                            </div>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Nom</th>
+                                            <th>Date</th>
+                                            <th>Taille</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>backup_20230901_101530.zip</td>
+                                            <td>01/09/2023 10:15</td>
+                                            <td>25.4 Mo</td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-outline-primary">
+                                                        <i class="fas fa-download"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-success">
+                                                        <i class="fas fa-undo"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-danger">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>backup_20230831_180000.zip</td>
+                                            <td>31/08/2023 18:00</td>
+                                            <td>24.8 Mo</td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-outline-primary">
+                                                        <i class="fas fa-download"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-success">
+                                                        <i class="fas fa-undo"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-danger">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>backup_20230830_180000.zip</td>
+                                            <td>30/08/2023 18:00</td>
+                                            <td>23.5 Mo</td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-outline-primary">
+                                                        <i class="fas fa-download"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-success">
+                                                        <i class="fas fa-undo"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-danger">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmationModalLabel">Confirmation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="confirmationMessage">
+                Êtes-vous sûr de vouloir effectuer cette action ?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-danger" id="confirmActionBtn">Confirmer</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Fonction pour afficher un modal de confirmation
+    function showConfirmation(message, actionCallback) {
+        document.getElementById('confirmationMessage').textContent = message;
+        
+        // Supprimer les gestionnaires d'événements précédents
+        const confirmBtn = document.getElementById('confirmActionBtn');
+        const newConfirmBtn = confirmBtn.cloneNode(true);
+        confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+        
+        // Ajouter le nouveau gestionnaire d'événements
+        document.getElementById('confirmActionBtn').addEventListener('click', function() {
+            actionCallback();
+            var modal = bootstrap.Modal.getInstance(document.getElementById('confirmationModal'));
+            modal.hide();
+        });
+        
+        var modal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+        modal.show();
+    }
+    
+    // Gestionnaire pour le bouton d'arrêt du système
+    document.getElementById('stopSystemBtn').addEventListener('click', function() {
+        showConfirmation('Êtes-vous sûr de vouloir arrêter le système ? Tous les utilisateurs seront déconnectés.', function() {
+            alert('Cette action arrêterait le système dans une implémentation réelle.');
+        });
+    });
+    
+    // Gestionnaire pour le bouton de redémarrage du système
+    document.getElementById('restartSystemBtn').addEventListener('click', function() {
+        showConfirmation('Êtes-vous sûr de vouloir redémarrer le système ? Tous les utilisateurs seront déconnectés.', function() {
+            alert('Cette action redémarrerait le système dans une implémentation réelle.');
+        });
+    });
+    
+    // Gestionnaire pour le bouton d'enregistrement de la configuration
+    document.getElementById('saveSystemConfigBtn').addEventListener('click', function() {
+        alert('Configuration enregistrée avec succès !');
+    });
+    
+    // Gestionnaire pour les boutons de filtrage des logs
+    document.querySelectorAll('[data-log-type]').forEach(button => {
+        button.addEventListener('click', function() {
+            // Retirer la classe active de tous les boutons
+            document.querySelectorAll('[data-log-type]').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Ajouter la classe active au bouton cliqué
+            this.classList.add('active');
+            
+            const logType = this.getAttribute('data-log-type');
+            const logEntries = document.querySelectorAll('.log-entry');
+            
+            if (logType === 'all') {
+                logEntries.forEach(entry => {
+                    entry.style.display = '';
+                });
+            } else {
+                logEntries.forEach(entry => {
+                    if (entry.textContent.includes(`[${logType.toUpperCase()}]`)) {
+                        entry.style.display = '';
+                    } else {
+                        entry.style.display = 'none';
+                    }
+                });
+            }
+        });
+    });
+    
+    // Gestionnaire pour le bouton d'actualisation des logs
+    document.getElementById('refreshLogsBtn').addEventListener('click', function() {
+        alert('Les logs seraient actualisés dans une implémentation réelle.');
+    });
+    
+    // Gestionnaire pour le bouton de téléchargement des logs
+    document.getElementById('downloadLogsBtn').addEventListener('click', function() {
+        alert('Les logs seraient téléchargés dans une implémentation réelle.');
+    });
+    
+    // Gestionnaire pour le bouton d'effacement des logs
+    document.getElementById('clearLogsBtn').addEventListener('click', function() {
+        showConfirmation('Êtes-vous sûr de vouloir effacer tous les logs ? Cette action est irréversible.', function() {
+            alert('Les logs seraient effacés dans une implémentation réelle.');
+        });
+    });
+    
+    // Gestionnaire pour le bouton de création de sauvegarde
+    document.getElementById('createBackupBtn').addEventListener('click', function() {
+        alert('Une sauvegarde complète serait créée dans une implémentation réelle.');
+    });
+    
+    // Gestionnaire pour le bouton d'actualisation des ressources
+    document.getElementById('refreshResourcesBtn').addEventListener('click', function() {
+        alert('Les données de ressources système seraient actualisées dans une implémentation réelle.');
+    });
+</script>
+{% endblock %}

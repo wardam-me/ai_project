@@ -1,0 +1,218 @@
+{% extends "layout.html" %}
+
+{% block title %}Gestion des Utilisateurs - NetSecure Pro{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar de navigation admin -->
+        <div class="col-md-2 admin-sidebar bg-dark text-light">
+            <div class="text-center p-3 border-bottom border-secondary">
+                <h4>Administration</h4>
+                <span class="badge bg-danger">Accès Total</span>
+            </div>
+            <ul class="nav flex-column mt-3">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin_dashboard') }}">
+                        <i class="fas fa-tachometer-alt"></i> Tableau de bord
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('admin_users') }}">
+                        <i class="fas fa-users"></i> Utilisateurs
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin_security') }}">
+                        <i class="fas fa-shield-alt"></i> Sécurité
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin_ai_management') }}">
+                        <i class="fas fa-robot"></i> Gestion IA
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin_system') }}">
+                        <i class="fas fa-server"></i> Système
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <!-- Contenu principal -->
+        <div class="col-md-10 admin-content">
+            <div class="admin-header d-flex justify-content-between align-items-center p-3">
+                <h2><i class="fas fa-users"></i> Gestion des utilisateurs</h2>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                    <i class="fas fa-plus"></i> Ajouter un utilisateur
+                </button>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <div class="card mt-3">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="usersTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nom d'utilisateur</th>
+                                    <th>Email</th>
+                                    <th>Rôle</th>
+                                    <th>Date d'inscription</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                <tr>
+                                    <td>{{ user.id }}</td>
+                                    <td>{{ user.username }}</td>
+                                    <td>{{ user.email }}</td>
+                                    <td>
+                                        {% if user.is_admin %}
+                                        <span class="badge bg-danger">Admin</span>
+                                        {% else %}
+                                        <span class="badge bg-info">Utilisateur</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ user.created_at | datetime }}</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button class="btn btn-sm btn-info" onclick="viewUserDetails({{ user.id }})">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            
+                                            {% if current_user.id != user.id %}
+                                            <form action="{{ url_for('toggle_admin_status', user_id=user.id) }}" method="POST" class="d-inline">
+                                                <button type="submit" class="btn btn-sm btn-warning">
+                                                    {% if user.is_admin %}
+                                                    <i class="fas fa-user-minus" title="Retirer les droits admin"></i>
+                                                    {% else %}
+                                                    <i class="fas fa-user-shield" title="Promouvoir en administrateur"></i>
+                                                    {% endif %}
+                                                </button>
+                                            </form>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal d'ajout d'utilisateur -->
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addUserModalLabel">Ajouter un utilisateur</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addUserForm">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Nom d'utilisateur</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Mot de passe</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="isAdmin" name="is_admin">
+                        <label class="form-check-label" for="isAdmin">Administrateur</label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="addUserBtn">Ajouter</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de visualisation des détails d'un utilisateur -->
+<div class="modal fade" id="userDetailsModal" tabindex="-1" aria-labelledby="userDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="userDetailsModalLabel">Détails de l'utilisateur</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="userDetailsContent">
+                <!-- Le contenu sera chargé dynamiquement par JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function viewUserDetails(userId) {
+        // Dans une implémentation réelle, on chargerait les données via une requête AJAX
+        // Pour cette démo, on affiche simplement un message dans le modal
+        document.getElementById('userDetailsContent').innerHTML = `
+            <div class="alert alert-info">
+                Chargement des détails pour l'utilisateur ID: ${userId}...
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Informations personnelles</h5>
+                    <p><strong>ID:</strong> ${userId}</p>
+                    <p><strong>Dernière connexion:</strong> Il y a 3 jours</p>
+                    <p><strong>Sessions actives:</strong> 1</p>
+                </div>
+                <div class="col-md-6">
+                    <h5>Statistiques d'utilisation</h5>
+                    <p><strong>Analyses de réseau:</strong> 12</p>
+                    <p><strong>Rapports générés:</strong> 5</p>
+                    <p><strong>Alertes de sécurité:</strong> 3</p>
+                </div>
+            </div>
+        `;
+        
+        var modal = new bootstrap.Modal(document.getElementById('userDetailsModal'));
+        modal.show();
+    }
+    
+    // Fonction pour ajouter un utilisateur (simulée)
+    document.getElementById('addUserBtn').addEventListener('click', function() {
+        var form = document.getElementById('addUserForm');
+        
+        // Afficher un message
+        alert('Dans une implémentation réelle, cette action ajouterait un nouvel utilisateur à la base de données.');
+        
+        // Fermer le modal
+        var modal = bootstrap.Modal.getInstance(document.getElementById('addUserModal'));
+        modal.hide();
+    });
+</script>
+{% endblock %}
