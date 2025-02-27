@@ -1823,6 +1823,6 @@ if __name__ == '__main__':
     
     # Démarrer l'application Flask avec l'extension SocketIO
     # Configuration pour le déploiement et le développement
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get("PORT", 8080))
     debug = os.environ.get("REPLIT_DEPLOYMENT", "0") != "1"
     socketio.run(app, host="0.0.0.0", port=port, debug=debug)
