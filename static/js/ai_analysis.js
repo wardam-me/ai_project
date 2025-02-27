@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Récupérer les données pour les graphiques
     const securityLevelsElement = document.getElementById('security-levels-data');
     const vulnerabilityStatsElement = document.getElementById('vulnerability-stats-data');
+    const securityDimensionsElement = document.getElementById('security-dimensions-data');
     
     if (securityLevelsElement && vulnerabilityStatsElement) {
         const securityLevelsData = JSON.parse(securityLevelsElement.textContent);
@@ -17,6 +18,12 @@ document.addEventListener('DOMContentLoaded', function() {
         // Créer les graphiques
         createSecurityLevelsChart(securityLevelsData);
         createVulnerabilityStatsChart(vulnerabilityStatsData);
+    }
+    
+    // Créer le graphique radar si les données sont disponibles
+    if (securityDimensionsElement) {
+        const securityDimensionsData = JSON.parse(securityDimensionsElement.textContent);
+        createSecurityRadarChart(securityDimensionsData);
     }
     
     // Ajouter le comportement interactif aux recommandations
@@ -190,6 +197,16 @@ function createSecurityRadarChart(data) {
     const ctx = document.getElementById('security-radar-chart');
     if (!ctx || !data) return;
     
+    // Extraire les données du format reçu
+    const dimensionValues = [
+        data.protocol || 0,
+        data.encryption || 0,
+        data.authentication || 0,
+        data.password || 0,
+        data.privacy || 0
+    ];
+    
+    // Créer le graphique radar
     new Chart(ctx, {
         type: 'radar',
         data: {
@@ -197,13 +214,12 @@ function createSecurityRadarChart(data) {
                 'Protocole', 
                 'Chiffrement', 
                 'Authentification',
-                'Gestion des mots de passe',
-                'Mises à jour',
-                'Vulnérabilités connues'
+                'Mots de passe',
+                'Confidentialité'
             ],
             datasets: [{
-                label: 'Votre réseau',
-                data: data,
+                label: 'Sécurité de votre réseau',
+                data: dimensionValues,
                 fill: true,
                 backgroundColor: 'rgba(54, 162, 235, 0.2)',
                 borderColor: 'rgb(54, 162, 235)',
@@ -225,7 +241,19 @@ function createSecurityRadarChart(data) {
                         display: true
                     },
                     suggestedMin: 0,
-                    suggestedMax: 100
+                    suggestedMax: 100,
+                    ticks: {
+                        stepSize: 20
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.label}: ${context.raw}/100`;
+                        }
+                    }
                 }
             }
         }
