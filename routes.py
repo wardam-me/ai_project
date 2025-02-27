@@ -340,7 +340,111 @@ def register_routes(app):
     @login_required
     def ai_analysis():
         """Page d'analyse IA avancée"""
-        return render_template('ai_analysis.html')
+        # Générer des données de simulation pour la démo
+        optimization_results = {
+            'optimality_score': 78.5,
+            'vulnerability_statistics': {
+                'critical': 1,
+                'high': 3,
+                'medium': 7,
+                'low': 12
+            },
+            'recommendations': {
+                'priority': [
+                    {
+                        'title': 'Mettre à jour le firmware du routeur',
+                        'description': 'Une vulnérabilité critique a été détectée dans la version actuelle du firmware.',
+                        'affected_devices': ['Routeur principal']
+                    }
+                ],
+                'medium': [
+                    {
+                        'title': 'Modifier les mots de passe par défaut',
+                        'description': 'Plusieurs appareils IoT utilisent encore leurs mots de passe par défaut.',
+                        'affected_devices': ['Caméra salon', 'Thermostat']
+                    },
+                    {
+                        'title': 'Isoler les appareils IoT',
+                        'description': 'Créer un réseau séparé pour les appareils IoT améliorerait la sécurité.',
+                        'affected_devices': ['Tous les appareils IoT']
+                    }
+                ]
+            },
+            'raw_vulnerabilities': [
+                {
+                    'vulnerability_type': 'Firmware obsolète',
+                    'severity': 'critical',
+                    'probability': 0.95,
+                    'description': 'Firmware du routeur vulnérable à l\'exploit CVE-2023-XXXX',
+                    'recommendation': 'Mettre à jour vers la dernière version du firmware'
+                },
+                {
+                    'vulnerability_type': 'Authentification faible',
+                    'severity': 'high',
+                    'probability': 0.85,
+                    'description': 'Mots de passe par défaut sur plusieurs appareils',
+                    'recommendation': 'Changer tous les mots de passe par défaut'
+                }
+            ]
+        }
+        
+        wifi_analysis = {
+            'overall_score': 65.3,
+            'networks_analyzed': 7,
+            'security_levels': {
+                'secure': 2,
+                'medium': 3,
+                'vulnerable': 2
+            },
+            'recommendations': [
+                {
+                    'title': 'Migrer vers WPA3',
+                    'priority': 'high',
+                    'description': 'WPA2 est vulnérable à diverses attaques. La migration vers WPA3 est recommandée.',
+                    'action_items': [
+                        'Vérifier la compatibilité des appareils avec WPA3',
+                        'Mettre à jour le firmware du routeur',
+                        'Reconfigurer le réseau avec WPA3-Personal'
+                    ]
+                },
+                {
+                    'title': 'Renforcer la robustesse des mots de passe',
+                    'priority': 'medium',
+                    'description': 'Les mots de passe WiFi doivent être complexes et longs (min. 12 caractères).',
+                    'action_items': [
+                        'Créer un mot de passe avec majuscules, minuscules, chiffres et symboles',
+                        'Longueur minimale de 12 caractères'
+                    ]
+                }
+            ],
+            'network_scores': [
+                {
+                    'ssid': 'Maison_Principal',
+                    'security_type': 'WPA2',
+                    'encryption': 'AES',
+                    'security_score': 75,
+                    'security_level': 'medium'
+                },
+                {
+                    'ssid': 'Maison_Invités',
+                    'security_type': 'WPA3',
+                    'encryption': 'AES',
+                    'security_score': 92,
+                    'security_level': 'secure'
+                },
+                {
+                    'ssid': 'IoT_Network',
+                    'security_type': 'WPA2',
+                    'encryption': 'TKIP',
+                    'security_score': 45,
+                    'security_level': 'vulnerable'
+                }
+            ]
+        }
+        
+        return render_template('ai_analysis.html', 
+                              optimization_results=optimization_results,
+                              wifi_analysis=wifi_analysis)
     
     # ======================================================
     # Routes pour la génération d'infographies
