@@ -556,5 +556,353 @@
         "details": "Configurez un réseau invité distinct pour les visiteurs et les appareils IoT afin d'isoler les appareils potentiellement compromis."
       }
     ]
+  },
+  {
+    "ssid": "Réseau_Domicile",
+    "timestamp": "2025-02-27T00:28:27.762150",
+    "security_type": "WPA2",
+    "encryption": "AES",
+    "authentication": "PSK",
+    "vulnerabilities": [
+      {
+        "type": "wpa2_krack",
+        "severity": "medium",
+        "description": "Vulnérable à l'attaque KRACK (Key Reinstallation Attack)",
+        "impact": "Permet à un attaquant de décrypter le trafic dans certaines conditions"
+      },
+      {
+        "type": "weak_psk",
+        "severity": "medium",
+        "description": "Utilisation de clé pré-partagée (PSK)",
+        "impact": "Vulnérable aux attaques par dictionnaire et attaques pré-calculées"
+      }
+    ],
+    "score": 70,
+    "recommendations": [
+      {
+        "priority": "medium",
+        "action": "upgrade_to_wpa3",
+        "description": "Mettre à niveau vers WPA3 si possible",
+        "details": "WPA3 offre une protection contre les attaques KRACK et par dictionnaire. Si votre matériel le supporte, activez WPA3."
+      },
+      {
+        "priority": "medium",
+        "action": "strong_password",
+        "description": "Utiliser un mot de passe fort et complexe",
+        "details": "Avec WPA2-PSK, la force de votre mot de passe est critique. Utilisez une phrase de passe d'au moins 12 caractères mêlant lettres, chiffres et caractères spéciaux."
+      },
+      {
+        "priority": "medium",
+        "action": "consider_enterprise",
+        "description": "Envisager WPA2-Enterprise pour les environnements professionnels",
+        "details": "Pour les entreprises, WPA2-Enterprise avec 802.1X offre une meilleure sécurité et gestion des identifiants que WPA2-PSK."
+      },
+      {
+        "priority": "medium",
+        "action": "disable_wps",
+        "description": "Désactiver WPS (Wi-Fi Protected Setup)",
+        "details": "WPS peut introduire des vulnérabilités indépendamment du protocole de sécurité choisi."
+      },
+      {
+        "priority": "medium",
+        "action": "guest_network",
+        "description": "Utiliser un réseau invité séparé",
+        "details": "Configurez un réseau invité distinct pour les visiteurs et les appareils IoT afin d'isoler les appareils potentiellement compromis."
+      }
+    ]
+  },
+  {
+    "ssid": "Réseau_Ancien",
+    "timestamp": "2025-02-27T00:28:27.763412",
+    "security_type": "WEP",
+    "encryption": null,
+    "authentication": null,
+    "vulnerabilities": [
+      {
+        "type": "wep_encryption",
+        "severity": "critical",
+        "description": "Chiffrement WEP obsolète et facilement crackable",
+        "impact": "Le chiffrement peut être cassé en quelques minutes avec des outils standard"
+      }
+    ],
+    "score": 30,
+    "recommendations": [
+      {
+        "priority": "critical",
+        "action": "upgrade_to_wpa3",
+        "description": "Remplacer WEP par WPA3-SAE immédiatement",
+        "details": "Le chiffrement WEP est cassable en minutes. Configurez votre routeur pour utiliser WPA3 avec authentification SAE."
+      },
+      {
+        "priority": "high",
+        "action": "change_router",
+        "description": "Envisager le remplacement des équipements anciens",
+        "details": "Si votre matériel ne prend pas en charge WPA3 ou au moins WPA2, il est fortement recommandé de le remplacer par des équipements modernes."
+      },
+      {
+        "priority": "medium",
+        "action": "disable_wps",
+        "description": "Désactiver WPS (Wi-Fi Protected Setup)",
+        "details": "WPS peut introduire des vulnérabilités indépendamment du protocole de sécurité choisi."
+      },
+      {
+        "priority": "medium",
+        "action": "guest_network",
+        "description": "Utiliser un réseau invité séparé",
+        "details": "Configurez un réseau invité distinct pour les visiteurs et les appareils IoT afin d'isoler les appareils potentiellement compromis."
+      }
+    ]
+  },
+  {
+    "ssid": "Réseau_Invité",
+    "timestamp": "2025-02-27T00:28:27.779523",
+    "security_type": "OPEN",
+    "encryption": null,
+    "authentication": null,
+    "vulnerabilities": [
+      {
+        "type": "open_network",
+        "severity": "critical",
+        "description": "Réseau ouvert sans chiffrement",
+        "impact": "Toutes les données transitant par ce réseau peuvent être interceptées et lues"
+      }
+    ],
+    "score": 20,
+    "recommendations": [
+      {
+        "priority": "critical",
+        "action": "enable_encryption",
+        "description": "Activer le chiffrement WPA3-SAE sur ce réseau",
+        "details": "Les réseaux ouverts exposent toutes les communications à l'interception. Configurez votre routeur pour utiliser WPA3 avec authentification SAE pour une sécurité maximale."
+      },
+      {
+        "priority": "medium",
+        "action": "disable_wps",
+        "description": "Désactiver WPS (Wi-Fi Protected Setup)",
+        "details": "WPS peut introduire des vulnérabilités indépendamment du protocole de sécurité choisi."
+      },
+      {
+        "priority": "medium",
+        "action": "guest_network",
+        "description": "Utiliser un réseau invité séparé",
+        "details": "Configurez un réseau invité distinct pour les visiteurs et les appareils IoT afin d'isoler les appareils potentiellement compromis."
+      }
+    ]
+  },
+  {
+    "ssid": "Réseau_Enterprise",
+    "timestamp": "2025-02-27T00:28:27.783080",
+    "security_type": "WPA2",
+    "encryption": "AES",
+    "authentication": "ENTERPRISE",
+    "vulnerabilities": [
+      {
+        "type": "wpa2_krack",
+        "severity": "medium",
+        "description": "Vulnérable à l'attaque KRACK (Key Reinstallation Attack)",
+        "impact": "Permet à un attaquant de décrypter le trafic dans certaines conditions"
+      }
+    ],
+    "score": 80,
+    "recommendations": [
+      {
+        "priority": "medium",
+        "action": "upgrade_to_wpa3",
+        "description": "Mettre à niveau vers WPA3 si possible",
+        "details": "WPA3 offre une protection contre les attaques KRACK et par dictionnaire. Si votre matériel le supporte, activez WPA3."
+      },
+      {
+        "priority": "medium",
+        "action": "disable_wps",
+        "description": "Désactiver WPS (Wi-Fi Protected Setup)",
+        "details": "WPS peut introduire des vulnérabilités indépendamment du protocole de sécurité choisi."
+      },
+      {
+        "priority": "medium",
+        "action": "guest_network",
+        "description": "Utiliser un réseau invité séparé",
+        "details": "Configurez un réseau invité distinct pour les visiteurs et les appareils IoT afin d'isoler les appareils potentiellement compromis."
+      }
+    ]
+  },
+  {
+    "ssid": "Réseau_Moderne",
+    "timestamp": "2025-02-27T00:28:27.787501",
+    "security_type": "WPA3",
+    "encryption": "GCMP",
+    "authentication": "SAE",
+    "vulnerabilities": [
+      {
+        "type": "wpa3_dragonblood",
+        "severity": "low",
+        "description": "Potentiellement vulnérable aux attaques Dragonblood",
+        "impact": "Possible vulnérabilité aux attaques par dictionnaire dans des conditions spécifiques"
+      }
+    ],
+    "score": 95,
+    "recommendations": [
+      {
+        "priority": "low",
+        "action": "firmware_updates",
+        "description": "Maintenir le firmware à jour",
+        "details": "Assurez-vous que votre routeur bénéficie des dernières mises à jour de firmware pour corriger les vulnérabilités Dragonblood et autres failles."
+      },
+      {
+        "priority": "low",
+        "action": "transition_mode",
+        "description": "Désactiver le mode de transition WPA3-WPA2 si possible",
+        "details": "Si tous vos appareils supportent WPA3, désactivez le mode de compatibilité WPA2 pour éviter les attaques de rétrogradation vers WPA2."
+      },
+      {
+        "priority": "medium",
+        "action": "disable_wps",
+        "description": "Désactiver WPS (Wi-Fi Protected Setup)",
+        "details": "WPS peut introduire des vulnérabilités indépendamment du protocole de sécurité choisi."
+      },
+      {
+        "priority": "medium",
+        "action": "guest_network",
+        "description": "Utiliser un réseau invité séparé",
+        "details": "Configurez un réseau invité distinct pour les visiteurs et les appareils IoT afin d'isoler les appareils potentiellement compromis."
+      }
+    ]
+  },
+  {
+    "ssid": "Réseau_Domicile",
+    "timestamp": "2025-02-27T00:30:08.201577",
+    "security_type": "WPA2",
+    "encryption": "AES",
+    "authentication": "PSK",
+    "vulnerabilities": [
+      {
+        "type": "wpa2_krack",
+        "severity": "medium",
+        "description": "Vulnérable à l'attaque KRACK (Key Reinstallation Attack)",
+        "impact": "Permet à un attaquant de décrypter le trafic dans certaines conditions"
+      },
+      {
+        "type": "weak_psk",
+        "severity": "medium",
+        "description": "Utilisation de clé pré-partagée (PSK)",
+        "impact": "Vulnérable aux attaques par dictionnaire et attaques pré-calculées"
+      }
+    ],
+    "score": 70,
+    "recommendations": [
+      {
+        "priority": "medium",
+        "action": "upgrade_to_wpa3",
+        "description": "Mettre à niveau vers WPA3 si possible",
+        "details": "WPA3 offre une protection contre les attaques KRACK et par dictionnaire. Si votre matériel le supporte, activez WPA3."
+      },
+      {
+        "priority": "medium",
+        "action": "strong_password",
+        "description": "Utiliser un mot de passe fort et complexe",
+        "details": "Avec WPA2-PSK, la force de votre mot de passe est critique. Utilisez une phrase de passe d'au moins 12 caractères mêlant lettres, chiffres et caractères spéciaux."
+      },
+      {
+        "priority": "medium",
+        "action": "consider_enterprise",
+        "description": "Envisager WPA2-Enterprise pour les environnements professionnels",
+        "details": "Pour les entreprises, WPA2-Enterprise avec 802.1X offre une meilleure sécurité et gestion des identifiants que WPA2-PSK."
+      },
+      {
+        "priority": "medium",
+        "action": "disable_wps",
+        "description": "Désactiver WPS (Wi-Fi Protected Setup)",
+        "details": "WPS peut introduire des vulnérabilités indépendamment du protocole de sécurité choisi."
+      },
+      {
+        "priority": "medium",
+        "action": "guest_network",
+        "description": "Utiliser un réseau invité séparé",
+        "details": "Configurez un réseau invité distinct pour les visiteurs et les appareils IoT afin d'isoler les appareils potentiellement compromis."
+      }
+    ]
+  },
+  {
+    "ssid": "Réseau_Ancien",
+    "timestamp": "2025-02-27T00:30:08.202980",
+    "security_type": "WEP",
+    "encryption": null,
+    "authentication": null,
+    "vulnerabilities": [
+      {
+        "type": "wep_encryption",
+        "severity": "critical",
+        "description": "Chiffrement WEP obsolète et facilement crackable",
+        "impact": "Le chiffrement peut être cassé en quelques minutes avec des outils standard"
+      }
+    ],
+    "score": 30,
+    "recommendations": [
+      {
+        "priority": "critical",
+        "action": "upgrade_to_wpa3",
+        "description": "Remplacer WEP par WPA3-SAE immédiatement",
+        "details": "Le chiffrement WEP est cassable en minutes. Configurez votre routeur pour utiliser WPA3 avec authentification SAE."
+      },
+      {
+        "priority": "high",
+        "action": "change_router",
+        "description": "Envisager le remplacement des équipements anciens",
+        "details": "Si votre matériel ne prend pas en charge WPA3 ou au moins WPA2, il est fortement recommandé de le remplacer par des équipements modernes."
+      },
+      {
+        "priority": "medium",
+        "action": "disable_wps",
+        "description": "Désactiver WPS (Wi-Fi Protected Setup)",
+        "details": "WPS peut introduire des vulnérabilités indépendamment du protocole de sécurité choisi."
+      },
+      {
+        "priority": "medium",
+        "action": "guest_network",
+        "description": "Utiliser un réseau invité séparé",
+        "details": "Configurez un réseau invité distinct pour les visiteurs et les appareils IoT afin d'isoler les appareils potentiellement compromis."
+      }
+    ]
+  },
+  {
+    "ssid": "Réseau_Moderne",
+    "timestamp": "2025-02-27T00:30:08.207302",
+    "security_type": "WPA3",
+    "encryption": "GCMP",
+    "authentication": "SAE",
+    "vulnerabilities": [
+      {
+        "type": "wpa3_dragonblood",
+        "severity": "low",
+        "description": "Potentiellement vulnérable aux attaques Dragonblood",
+        "impact": "Possible vulnérabilité aux attaques par dictionnaire dans des conditions spécifiques"
+      }
+    ],
+    "score": 95,
+    "recommendations": [
+      {
+        "priority": "low",
+        "action": "firmware_updates",
+        "description": "Maintenir le firmware à jour",
+        "details": "Assurez-vous que votre routeur bénéficie des dernières mises à jour de firmware pour corriger les vulnérabilités Dragonblood et autres failles."
+      },
+      {
+        "priority": "low",
+        "action": "transition_mode",
+        "description": "Désactiver le mode de transition WPA3-WPA2 si possible",
+        "details": "Si tous vos appareils supportent WPA3, désactivez le mode de compatibilité WPA2 pour éviter les attaques de rétrogradation vers WPA2."
+      },
+      {
+        "priority": "medium",
+        "action": "disable_wps",
+        "description": "Désactiver WPS (Wi-Fi Protected Setup)",
+        "details": "WPS peut introduire des vulnérabilités indépendamment du protocole de sécurité choisi."
+      },
+      {
+        "priority": "medium",
+        "action": "guest_network",
+        "description": "Utiliser un réseau invité séparé",
+        "details": "Configurez un réseau invité distinct pour les visiteurs et les appareils IoT afin d'isoler les appareils potentiellement compromis."
+      }
+    ]
   }
 ]

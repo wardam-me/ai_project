@@ -24,6 +24,8 @@ from models import User, UserReport, SavedTopology
 from network_topology import NetworkTopology
 from security_scoring import DeviceSecurityScoring
 from assistant_securite import AssistantSecurite
+from gamification import SecurityGamification
+from datetime import datetime, timedelta
 
 # Configuration du logging
 logging.basicConfig(level=logging.DEBUG)
@@ -804,6 +806,196 @@ def handle_device_security_update(data):
                 'security_score': new_score,
                 'last_updated': datetime.now().isoformat()
             }, broadcast=True)
+
+# Initialiser le système de gamification
+gamification = SecurityGamification()
+
+# Routes pour le tableau de bord de sécurité gamifié
+@app.route('/security-game')
+@login_required
+def security_game():
+    """Tableau de bord de sécurité gamifié avec système de points et récompenses"""
+    # Récupérer les statistiques du réseau
+    network_stats = security_scoring.get_network_security_status()
+    
+    # Initialiser l'utilisateur dans le système de gamification s'il ne l'est pas déjà
+    gamification.initialize_user(current_user.id)
+    
+    # Mettre à jour le score de l'utilisateur en fonction des statistiques de sécurité
+    progress_data = gamification.update_score_from_security(current_user.id, network_stats)
+    
+    # Récupérer toutes les données de gamification de l'utilisateur
+    user_data = gamification.get_user_gamification_data(current_user.id)
+    
+    # Obtenir le classement
+    leaderboard = gamification.get_leaderboard(limit=5)
+    
+    # Récupérer les noms d'utilisateur pour le classement
+    leaderboard_users = {}
+    for entry in leaderboard:
+        try:
+            user = User.query.get(int(entry['user_id']))
+            if user:
+                leaderboard_users[entry['user_id']] = user.username
+            else:
+                leaderboard_users[entry['user_id']] = f"Utilisateur {entry['user_id']}"
+        except:
+            leaderboard_users[entry['user_id']] = f"Utilisateur {entry['user_id']}"
+    
+    # Déterminer les titres basés sur les scores
+    level = user_data['scores']['level']
+    if level >= 20:
+        user_title = "Légende de la Sécurité"
+    elif level >= 15:
+        user_title = "Expert en Cyber-Sécurité"
+    elif level >= 10:
+        user_title = "Maître des Défenses"
+    elif level >= 5:
+        user_title = "Protecteur du Réseau"
+    else:
+        user_title = "Gardien Novice"
+    
+    overall_score = network_stats['overall_score']
+    if overall_score >= 90:
+        score_title = "Sécurité Exemplaire"
+    elif overall_score >= 80:
+        score_title = "Très Bonne Sécurité"
+    elif overall_score >= 70:
+        score_title = "Bonne Sécurité"
+    elif overall_score >= 50:
+        score_title = "Sécurité Moyenne"
+    else:
+        score_title = "Sécurité à Risque"
+    
+    # Définir un filtre pour convertir les chaînes ISO en objets datetime
+    @app.template_filter('from_isoformat')
+    def from_isoformat(value):
+        if not value:
+            return datetime.now()
+        try:
+            return datetime.fromisoformat(value.replace('Z', '+00:00'))
+        except (ValueError, AttributeError):
+            return datetime.now()
+    
+    return render_template(
+        'security_game.html',
+        network_stats=network_stats,
+        user_data=user_data,
+        xp_gain=progress_data.get('xp_gain', 0),
+        level_up=progress_data.get('level_up'),
+        new_achievements=progress_data.get('new_achievements', []),
+        challenge_progress=progress_data.get('challenge_progress', []),
+        leaderboard=leaderboard,
+        leaderboard_users=leaderboard_users,
+        user_title=user_title,
+        score_title=score_title
+    )
+
+@app.route('/perform-network-scan')
+@login_required
+def perform_network_scan():
+    """Effectue une analyse du réseau et attribue des points d'expérience"""
+    # Simuler une détection de réseau
+    security_scoring.detect_devices()
+    
+    # Récupérer les statistiques du réseau après l'analyse
+    network_stats = security_scoring.get_network_security_status()
+    
+    # Mettre à jour le score de l'utilisateur avec des points bonus pour l'analyse
+    fixed_issues = []  # Simulation de problèmes résolus
+    progress_data = gamification.update_score_from_security(current_user.id, network_stats, fixed_issues)
+    
+    # Ajouter des points supplémentaires pour l'action d'analyse
+    gamification._add_xp(str(current_user.id), 30)
+    
+    flash('Analyse du réseau effectuée avec succès ! +30 XP', 'success')
+    return redirect(url_for('security_game'))
+
+@app.route('/fix-security-issues')
+@login_required
+def fix_security_issues():
+    """Simule la correction de problèmes de sécurité et attribue des récompenses"""
+    # Récupérer tous les appareils avec leurs scores
+    device_scores = security_scoring.get_all_device_scores()
+    
+    # Filtrer les appareils avec des scores de sécurité faibles
+    low_security_devices = [d for d in device_scores if d['security_score'] < 60]
+    
+    fixed_issues = []
+    xp_gained = 0
+    
+    # Pour chaque appareil à faible sécurité, simuler une amélioration
+    for device in low_security_devices[:min(3, len(low_security_devices))]:
+        # Récupérer les détails de l'appareil
+        device_data = security_scoring.get_device(device['mac_address'])
+        
+        if device_data and device_data.get('security_issues'):
+            # Simuler la résolution d'un problème de sécurité aléatoire
+            issue_to_fix = random.choice(device_data['security_issues'])
+            fixed_issues.append(issue_to_fix)
+            
+            # Attribuer des points selon la sévérité
+            if issue_to_fix['severity'] == 'high':
+                xp_gained += 50
+            elif issue_to_fix['severity'] == 'medium':
+                xp_gained += 25
+            else:
+                xp_gained += 10
+            
+            # Augmenter le score de sécurité de l'appareil
+            new_score = min(100, device_data['security_score'] + random.randint(5, 15))
+            device_data['security_score'] = new_score
+            
+            # Mettre à jour les problèmes de sécurité (supprimer celui qui a été résolu)
+            device_data['security_issues'] = [issue for issue in device_data['security_issues'] if issue['id'] != issue_to_fix['id']]
+            
+            # Mettre à jour les données de topologie
+            network_topology.update_device_security(device['mac_address'], {
+                'security_score': new_score,
+                'security_issues': device_data['security_issues']
+            })
+    
+    # Sauvegarder les modifications
+    security_scoring.save_devices()
+    
+    # Mettre à jour les statistiques du réseau après les corrections
+    network_stats = security_scoring.get_network_security_status()
+    
+    # Mettre à jour le score de l'utilisateur avec les problèmes résolus
+    progress_data = gamification.update_score_from_security(current_user.id, network_stats, fixed_issues)
+    
+    if fixed_issues:
+        flash(f'{len(fixed_issues)} problèmes de sécurité corrigés ! +{xp_gained} XP', 'success')
+    else:
+        flash('Aucun problème de sécurité critique à corriger.', 'info')
+    
+    return redirect(url_for('security_game'))
+
+@app.route('/api/gamification/user-data')
+@login_required
+def api_gamification_user_data():
+    """API pour récupérer les données de gamification de l'utilisateur"""
+    user_data = gamification.get_user_gamification_data(current_user.id)
+    return jsonify(user_data)
+
+@app.route('/api/gamification/leaderboard')
+@login_required
+def api_gamification_leaderboard():
+    """API pour récupérer le classement"""
+    leaderboard = gamification.get_leaderboard()
+    
+    # Récupérer les noms d'utilisateur pour le classement
+    for entry in leaderboard:
+        try:
+            user = User.query.get(int(entry['user_id']))
+            if user:
+                entry['username'] = user.username
+            else:
+                entry['username'] = f"Utilisateur {entry['user_id']}"
+        except:
+            entry['username'] = f"Utilisateur {entry['user_id']}"
+    
+    return jsonify(leaderboard)
 
 # Gestionnaires d'erreurs
 @app.errorhandler(404)

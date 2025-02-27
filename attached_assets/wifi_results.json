@@ -1,0 +1,580 @@
+[
+  {
+    "bssid": "22:6a:94:f3:cb:30",
+    "frequency_mhz": 5180,
+    "rssi": -89,
+    "ssid": "Familiahilario",
+    "timestamp": 101081837491,
+    "channel_bandwidth_mhz": "80",
+    "center_frequency_mhz": 5210
+  },
+  {
+    "bssid": "da:94:70:3f:c3:a8",
+    "frequency_mhz": 2412,
+    "rssi": -79,
+    "ssid": "",
+    "timestamp": 101383035843,
+    "channel_bandwidth_mhz": "20"
+  },
+  {
+    "bssid": "f6:79:0a:03:74:34",
+    "frequency_mhz": 2412,
+    "rssi": -78,
+    "ssid": "",
+    "timestamp": 100475293627,
+    "channel_bandwidth_mhz": "20"
+  },
+  {
+    "bssid": "c0:94:35:fa:e6:f2",
+    "frequency_mhz": 2412,
+    "rssi": -79,
+    "ssid": "ArevaloVinasco",
+    "timestamp": 101383004865,
+    "channel_bandwidth_mhz": "20"
+  },
+  {
+    "bssid": "b8:94:70:3f:c3:a8",
+    "frequency_mhz": 2412,
+    "rssi": -73,
+    "ssid": "Altima-01269E74",
+    "timestamp": 139070924344,
+    "channel_bandwidth_mhz": "20"
+  },
+  {
+    "bssid": "46:8a:a1:03:19:19",
+    "frequency_mhz": 2437,
+    "rssi": -73,
+    "ssid": "FILOU",
+    "timestamp": 139071326267,
+    "channel_bandwidth_mhz": "20"
+  },
+  {
+    "bssid": "36:6a:94:f3:cb:30",
+    "frequency_mhz": 5180,
+    "rssi": -88,
+    "ssid": "blackhole-F3CB30",
+    "timestamp": 101081837959,
+    "channel_bandwidth_mhz": "80",
+    "center_frequency_mhz": 5210
+  },
+  {
+    "bssid": "7a:8d:af:3a:6f:d6",
+    "frequency_mhz": 5785,
+    "rssi": -46,
+    "ssid": "BELL120",
+    "timestamp": 139072294373,
+    "channel_bandwidth_mhz": "80",
+    "center_frequency_mhz": 5775
+  },
+  {
+    "bssid": "ce:f7:35:24:a2:df",
+    "frequency_mhz": 5785,
+    "rssi": -68,
+    "ssid": "DIRECT-HA-FireTV_fbe5",
+    "timestamp": 139072234342,
+    "channel_bandwidth_mhz": "20"
+  },
+  {
+    "bssid": "36:6a:94:f3:cb:38",
+    "frequency_mhz": 2412,
+    "rssi": -75,
+    "ssid": "",
+    "timestamp": 101742327010,
+    "channel_bandwidth_mhz": "20"
+  },
+  {
+    "bssid": "7c:f6:66:29:6c:33",
+    "frequency_mhz": 2437,
+    "rssi": -73,
+    "ssid": "SmartLife-6C32",
+    "timestamp": 139071331703,
+    "channel_bandwidth_mhz": "20"
+  },
+  {
+    "bssid": "1e:9d:72:c6:2a:35",
+    "frequency_mhz": 2462,
+    "rssi": -56,
+    "ssid": "",
+    "timestamp": 100779479720,
+    "channel_bandwidth_mhz": "20"
+  },
+  {
+    "bssid": "1e:9d:72:c6:2a:37",
+    "frequency_mhz": 2462,
+    "rssi": -56,
+    "ssid": "",
+    "timestamp": 100779480161,
+    "channel_bandwidth_mhz": "20"
+  },
+  {
+    "bssid": "f8:79:0a:03:74:34",
+    "frequency_mhz": 2412,
+    "rssi": -72,
+    "ssid": "Ghita",
+    "timestamp": 101383067065,
+    "channel_bandwidth_mhz": "20"
+  },
+  {
+    "bssid": "1e:9d:72:c6:2a:31",
+    "frequency_mhz": 2462,
+    "rssi": -56,
+    "ssid": "",
+    "timestamp": 100779479458,
+    "channel_bandwidth_mhz": "20"
+  },
+  {
+    "bssid": "f8:79:0a:03:74:35",
+    "frequency_mhz": 5220,
+    "rssi": -85,
+    "ssid": "Ghita",
+    "timestamp": 139071970914,
+    "channel_bandwidth_mhz": "80",
+    "center_frequency_mhz": 5210
+  },
+  {
+    "bssid": "48:4b:d4:f1:ef:78",
+    "frequency_mhz": 2462,
+    "rssi": -52,
+    "ssid": "",
+    "timestamp": 139071698224,
+    "channel_bandwidth_mhz": "20"
+  },
+  {
+    "bssid": "0e:ac:8a:f6:9d:e7",
+    "frequency_mhz": 5220,
+    "rssi": -64,
+    "ssid": "BELL292",
+    "timestamp": 139071968021,
+    "channel_bandwidth_mhz": "80",
+    "center_frequency_mhz": 5210
+  },
+  {
+    "bssid": "48:4b:d4:f1:ef:76",
+    "frequency_mhz": 2462,
+    "rssi": -75,
+    "ssid": "",
+    "timestamp": 100779498381,
+    "channel_bandwidth_mhz": "20"
+  },
+  {
+    "bssid": "0c:ac:8a:f5:5f:a7",
+    "frequency_mhz": 2412,
+    "rssi": -81,
+    "ssid": "BELL056",
+    "timestamp": 101383011754,
+    "channel_bandwidth_mhz": "20"
+  },
+  {
+    "bssid": "0e:ac:8a:f6:9d:e6",
+    "frequency_mhz": 2462,
+    "rssi": -57,
+    "ssid": "BELL292-V",
+    "timestamp": 139071739428,
+    "channel_bandwidth_mhz": "20"
+  },
+  {
+    "bssid": "48:4b:d4:f1:ef:74",
+    "frequency_mhz": 2462,
+    "rssi": -75,
+    "ssid": "",
+    "timestamp": 100779481350,
+    "channel_bandwidth_mhz": "20"
+  },
+  {
+    "bssid": "ee:79:0a:03:74:34",
+    "frequency_mhz": 2412,
+    "rssi": -73,
+    "ssid": "",
+    "timestamp": 139070945533,
+    "channel_bandwidth_mhz": "20"
+  },
+  {
+    "bssid": "48:4b:d4:f1:ef:73",
+    "frequency_mhz": 2462,
+    "rssi": -52,
+    "ssid": "Helix 4355",
+    "timestamp": 139071747399,
+    "channel_bandwidth_mhz": "20"
+  },
+  {
+    "bssid": "0e:ac:8a:f6:9d:e3",
+    "frequency_mhz": 6135,
+    "rssi": -56,
+    "ssid": "BELL292-V",
+    "timestamp": 100481341224,
+    "channel_bandwidth_mhz": "160",
+    "center_frequency_mhz": 6145
+  },
+  {
+    "bssid": "20:6a:94:f3:cb:38",
+    "frequency_mhz": 2412,
+    "rssi": -69,
+    "ssid": "Familiahilario",
+    "timestamp": 101383000185,
+    "channel_bandwidth_mhz": "20"
+  },
+  {
+    "bssid": "48:29:52:fb:77:5f",
+    "frequency_mhz": 5220,
+    "rssi": -88,
+    "ssid": "BELL717",
+    "timestamp": 139071969638,
+    "channel_bandwidth_mhz": "80",
+    "center_frequency_mhz": 5210
+  },
+  {
+    "bssid": "0e:ac:8a:5e:6a:9f",
+    "frequency_mhz": 5785,
+    "rssi": -67,
+    "ssid": "BELL349",
+    "timestamp": 139072233636,
+    "channel_bandwidth_mhz": "80",
+    "center_frequency_mhz": 5775
+  },
+  {
+    "bssid": "be:d7:d4:69:a2:02",
+    "frequency_mhz": 5220,
+    "rssi": -60,
+    "ssid": "DIRECT-roku-FU5-73313C",
+    "timestamp": 100779719521,
+    "channel_bandwidth_mhz": "20"
+  },
+  {
+    "bssid": "1a:82:8c:af:ef:00",
+    "frequency_mhz": 5240,
+    "rssi": -87,
+    "ssid": "",
+    "timestamp": 139072048319,
+    "channel_bandwidth_mhz": "80",
+    "center_frequency_mhz": 5210
+  },
+  {
+    "bssid": "0e:ac:8a:f6:9d:e0",
+    "frequency_mhz": 5220,
+    "rssi": -65,
+    "ssid": "BELL292-V",
+    "timestamp": 139071968596,
+    "channel_bandwidth_mhz": "80",
+    "center_frequency_mhz": 5210
+  },
+  {
+    "bssid": "10:33:bf:a1:d6:51",
+    "frequency_mhz": 2462,
+    "rssi": -78,
+    "ssid": "Ermitage",
+    "timestamp": 100779494993,
+    "channel_bandwidth_mhz": "20"
+  },
+  {
+    "bssid": "18:82:8c:af:ef:00",
+    "frequency_mhz": 5240,
+    "rssi": -86,
+    "ssid": "TELUSWiFi6839",
+    "timestamp": 139072034440,
+    "channel_bandwidth_mhz": "80",
+    "center_frequency_mhz": 5210
+  },
+  {
+    "bssid": "26:bc:9f:58:e6:56",
+    "frequency_mhz": 2412,
+    "rssi": -74,
+    "ssid": "",
+    "timestamp": 101383066849,
+    "channel_bandwidth_mhz": "20"
+  },
+  {
+    "bssid": "a6:9a:93:fd:58:55",
+    "frequency_mhz": 5785,
+    "rssi": -60,
+    "ssid": "TNEXT Y051",
+    "timestamp": 101743989499,
+    "channel_bandwidth_mhz": "80",
+    "center_frequency_mhz": 5775
+  },
+  {
+    "bssid": "10:7c:61:2c:c6:0a",
+    "frequency_mhz": 2437,
+    "rssi": -43,
+    "ssid": "M-audio",
+    "timestamp": 139071340389,
+    "channel_bandwidth_mhz": "40",
+    "center_frequency_mhz": 2447
+  },
+  {
+    "bssid": "48:4b:d4:f1:ef:80",
+    "frequency_mhz": 5785,
+    "rssi": -87,
+    "ssid": "",
+    "timestamp": 100780026423,
+    "channel_bandwidth_mhz": "80",
+    "center_frequency_mhz": 5775
+  },
+  {
+    "bssid": "12:77:7b:55:fd:88",
+    "frequency_mhz": 2462,
+    "rssi": -77,
+    "ssid": "",
+    "timestamp": 100779463628,
+    "channel_bandwidth_mhz": "20"
+  },
+  {
+    "bssid": "b8:ec:a3:d3:5b:b1",
+    "frequency_mhz": 5745,
+    "rssi": -80,
+    "ssid": "VIDEOTRON1400_5GHz",
+    "timestamp": 139072106362,
+    "channel_bandwidth_mhz": "80",
+    "center_frequency_mhz": 5775
+  },
+  {
+    "bssid": "10:7c:61:2c:c6:0d",
+    "frequency_mhz": 5785,
+    "rssi": -46,
+    "ssid": "M-audio_5G-1",
+    "timestamp": 101743991885,
+    "channel_bandwidth_mhz": "80",
+    "center_frequency_mhz": 5775
+  },
+  {
+    "bssid": "0c:ac:8a:f6:9d:e5",
+    "frequency_mhz": 2462,
+    "rssi": -57,
+    "ssid": "BELL292",
+    "timestamp": 139071761431,
+    "channel_bandwidth_mhz": "20"
+  },
+  {
+    "bssid": "0c:ac:8a:5e:6a:9e",
+    "frequency_mhz": 5785,
+    "rssi": -44,
+    "ssid": "",
+    "timestamp": 100780021209,
+    "channel_bandwidth_mhz": "80",
+    "center_frequency_mhz": 5775
+  },
+  {
+    "bssid": "0c:ac:8a:f6:9d:e6",
+    "frequency_mhz": 5220,
+    "rssi": -44,
+    "ssid": "",
+    "timestamp": 100476808734,
+    "channel_bandwidth_mhz": "80",
+    "center_frequency_mhz": 5210
+  },
+  {
+    "bssid": "0c:ac:8a:5e:6a:9d",
+    "frequency_mhz": 2412,
+    "rssi": -62,
+    "ssid": "BELL349",
+    "timestamp": 139070915738,
+    "channel_bandwidth_mhz": "20"
+  },
+  {
+    "bssid": "0c:ac:8a:f6:9d:e2",
+    "frequency_mhz": 6135,
+    "rssi": -54,
+    "ssid": "BELL292",
+    "timestamp": 101744043890,
+    "channel_bandwidth_mhz": "160",
+    "center_frequency_mhz": 6145
+  },
+  {
+    "bssid": "e8:9c:25:6a:21:c8",
+    "frequency_mhz": 5240,
+    "rssi": -67,
+    "ssid": "M-audio_5G-1",
+    "timestamp": 101743755801,
+    "channel_bandwidth_mhz": "80",
+    "center_frequency_mhz": 5210
+  },
+  {
+    "bssid": "f0:4d:d4:f9:48:b7",
+    "frequency_mhz": 5220,
+    "rssi": -88,
+    "ssid": "VIRGIN098",
+    "timestamp": 139071969161,
+    "channel_bandwidth_mhz": "80",
+    "center_frequency_mhz": 5210
+  },
+  {
+    "bssid": "c6:94:35:fa:e6:f2",
+    "frequency_mhz": 2412,
+    "rssi": -80,
+    "ssid": "",
+    "timestamp": 101383007859,
+    "channel_bandwidth_mhz": "20"
+  },
+  {
+    "bssid": "e8:9c:25:6a:21:c4",
+    "frequency_mhz": 2437,
+    "rssi": -58,
+    "ssid": "M-audio",
+    "timestamp": 139071349761,
+    "channel_bandwidth_mhz": "40",
+    "center_frequency_mhz": 2447
+  },
+  {
+    "bssid": "0c:ac:8a:5e:6a:9a",
+    "frequency_mhz": 6775,
+    "rssi": -67,
+    "ssid": "BELL349",
+    "timestamp": 100480135597,
+    "channel_bandwidth_mhz": "160",
+    "center_frequency_mhz": 6785
+  },
+  {
+    "bssid": "e6:79:0a:03:74:34",
+    "frequency_mhz": 2412,
+    "rssi": -72,
+    "ssid": "",
+    "timestamp": 139070945270,
+    "channel_bandwidth_mhz": "20"
+  },
+  {
+    "bssid": "a8:9a:93:fd:58:57",
+    "frequency_mhz": 5220,
+    "rssi": -80,
+    "ssid": "TNEXT Y051",
+    "timestamp": 139071967921,
+    "channel_bandwidth_mhz": "80",
+    "center_frequency_mhz": 5210
+  },
+  {
+    "bssid": "ac:89:95:ab:db:f7",
+    "frequency_mhz": 2412,
+    "rssi": -58,
+    "ssid": "PS4-B2C9679B0C2D",
+    "timestamp": 139070929720,
+    "channel_bandwidth_mhz": "20"
+  },
+  {
+    "bssid": "a8:9a:93:fd:58:55",
+    "frequency_mhz": 5785,
+    "rssi": -69,
+    "ssid": "",
+    "timestamp": 100477218057,
+    "channel_bandwidth_mhz": "80",
+    "center_frequency_mhz": 5775
+  },
+  {
+    "bssid": "a8:9a:93:fd:58:56",
+    "frequency_mhz": 2412,
+    "rssi": -71,
+    "ssid": "TNEXT Y051",
+    "timestamp": 139070919386,
+    "channel_bandwidth_mhz": "20"
+  },
+  {
+    "bssid": "40:a5:ef:e2:80:58",
+    "frequency_mhz": 5280,
+    "rssi": -90,
+    "ssid": "Familiahilario-5G",
+    "timestamp": 100477688361,
+    "channel_bandwidth_mhz": "80",
+    "center_frequency_mhz": 5290
+  },
+  {
+    "bssid": "a0:36:bc:9f:58:84",
+    "frequency_mhz": 5785,
+    "rssi": -72,
+    "ssid": "M-audio_5G-1",
+    "timestamp": 101082415896,
+    "channel_bandwidth_mhz": "80",
+    "center_frequency_mhz": 5775
+  },
+  {
+    "bssid": "c4:38:75:16:6e:75",
+    "frequency_mhz": 5200,
+    "rssi": -63,
+    "ssid": "",
+    "timestamp": 101743566433,
+    "channel_bandwidth_mhz": "20"
+  },
+  {
+    "bssid": "10:33:bf:a1:d6:5e",
+    "frequency_mhz": 5785,
+    "rssi": -88,
+    "ssid": "",
+    "timestamp": 100477229135,
+    "channel_bandwidth_mhz": "80",
+    "center_frequency_mhz": 5775
+  },
+  {
+    "bssid": "e8:9c:25:6a:21:cc",
+    "frequency_mhz": 5785,
+    "rssi": -60,
+    "ssid": "M-audio_5G-2",
+    "timestamp": 139072231767,
+    "channel_bandwidth_mhz": "80",
+    "center_frequency_mhz": 5775
+  },
+  {
+    "bssid": "50:d4:f7:51:99:9d",
+    "frequency_mhz": 5745,
+    "rssi": -85,
+    "ssid": "TP-Link_999E_5G",
+    "timestamp": 100477017770,
+    "channel_bandwidth_mhz": "80",
+    "center_frequency_mhz": 5775
+  },
+  {
+    "bssid": "50:d4:f7:51:99:9e",
+    "frequency_mhz": 2452,
+    "rssi": -72,
+    "ssid": "TP-Link_999E",
+    "timestamp": 100476099381,
+    "channel_bandwidth_mhz": "40",
+    "center_frequency_mhz": 2442
+  },
+  {
+    "bssid": "ea:2a:44:0a:e3:03",
+    "frequency_mhz": 5785,
+    "rssi": -65,
+    "ssid": "DIRECT-roku-880-C780B9",
+    "timestamp": 101384358163,
+    "channel_bandwidth_mhz": "20"
+  },
+  {
+    "bssid": "d6:94:35:fa:e6:f2",
+    "frequency_mhz": 2412,
+    "rssi": -79,
+    "ssid": "",
+    "timestamp": 101383014193,
+    "channel_bandwidth_mhz": "20"
+  },
+  {
+    "bssid": "e8:9c:25:6a:21:d0",
+    "frequency_mhz": 6615,
+    "rssi": -73,
+    "ssid": "M-audio_6G",
+    "timestamp": 100480855774,
+    "channel_bandwidth_mhz": "160",
+    "center_frequency_mhz": 6625
+  },
+  {
+    "bssid": "78:8d:af:3a:6f:d4",
+    "frequency_mhz": 2412,
+    "rssi": -59,
+    "ssid": "BELL120",
+    "timestamp": 101742324221,
+    "channel_bandwidth_mhz": "20"
+  },
+  {
+    "bssid": "48:4b:d4:f1:ef:7b",
+    "frequency_mhz": 5785,
+    "rssi": -53,
+    "ssid": "Helix 4355",
+    "timestamp": 139072232045,
+    "channel_bandwidth_mhz": "80",
+    "center_frequency_mhz": 5775
+  },
+  {
+    "bssid": "a0:36:bc:9f:58:80",
+    "frequency_mhz": 2437,
+    "rssi": -60,
+    "ssid": "M-audio",
+    "timestamp": 101383428143,
+    "channel_bandwidth_mhz": "40",
+    "center_frequency_mhz": 2447
+  }
+]
