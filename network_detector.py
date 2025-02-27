@@ -102,8 +102,17 @@ class NetworkDetector:
             try:
                 result = subprocess.check_output(['ip', 'link']).decode('utf-8')
                 return "wlan" in result or "wlp" in result
-            except Exception as e2:
-                print(f"Erreur alternative WiFi: {e2}")
+            except FileNotFoundError as e2:
+                print(f"Commande ip non trouvée (après échec iwconfig): {e2}")
+                return False
+            except subprocess.CalledProcessError as e2:
+                print(f"Erreur lors de l'exécution de ip link (après échec iwconfig): {e2}")
+                return False
+            except UnicodeDecodeError as e2:
+                print(f"Erreur de décodage de la sortie ip (après échec iwconfig): {e2}")
+                return False
+            except OSError as e2:
+                print(f"Erreur système lors de la détection WiFi alternative (après échec iwconfig): {e2}")
                 return False
         except UnicodeDecodeError as e:
             print(f"Erreur de décodage de la sortie iwconfig: {e}")
@@ -126,14 +135,30 @@ class NetworkDetector:
     @classmethod
     async def save_network_status(cls):
         """Enregistre l'état des différentes technologies réseau"""
-        os.makedirs(CONFIG_DIR, exist_ok=True)
+        try:
+            os.makedirs(CONFIG_DIR, exist_ok=True)
+        except PermissionError as e:
+            print(f"Erreur de permission lors de la création du répertoire de configuration: {e}")
+            # Utiliser un répertoire temporaire comme fallback
+            global CONFIG_DIR, NETWORK_STATUS_FILE
+            CONFIG_DIR = os.path.join('/tmp', '.network_detect')
+            NETWORK_STATUS_FILE = os.path.join(CONFIG_DIR, "network_status.json")
+            os.makedirs(CONFIG_DIR, exist_ok=True)
+        except OSError as e:
+            print(f"Erreur système lors de la création du répertoire de configuration: {e}")
         
         status = await cls.get_all_network_status()
         
-        with open(NETWORK_STATUS_FILE, 'w') as f:
-            json.dump(status, f, indent=2)
-        
-        return status
+        try:
+            with open(NETWORK_STATUS_FILE, 'w') as f:
+                json.dump(status, f, indent=2)
+            return status
+        except PermissionError as e:
+            print(f"Erreur de permission lors de l'écriture du fichier de statut réseau: {e}")
+            return status
+        except IOError as e:
+            print(f"Erreur d'I/O lors de l'écriture du fichier de statut réseau: {e}")
+            return status
     
     @staticmethod
     def get_saved_status():
