@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}NetSecure Pro - Analyse de Sécurité WiFi{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    {% block styles %}{% endblock %}
+</head>
+<body class="bg-light">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('accueil') }}">
+                <i class="fas fa-wifi me-2"></i>NetSecure Pro
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('accueil') }}">
+                            <i class="fas fa-home me-1"></i>Accueil
+                        </a>
+                    </li>
+                    
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard') }}">
+                                <i class="fas fa-tachometer-alt me-1"></i>Tableau de bord
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('network_topology_view') }}">
+                                <i class="fas fa-project-diagram me-1"></i>Topologie
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarAnalysisDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-chart-line me-1"></i>Analyse
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarAnalysisDropdown">
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('vulnerability_analysis') }}">
+                                        <i class="fas fa-bug me-1"></i>Vulnérabilités
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('protocol_analysis') }}">
+                                        <i class="fas fa-shield-alt me-1"></i>Protocoles
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('security_report') }}">
+                                        <i class="fas fa-file-alt me-1"></i>Rapport
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('ai_analysis') }}">
+                                        <i class="fas fa-brain me-1"></i>Analyse IA
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarAIDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-robot me-1"></i>Intelligence Artificielle
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarAIDropdown">
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('intelligent_security_assistant') }}">
+                                        <i class="fas fa-user-shield me-1"></i>Assistant IA
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('chatbot') }}">
+                                        <i class="fas fa-comments me-1"></i>Chatbot
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('security_radar') }}">
+                                        <i class="fas fa-radar me-1"></i>Radar de Sécurité
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('ai_error_detection') }}">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>Détection d'Erreurs
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('ai_clones_dashboard') }}">
+                                        <i class="fas fa-clone me-1"></i>Clones IA
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('security_game') }}">
+                                <i class="fas fa-gamepad me-1"></i>Gamification
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarLanguageDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-language me-1"></i>Langue
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarLanguageDropdown">
+                            <li>
+                                <a class="dropdown-item" href="#" data-language="fr">
+                                    <img src="{{ url_for('static', filename='img/flags/fr.svg') }}" alt="Français" class="language-flag me-2" width="20">Français
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" data-language="en">
+                                    <img src="{{ url_for('static', filename='img/flags/en.svg') }}" alt="English" class="language-flag me-2" width="20">English
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" data-language="ar">
+                                    <img src="{{ url_for('static', filename='img/flags/ar.svg') }}" alt="العربية" class="language-flag me-2" width="20">العربية
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarUserDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user-circle me-1"></i>{{ current_user.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarUserDropdown">
+                                <li>
+                                    <a class="dropdown-item" href="#">
+                                        <i class="fas fa-user me-1"></i>Profil
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="#">
+                                        <i class="fas fa-cog me-1"></i>Paramètres
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('logout') }}">
+                                        <i class="fas fa-sign-out-alt me-1"></i>Déconnexion
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('login') }}">
+                                <i class="fas fa-sign-in-alt me-1"></i>Connexion
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('register') }}">
+                                <i class="fas fa-user-plus me-1"></i>Inscription
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Messages flash -->
+    <div class="container mt-3">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+    
+    <!-- Contenu principal -->
+    <main class="py-3">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Footer -->
+    <footer class="footer mt-auto py-3 bg-dark text-light">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="fas fa-wifi me-2"></i>NetSecure Pro</h5>
+                    <p class="text-muted">Analyse avancée de sécurité réseau WiFi</p>
+                </div>
+                <div class="col-md-3">
+                    <h6>Liens rapides</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="{{ url_for('accueil') }}" class="text-decoration-none text-muted">Accueil</a></li>
+                        {% if current_user.is_authenticated %}
+                            <li><a href="{{ url_for('dashboard') }}" class="text-decoration-none text-muted">Tableau de bord</a></li>
+                            <li><a href="{{ url_for('network_topology_view') }}" class="text-decoration-none text-muted">Topologie</a></li>
+                        {% else %}
+                            <li><a href="{{ url_for('login') }}" class="text-decoration-none text-muted">Connexion</a></li>
+                            <li><a href="{{ url_for('register') }}" class="text-decoration-none text-muted">Inscription</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h6>Contact</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-decoration-none text-muted"><i class="fas fa-envelope me-1"></i>contact@netsecure.pro</a></li>
+                        <li><a href="#" class="text-decoration-none text-muted"><i class="fas fa-question-circle me-1"></i>Aide & Support</a></li>
+                        <li><a href="#" class="text-decoration-none text-muted"><i class="fas fa-shield-alt me-1"></i>Politique de confidentialité</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0">&copy; {{ now.year }} NetSecure Pro. Tous droits réservés.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <ul class="list-inline mb-0">
+                        <li class="list-inline-item"><a href="#" class="text-muted"><i class="fab fa-facebook-f"></i></a></li>
+                        <li class="list-inline-item"><a href="#" class="text-muted"><i class="fab fa-twitter"></i></a></li>
+                        <li class="list-inline-item"><a href="#" class="text-muted"><i class="fab fa-linkedin-in"></i></a></li>
+                        <li class="list-inline-item"><a href="#" class="text-muted"><i class="fab fa-github"></i></a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+    
+    <!-- Bootstrap 5 JS with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

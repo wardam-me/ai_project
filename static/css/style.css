@@ -1,348 +1,337 @@
-/**
- * Styles globaux pour l'application NetSecure Pro
- */
-
+/* Styles généraux */
 :root {
-    --primary-dark: #1a1a2e;
-    --secondary-dark: #16213e;
-    --accent-blue: #0f3460;
-    --accent-red: #e94560;
-    --text-light: #f1f1f1;
+    --primary-color: #3498db;
+    --secondary-color: #2c3e50;
+    --success-color: #2ecc71;
+    --warning-color: #f39c12;
+    --danger-color: #e74c3c;
+    --info-color: #3498db;
+    --light-color: #ecf0f1;
+    --dark-color: #2c3e50;
+    --muted-color: #95a5a6;
+    --body-bg: #f8f9fa;
+    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --transition-speed: 0.3s;
 }
 
 body {
+    background-color: var(--body-bg);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: #333;
-}
-
-/* Styles pour les cartes */
-.card {
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
-}
-
-.card-dark {
-    background-color: var(--secondary-dark);
-    color: var(--text-light);
-}
-
-.card-header-dark {
-    background-color: var(--primary-dark);
-    color: var(--text-light);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Styles pour les graphiques et visualisations */
-.chart-container {
-    position: relative;
-    height: 300px;
-}
-
-.map-container {
-    height: 400px;
-    background-color: var(--secondary-dark);
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-/* Styles pour les barres de progression */
-.progress {
-    height: 10px;
-    border-radius: 5px;
-    background-color: rgba(0, 0, 0, 0.1);
-}
-
-.progress-sm {
-    height: 6px;
-}
-
-.progress-lg {
-    height: 15px;
-}
-
-/* Indicateurs de score de sécurité */
-.security-score {
-    position: relative;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background-color: #e9ecef;
-    font-weight: bold;
-    font-size: 1.2em;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.security-score-high {
-    background-color: #4cd964;
-    color: white;
-}
-
-.security-score-medium {
-    background-color: #ff9500;
-    color: white;
-}
-
-.security-score-low {
-    background-color: #ff3b30;
-    color: white;
-}
-
-/* Styles pour la barre de navigation */
-.navbar-dark {
-    background-color: var(--primary-dark) !important;
+    padding-bottom: 60px; /* Pour le footer fixe */
 }
 
 .navbar-brand {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* Styles des cartes */
+.card {
+    border-radius: 8px;
+    border: none;
+    box-shadow: var(--card-shadow);
+    transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    border-radius: 8px 8px 0 0 !important;
+    font-weight: 600;
+}
+
+/* Styles pour le tableau de bord */
+.stat-card {
+    padding: 20px;
+    text-align: center;
+    height: 100%;
+}
+
+.stat-card .stat-icon {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+.stat-card .stat-value {
+    font-size: 1.8rem;
     font-weight: bold;
-    color: var(--text-light) !important;
+    margin-bottom: 5px;
 }
 
-/* Styles pour les boutons */
-.btn-primary {
-    background-color: #0f3460;
-    border-color: #0f3460;
+.stat-card .stat-label {
+    font-size: 0.9rem;
+    color: var(--muted-color);
 }
 
-.btn-primary:hover {
-    background-color: #0a2649;
-    border-color: #0a2649;
+/* Styles pour la topologie réseau */
+.topology-container {
+    height: 600px;
+    border-radius: 8px;
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
 }
 
-.btn-danger {
-    background-color: var(--accent-red);
-    border-color: var(--accent-red);
+.device-node {
+    cursor: pointer;
+    transition: all var(--transition-speed);
 }
 
-.btn-danger:hover {
-    background-color: #d33b51;
-    border-color: #d33b51;
+.device-node:hover {
+    transform: scale(1.1);
 }
 
-/* Styles pour les tableaux */
-.table-dark {
-    background-color: var(--secondary-dark);
-    color: var(--text-light);
+.device-link {
+    stroke-width: 2px;
+    transition: stroke-width var(--transition-speed);
 }
 
-.table-hover.table-dark tbody tr:hover {
-    background-color: rgba(255, 255, 255, 0.075);
+.device-link:hover {
+    stroke-width: 4px;
 }
 
-/* Styles pour les badges */
+/* Styles pour les badges et alertes */
 .badge {
     font-weight: 500;
     padding: 0.35em 0.65em;
-    border-radius: 10rem;
+    border-radius: 4px;
 }
 
-/* Styles pour les formulaires */
-.form-control {
-    border-radius: 0.25rem;
-    border: 1px solid #ced4da;
-    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+.alert {
+    border-radius: 8px;
+    border: none;
 }
 
-.form-control:focus {
-    border-color: var(--accent-blue);
-    box-shadow: 0 0 0 0.2rem rgba(15, 52, 96, 0.25);
-}
-
-/* Styles pour les notifications */
-.toast {
-    border-radius: 0.25rem;
-    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.1);
-}
-
-/* Styles pour la page d'accueil */
-.hero {
-    background: linear-gradient(135deg, var(--primary-dark), var(--accent-blue));
-    color: var(--text-light);
-    padding: 4rem 0;
-    margin-bottom: 2rem;
-    border-radius: 0 0 20px 20px;
-}
-
-.feature-icon {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    background-color: rgba(15, 52, 96, 0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2em;
-    color: var(--accent-blue);
-    margin-bottom: 1.5rem;
-}
-
-/* Styles pour le footer */
-.footer {
-    background-color: var(--primary-dark);
-    padding: 2rem 0;
-    color: var(--text-light);
-}
-
-/* Animations */
-@keyframes pulse {
-    0% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.05);
-    }
-    100% {
-        transform: scale(1);
-    }
-}
-
+/* Animation de pulsation pour les éléments actifs */
 .pulse {
     animation: pulse 2s infinite;
 }
 
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(52, 152, 219, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(52, 152, 219, 0);
+    }
+}
+
 /* Styles pour le chatbot */
 .chat-container {
-    max-height: 400px;
+    height: 500px;
     overflow-y: auto;
-    padding: 1rem;
-    border-radius: 0.5rem;
-    background-color: #f8f9fa;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #ddd;
 }
 
 .chat-message {
-    display: flex;
-    margin-bottom: 1rem;
-    animation: fadeIn 0.3s ease-in-out;
-}
-
-.user-message {
-    justify-content: flex-end;
-}
-
-.message-content {
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    border-radius: 8px;
     max-width: 80%;
-    padding: 0.75rem 1rem;
-    border-radius: 1rem;
+    position: relative;
 }
 
-.bot-message .message-content {
-    background-color: #f1f1f1;
-    border-top-left-radius: 0;
-}
-
-.user-message .message-content {
-    background-color: var(--accent-blue);
+.chat-message.user {
+    background-color: var(--primary-color);
     color: white;
-    border-top-right-radius: 0;
+    align-self: flex-end;
+    margin-left: auto;
 }
 
-.suggestion-item {
-    padding: 0.75rem;
-    margin-bottom: 0.5rem;
-    background-color: #f8f9fa;
-    border-radius: 0.5rem;
-    cursor: pointer;
-    transition: all 0.2s;
+.chat-message.assistant {
+    background-color: #e9e9e9;
+    color: var(--dark-color);
 }
 
-.suggestion-item:hover {
-    background-color: #e9ecef;
-    transform: translateY(-2px);
+.chat-message .timestamp {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.7);
+    position: absolute;
+    bottom: 3px;
+    right: 8px;
 }
 
-.conversation-history {
-    max-height: 200px;
-    overflow-y: auto;
+.chat-message.assistant .timestamp {
+    color: var(--muted-color);
 }
 
-.chat-avatar {
-    width: 60px;
-    height: 60px;
-    background-color: #f1f1f1;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+/* Styles pour les erreurs et notifications */
+.toast {
+    position: relative;
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    opacity: 0.9;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+/* Styles pour le module IA */
+.ai-badge {
+    position: relative;
+    padding-right: 25px;
 }
 
-/* Typing indicator animation */
-.typing-indicator {
-    display: flex;
-    padding: 0.5rem 1rem;
-    background-color: #f1f1f1;
-    border-radius: 1rem;
-    border-top-left-radius: 0;
-    margin-bottom: 1rem;
-    width: fit-content;
-}
-
-.typing-indicator span {
-    height: 8px;
+.ai-badge::after {
+    content: '';
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
     width: 8px;
-    background-color: #888;
+    height: 8px;
     border-radius: 50%;
-    display: inline-block;
-    margin-right: 5px;
+    background-color: var(--success-color);
+    animation: pulse 2s infinite;
 }
 
-.typing-indicator span:nth-child(1) {
-    animation: bounce 1s infinite 0.1s;
+.ai-section {
+    padding: 20px;
+    border-radius: 10px;
+    background-color: #f8f9fa;
+    border-left: 4px solid var(--primary-color);
+    margin-bottom: 20px;
 }
 
-.typing-indicator span:nth-child(2) {
-    animation: bounce 1s infinite 0.3s;
+.ai-recommendations .recommendation {
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    background-color: white;
+    border-left: 3px solid var(--info-color);
+    transition: transform var(--transition-speed);
 }
 
-.typing-indicator span:nth-child(3) {
-    animation: bounce 1s infinite 0.5s;
-    margin-right: 0;
+.ai-recommendations .recommendation:hover {
+    transform: translateX(5px);
 }
 
-@keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-5px); }
+.ai-recommendations .recommendation.high-priority {
+    border-left-color: var(--danger-color);
 }
 
-/* Media queries pour la réactivité */
-@media (max-width: 768px) {
-    .hero {
-        padding: 2rem 0;
+.ai-recommendations .recommendation.medium-priority {
+    border-left-color: var(--warning-color);
+}
+
+.ai-recommendations .recommendation.low-priority {
+    border-left-color: var(--success-color);
+}
+
+/* Styles pour les détecteurs d'erreur IA */
+.error-item {
+    position: relative;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border-left: 4px solid var(--danger-color);
+    transition: transform var(--transition-speed);
+}
+
+.error-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.error-item .error-severity {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.error-item .error-type {
+    font-size: 0.8em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--muted-color);
+    letter-spacing: 0.5px;
+}
+
+.error-item .error-description {
+    margin: 10px 0;
+}
+
+.error-item .error-meta {
+    font-size: 0.85em;
+    color: var(--muted-color);
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Styles pour les clones IA */
+.clone-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.clone-card .clone-status {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1;
+}
+
+.clone-card .clone-header {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 15px;
+    border-radius: 8px 8px 0 0;
+}
+
+.clone-card .clone-body {
+    padding: 15px;
+}
+
+.clone-card .clone-progress {
+    margin: 15px 0;
+}
+
+.clone-card .clone-icon {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    color: var(--primary-color);
+}
+
+.clone-card .clone-stats {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 15px;
+}
+
+.clone-card .clone-stat {
+    text-align: center;
+}
+
+.clone-card .clone-stat .value {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.clone-card .clone-stat .label {
+    font-size: 0.8rem;
+    color: var(--muted-color);
+}
+
+/* Animation de pulsation pour les éléments actifs */
+.pulse-animation {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
     }
-    
-    .feature-icon {
-        width: 60px;
-        height: 60px;
-        font-size: 1.5em;
+    70% {
+        box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
     }
-    
-    .chart-container {
-        height: 250px;
-    }
-    
-    .security-score {
-        width: 50px;
-        height: 50px;
-        font-size: 1em;
-    }
-    
-    .chat-container {
-        max-height: 300px;
-    }
-    
-    .message-content {
-        max-width: 90%;
+    100% {
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
     }
 }

@@ -1,233 +1,265 @@
 /**
- * Fichier JavaScript commun pour toutes les pages
- * Contient des fonctionnalités partagées comme les notifications, la validation de formulaires, etc.
+ * Script principal pour l'application NetSecure Pro
  */
 
-// Initialisation au chargement de la page
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Initialisation de script.js');
+    console.log("Initialisation de script.js");
     
-    // Initialiser les tooltips Bootstrap
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    // Configuration des tooltips Bootstrap
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
     
-    // Initialiser les popovers Bootstrap
-    var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+    // Configuration des popovers Bootstrap
+    const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
     popoverTriggerList.map(function (popoverTriggerEl) {
         return new bootstrap.Popover(popoverTriggerEl);
     });
     
-    // Configuration de la date du copyright dans le footer
-    const yearEl = document.querySelector('.copyright-year');
-    if (yearEl) {
-        yearEl.textContent = new Date().getFullYear();
-    }
+    // Configuration du déclenchement automatique des toasts
+    const toastElList = [].slice.call(document.querySelectorAll('.toast'));
+    toastElList.map(function (toastEl) {
+        return new bootstrap.Toast(toastEl, {
+            autohide: true,
+            delay: 5000
+        }).show();
+    });
     
-    // Gestion des événements pour les formulaires
-    setupFormValidation();
+    // Fonction pour afficher des notifications
+    window.showNotification = function(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `toast align-items-center text-white bg-${type} border-0`;
+        toast.setAttribute('role', 'alert');
+        toast.setAttribute('aria-live', 'assertive');
+        toast.setAttribute('aria-atomic', 'true');
+        
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        `;
+        
+        const toastContainer = document.querySelector('.toast-container');
+        if (!toastContainer) {
+            const container = document.createElement('div');
+            container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+            document.body.appendChild(container);
+            container.appendChild(toast);
+        } else {
+            toastContainer.appendChild(toast);
+        }
+        
+        const bsToast = new bootstrap.Toast(toast, {
+            autohide: true,
+            delay: 5000
+        });
+        bsToast.show();
+    };
     
-    // Gestion des événements pour les messages flash
-    setupFlashMessages();
+    // Fonction pour animer les compteurs
+    window.animateCounter = function(element, start, end, duration) {
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            element.innerHTML = Math.floor(progress * (end - start) + start);
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            }
+        };
+        window.requestAnimationFrame(step);
+    };
+    
+    // Fonction pour formater les octets en unités lisibles
+    window.formatBytes = function(bytes, decimals = 2) {
+        if (bytes === 0) return '0 Bytes';
+        
+        const k = 1024;
+        const dm = decimals < 0 ? 0 : decimals;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+        
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+    };
+    
+    // Fonction pour formater une date relative
+    window.formatRelativeTime = function(dateString) {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffSec = Math.round(diffMs / 1000);
+        const diffMin = Math.round(diffSec / 60);
+        const diffHour = Math.round(diffMin / 60);
+        const diffDay = Math.round(diffHour / 24);
+        
+        if (diffSec < 60) {
+            return "à l'instant";
+        } else if (diffMin < 60) {
+            return `il y a ${diffMin} minute${diffMin > 1 ? 's' : ''}`;
+        } else if (diffHour < 24) {
+            return `il y a ${diffHour} heure${diffHour > 1 ? 's' : ''}`;
+        } else if (diffDay < 30) {
+            return `il y a ${diffDay} jour${diffDay > 1 ? 's' : ''}`;
+        } else {
+            return date.toLocaleDateString();
+        }
+    };
+    
+    // Gestionnaire pour le changement de langue
+    const languageLinks = document.querySelectorAll('[data-language]');
+    languageLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const lang = this.getAttribute('data-language');
+            // Stocker la préférence de langue dans un cookie
+            document.cookie = `preferred_language=${lang}; path=/; max-age=${60*60*24*30}`;
+            // Recharger la page
+            window.location.reload();
+        });
+    });
+    
+    // Fonction de débogage pour module IA
+    window.debugAIModule = function(data) {
+        console.group('Debug IA Module');
+        console.log('Data:', data);
+        console.groupEnd();
+    };
+    
+    // Gestion des clones IA - Données globales
+    window.aiCloneManager = {
+        activeClones: {},
+        
+        // Enregistrer un nouveau clone
+        registerClone: function(cloneId, cloneData) {
+            this.activeClones[cloneId] = cloneData;
+            console.log(`Clone IA enregistré: ${cloneId}`);
+            return this.activeClones[cloneId];
+        },
+        
+        // Mettre à jour les données d'un clone
+        updateCloneStatus: function(cloneId, statusData) {
+            if (!this.activeClones[cloneId]) {
+                this.registerClone(cloneId, {});
+            }
+            this.activeClones[cloneId] = {...this.activeClones[cloneId], ...statusData};
+            console.log(`Statut du clone mis à jour: ${cloneId}`);
+            return this.activeClones[cloneId];
+        },
+        
+        // Supprimer un clone
+        removeClone: function(cloneId) {
+            if (this.activeClones[cloneId]) {
+                delete this.activeClones[cloneId];
+                console.log(`Clone IA supprimé: ${cloneId}`);
+                return true;
+            }
+            return false;
+        },
+        
+        // Récupérer tous les clones actifs
+        getAllClones: function() {
+            return Object.values(this.activeClones);
+        },
+        
+        // Récupérer un clone spécifique
+        getClone: function(cloneId) {
+            return this.activeClones[cloneId] || null;
+        }
+    };
+    
+    // Initialiser les éléments d'interface si présents
+    initializeAIErrorDetection();
+    initializeAIClones();
 });
 
 /**
- * Configure la validation des formulaires
+ * Initialise la page de détection d'erreurs IA si elle est présente
  */
-function setupFormValidation() {
-    // Récupérer tous les formulaires qui ont besoin de validation
-    const forms = document.querySelectorAll('.needs-validation');
-    
-    // Boucler sur les formulaires et empêcher la soumission si non valides
-    Array.from(forms).forEach(form => {
-        form.addEventListener('submit', event => {
-            if (!form.checkValidity()) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-            
-            form.classList.add('was-validated');
-        }, false);
-    });
-}
-
-/**
- * Configure les messages flash
- */
-function setupFlashMessages() {
-    // Auto-disparition des messages flash après 5 secondes
-    const flashMessages = document.querySelectorAll('.alert-dismissible');
-    flashMessages.forEach(message => {
-        setTimeout(() => {
-            const closeButton = message.querySelector('.btn-close');
-            if (closeButton) {
-                closeButton.click();
-            }
-        }, 5000);
-    });
-}
-
-/**
- * Affiche une notification
- * @param {string} message - Le message à afficher
- * @param {string} type - Le type de notification (success, danger, warning, info)
- */
-function showNotification(message, type = 'info') {
-    const container = document.createElement('div');
-    container.className = `toast align-items-center text-white bg-${type} border-0 position-fixed top-0 end-0 m-3`;
-    container.style.zIndex = '1050';
-    container.setAttribute('role', 'alert');
-    container.setAttribute('aria-live', 'assertive');
-    container.setAttribute('aria-atomic', 'true');
-    
-    const flexContainer = document.createElement('div');
-    flexContainer.className = 'd-flex';
-    
-    const body = document.createElement('div');
-    body.className = 'toast-body';
-    body.textContent = message;
-    
-    const closeButton = document.createElement('button');
-    closeButton.className = 'btn-close btn-close-white me-2 m-auto';
-    closeButton.setAttribute('data-bs-dismiss', 'toast');
-    closeButton.setAttribute('aria-label', 'Fermer');
-    
-    flexContainer.appendChild(body);
-    flexContainer.appendChild(closeButton);
-    container.appendChild(flexContainer);
-    
-    document.body.appendChild(container);
-    
-    const toast = new bootstrap.Toast(container, { autohide: true, delay: 3000 });
-    toast.show();
-    
-    container.addEventListener('hidden.bs.toast', function() {
-        document.body.removeChild(container);
-    });
-}
-
-/**
- * Copie le texte dans le presse-papiers
- * @param {string} text - Le texte à copier
- * @returns {Promise}
- */
-function copyToClipboard(text) {
-    if (navigator.clipboard) {
-        return navigator.clipboard.writeText(text)
-            .then(() => {
-                showNotification('Texte copié dans le presse-papiers', 'success');
-                return true;
-            })
-            .catch(err => {
-                console.error('Erreur lors de la copie dans le presse-papiers:', err);
-                showNotification('Erreur lors de la copie', 'danger');
-                return false;
-            });
-    } else {
-        // Fallback pour les navigateurs plus anciens
-        const textArea = document.createElement('textarea');
-        textArea.value = text;
-        textArea.style.position = 'fixed';
-        textArea.style.opacity = '0';
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
+function initializeAIErrorDetection() {
+    // Vérifier si la page est la page de détection d'erreurs
+    if (document.getElementById('errorTabs')) {
+        console.log('Initialisation de la page de détection d\'erreurs IA');
         
-        try {
-            const successful = document.execCommand('copy');
-            const msg = successful ? 'successful' : 'unsuccessful';
-            console.log('Fallback: Copying text command was ' + msg);
-            showNotification('Texte copié dans le presse-papiers', 'success');
-            return Promise.resolve(true);
-        } catch (err) {
-            console.error('Fallback: Oops, unable to copy', err);
-            showNotification('Erreur lors de la copie', 'danger');
-            return Promise.resolve(false);
-        } finally {
-            document.body.removeChild(textArea);
-        }
+        // Mettre à jour en temps réel les statuts des clones IA (simulation)
+        const cloneProgressBars = document.querySelectorAll('.progress-bar');
+        cloneProgressBars.forEach(bar => {
+            const currentValue = parseInt(bar.style.width);
+            const targetValue = Math.min(currentValue + Math.round(Math.random() * 20), 100);
+            
+            setTimeout(() => {
+                bar.style.width = `${targetValue}%`;
+                bar.setAttribute('aria-valuenow', targetValue);
+                bar.innerText = `${targetValue}%`;
+            }, Math.random() * 5000 + 1000);
+        });
     }
 }
 
 /**
- * Formate un nombre d'octets en une chaîne lisible par l'homme
- * @param {number} bytes - Le nombre d'octets à formater
- * @param {number} decimals - Le nombre de décimales à afficher
- * @returns {string}
+ * Initialise la page de gestion des clones IA si elle est présente
  */
-function formatBytes(bytes, decimals = 2) {
-    if (bytes === 0) return '0 Bytes';
+function initializeAIClones() {
+    // Vérifier si la page est la page de gestion des clones
+    if (document.querySelector('.clone-card')) {
+        console.log('Initialisation de la page de gestion des clones IA');
+        
+        // Simulation de mises à jour périodiques des clones
+        setInterval(() => {
+            const cloneCards = document.querySelectorAll('.clone-card');
+            if (cloneCards.length === 0) return;
+            
+            // Choisir un clone aléatoire pour mettre à jour ses statistiques
+            const randomIndex = Math.floor(Math.random() * cloneCards.length);
+            const cloneCard = cloneCards[randomIndex];
+            const cloneId = cloneCard.getAttribute('data-clone-id');
+            
+            if (!cloneId) return;
+            
+            // Simuler une mise à jour du statut via l'API
+            fetch(`/api/ai-clone/${cloneId}/status`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Mettre à jour l'interface avec les nouvelles données
+                        updateCloneUI(cloneCard, data.status);
+                    }
+                })
+                .catch(error => console.error('Erreur lors de la mise à jour du clone:', error));
+        }, 10000); // Toutes les 10 secondes
+    }
+}
+
+/**
+ * Met à jour l'interface d'un clone avec les nouvelles données
+ */
+function updateCloneUI(cloneCard, cloneData) {
+    // Mise à jour du pourcentage de progression
+    const progressBar = cloneCard.querySelector('.progress-bar');
+    if (progressBar) {
+        progressBar.style.width = `${cloneData.scan_progress}%`;
+        progressBar.setAttribute('aria-valuenow', cloneData.scan_progress);
+        progressBar.innerText = `${cloneData.scan_progress}%`;
+    }
     
-    const k = 1024;
-    const dm = decimals < 0 ? 0 : decimals;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+    // Mise à jour des statistiques
+    const statsValueElements = cloneCard.querySelectorAll('.stat-value');
+    if (statsValueElements.length >= 3) {
+        // Erreurs détectées
+        statsValueElements[0].innerText = cloneData.detected_errors_count;
+        // Corrections appliquées
+        statsValueElements[1].innerText = cloneData.corrections_count;
+        // Nombre de scans
+        statsValueElements[2].innerText = cloneData.scan_count;
+    }
     
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-}
-
-/**
- * Formate une date relative (il y a X minutes, etc.)
- * @param {string|Date} date - La date à formater
- * @returns {string}
- */
-function formatRelativeTime(date) {
-    const now = new Date();
-    const inputDate = typeof date === 'string' ? new Date(date) : date;
-    const diffMs = now - inputDate;
-    const diffSec = Math.floor(diffMs / 1000);
-    
-    if (diffSec < 60) return 'à l\'instant';
-    if (diffSec < 3600) return `il y a ${Math.floor(diffSec / 60)} minutes`;
-    if (diffSec < 86400) return `il y a ${Math.floor(diffSec / 3600)} heures`;
-    if (diffSec < 2592000) return `il y a ${Math.floor(diffSec / 86400)} jours`;
-    if (diffSec < 31536000) return `il y a ${Math.floor(diffSec / 2592000)} mois`;
-    return `il y a ${Math.floor(diffSec / 31536000)} ans`;
-}
-
-/**
- * Vérifie si une chaîne est un email valide
- * @param {string} email - L'email à vérifier
- * @returns {boolean}
- */
-function isValidEmail(email) {
-    const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    return re.test(String(email).toLowerCase());
-}
-
-/**
- * Vérifie si une chaîne est une adresse MAC valide
- * @param {string} mac - L'adresse MAC à vérifier
- * @returns {boolean}
- */
-function isValidMacAddress(mac) {
-    const re = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
-    return re.test(mac);
-}
-
-/**
- * Vérifie si une chaîne est une adresse IP valide
- * @param {string} ip - L'adresse IP à vérifier
- * @returns {boolean}
- */
-function isValidIpAddress(ip) {
-    const re = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-    return re.test(ip);
-}
-
-/**
- * Débounce une fonction pour éviter les appels répétés
- * @param {Function} func - La fonction à débouncer
- * @param {number} wait - Le temps d'attente en ms
- * @returns {Function}
- */
-function debounce(func, wait) {
-    let timeout;
-    return function(...args) {
-        const context = this;
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(context, args), wait);
-    };
+    // Mise à jour de la dernière activité
+    const lastActivityElement = cloneCard.querySelector('[data-last-activity]');
+    if (lastActivityElement) {
+        lastActivityElement.innerText = formatRelativeTime(cloneData.last_activity_at);
+    }
 }
