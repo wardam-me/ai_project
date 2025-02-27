@@ -1,0 +1,667 @@
+{% extends "base.html" %}
+
+{% block title %}Assistant Intelligent de Sécurité{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="mb-4">
+                <i class="fas fa-shield-alt text-primary me-2"></i>
+                Assistant Intelligent d'Optimisation de Sécurité
+            </h1>
+            <p class="lead">
+                Cet assistant utilise l'intelligence artificielle pour analyser votre réseau et vous fournir des recommandations personnalisées pour optimiser votre sécurité.
+            </p>
+        </div>
+    </div>
+
+    <!-- Statut global de sécurité -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-{{ assessment_results.security_status.color }} text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-{{ assessment_results.security_status.icon }} me-2"></i>
+                        Niveau de sécurité : {{ assessment_results.security_status.level|capitalize }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-4 text-center">
+                            <div class="p-3">
+                                <div class="display-4 mb-2">{{ assessment_results.global_score|round(1) }}%</div>
+                                <p class="text-muted">Score de sécurité global</p>
+                                
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar bg-{{ assessment_results.security_status.color }}" 
+                                         role="progressbar" 
+                                         style="width: {{ assessment_results.global_score }}%;" 
+                                         aria-valuenow="{{ assessment_results.global_score }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <p class="lead mb-3">{{ assessment_results.security_status.message }}</p>
+                            
+                            <div class="row text-center mt-4">
+                                <div class="col-6">
+                                    <div class="border rounded p-3">
+                                        <h5>Score Réseau</h5>
+                                        <span class="display-6">{{ assessment_results.network_optimization.optimality_score|round(1) }}%</span>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="border rounded p-3">
+                                        <h5>Score WiFi</h5>
+                                        <span class="display-6">{{ assessment_results.wifi_analysis.overall_score|round(1) }}%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Plan d'action avec progression -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-tasks me-2"></i>
+                        Plan d'action recommandé
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <p class="lead mb-4">Voici les étapes recommandées pour améliorer votre sécurité :</p>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="5%">Étape</th>
+                                    <th width="50%">Action</th>
+                                    <th width="15%">Priorité</th>
+                                    <th width="15%">Temps estimé</th>
+                                    <th width="15%">Impact</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for step in assessment_results.action_plan %}
+                                <tr>
+                                    <td>{{ step.step }}</td>
+                                    <td>
+                                        <strong>{{ step.action }}</strong>
+                                        <div class="text-muted small">{{ step.context }}</div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'danger' if step.priority == 'critical' else 'warning' if step.priority == 'high' else 'info' if step.priority == 'medium' else 'primary' }}">
+                                            {{ step.priority|capitalize }}
+                                        </span>
+                                    </td>
+                                    <td>{{ step.estimated_time }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="flex-grow-1 me-2">
+                                                <div class="progress" style="height: 6px;">
+                                                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ (step.completion_impact / 15) * 100 }}%;" aria-valuenow="{{ step.completion_impact }}" aria-valuemin="0" aria-valuemax="15"></div>
+                                                </div>
+                                            </div>
+                                            <div class="text-nowrap">+{{ step.completion_impact }} pts</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <!-- Graphique radar des dimensions de sécurité -->
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-chart-radar me-2"></i>
+                        Dimensions de sécurité
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="position: relative; height:300px;">
+                        <canvas id="security-dimensions-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tendances historiques -->
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Évolution de la sécurité
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% if historical_trends.has_enough_data %}
+                        <div class="mb-3">
+                            <h5 class="mb-3">
+                                <span class="badge bg-{{ 'success' if historical_trends.trend == 'positive' else 'info' if historical_trends.trend == 'slightly_positive' else 'secondary' if historical_trends.trend == 'stable' else 'danger' }} me-2">
+                                    <i class="fas fa-{{ 'arrow-up' if historical_trends.trend == 'positive' or historical_trends.trend == 'slightly_positive' else 'equals' if historical_trends.trend == 'stable' else 'arrow-down' }}"></i>
+                                </span>
+                                {{ historical_trends.message }}
+                            </h5>
+                            <div class="text-muted mb-2">Évolution : {{ '+' if historical_trends.score_evolution >= 0 else '' }}{{ historical_trends.score_evolution|round(1) }} points</div>
+                        </div>
+                        <div class="chart-container" style="position: relative; height:220px;">
+                            <canvas id="security-trends-chart"></canvas>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            {{ historical_trends.message }}
+                        </div>
+                        <p class="text-center">
+                            <img src="/static/img/no-data.svg" alt="Pas de données" style="max-width: 200px;">
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <!-- Recommandations prioritaires -->
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Recommandations prioritaires
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% if assessment_results.priority_recommendations %}
+                        <div class="accordion" id="priorityRecommendations">
+                            {% for recommendation in assessment_results.priority_recommendations %}
+                                {% if loop.index <= 5 %}
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header" id="heading{{ loop.index }}">
+                                            <button class="accordion-button {{ '' if loop.index == 1 else 'collapsed' }}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}" aria-expanded="{{ 'true' if loop.index == 1 else 'false' }}" aria-controls="collapse{{ loop.index }}">
+                                                <span class="badge bg-{{ 'danger' if recommendation.priority == 'critical' else 'warning' if recommendation.priority == 'high' else 'info' }} me-2">{{ recommendation.priority|upper }}</span>
+                                                {{ recommendation.title }}
+                                            </button>
+                                        </h2>
+                                        <div id="collapse{{ loop.index }}" class="accordion-collapse collapse {{ 'show' if loop.index == 1 else '' }}" aria-labelledby="heading{{ loop.index }}" data-bs-parent="#priorityRecommendations">
+                                            <div class="accordion-body">
+                                                <p>{{ recommendation.description }}</p>
+                                                {% if recommendation.action_items %}
+                                                    <h6 class="mt-3 mb-2">Comment résoudre :</h6>
+                                                    <ol class="mb-0">
+                                                        {% for action in recommendation.action_items %}
+                                                            <li>{{ action }}</li>
+                                                        {% endfor %}
+                                                    </ol>
+                                                {% endif %}
+                                                
+                                                {% if recommendation.affected_items %}
+                                                    <div class="mt-3">
+                                                        <h6>Appareils concernés :</h6>
+                                                        <div class="d-flex flex-wrap gap-2">
+                                                            {% for item in recommendation.affected_items %}
+                                                                <span class="badge bg-secondary">{{ item }}</span>
+                                                            {% endfor %}
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if assessment_results.priority_recommendations|length > 5 %}
+                                <div class="mt-3 text-center">
+                                    <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#moreRecommendations" aria-expanded="false" aria-controls="moreRecommendations">
+                                        Voir toutes les recommandations ({{ assessment_results.priority_recommendations|length }})
+                                    </button>
+                                </div>
+                                
+                                <div class="collapse mt-3" id="moreRecommendations">
+                                    <div class="list-group">
+                                        {% for recommendation in assessment_results.priority_recommendations %}
+                                            {% if loop.index > 5 %}
+                                                <div class="list-group-item">
+                                                    <div class="d-flex w-100 justify-content-between">
+                                                        <h5 class="mb-1">{{ recommendation.title }}</h5>
+                                                        <small class="text-{{ 'danger' if recommendation.priority == 'critical' else 'warning' if recommendation.priority == 'high' else 'info' }}">{{ recommendation.priority|upper }}</small>
+                                                    </div>
+                                                    <p class="mb-1">{{ recommendation.description }}</p>
+                                                    
+                                                    {% if recommendation.action_items %}
+                                                        <div class="mt-2 small">
+                                                            <strong>Actions :</strong>
+                                                            <ul class="mb-0">
+                                                                {% for action in recommendation.action_items %}
+                                                                    <li>{{ action }}</li>
+                                                                {% endfor %}
+                                                            </ul>
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i>
+                            Aucune recommandation prioritaire n'est nécessaire. Votre réseau est bien sécurisé !
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chatbot de sécurité intelligent -->
+    <div class="row mb-5">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-robot me-2"></i>
+                        Assistant Sécurité IA
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <p class="lead mb-3">Posez vos questions sur la sécurité réseau à notre assistant IA :</p>
+                    
+                    <!-- Zone de chat -->
+                    <div class="chat-container mb-3" id="chatMessages" style="height: 300px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 0.25rem; padding: 1rem; background-color: #f8f9fa;">
+                        <!-- Messages initiaux -->
+                        <div class="chat-message assistant-message mb-3">
+                            <div class="chat-bubble">
+                                <div class="chat-avatar">
+                                    <i class="fas fa-robot"></i>
+                                </div>
+                                <div class="chat-content">
+                                    <p>Bonjour ! Je suis votre assistant de sécurité intelligent. Comment puis-je vous aider aujourd'hui ?</p>
+                                    <p>Vous pouvez me poser des questions sur :</p>
+                                    <ul>
+                                        <li>La sécurité de vos réseaux WiFi</li>
+                                        <li>Les vulnérabilités de vos appareils</li>
+                                        <li>Les recommandations pour améliorer votre sécurité</li>
+                                        <li>L'analyse des menaces potentielles</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Les messages de chat seront ajoutés ici -->
+                    </div>
+                    
+                    <!-- Formulaire de saisie -->
+                    <div class="chat-input">
+                        <form id="chatForm" class="d-flex">
+                            <input type="text" id="userMessage" class="form-control me-2" placeholder="Posez votre question..." required>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> Envoyer
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chat-message {
+        margin-bottom: 15px;
+    }
+    
+    .chat-bubble {
+        display: flex;
+    }
+    
+    .user-message .chat-bubble {
+        flex-direction: row-reverse;
+    }
+    
+    .chat-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #e0e0e0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        margin-right: 10px;
+    }
+    
+    .user-message .chat-avatar {
+        margin-right: 0;
+        margin-left: 10px;
+        background-color: #007bff;
+        color: white;
+    }
+    
+    .chat-content {
+        background: #e9ecef;
+        border-radius: 1rem;
+        padding: 10px 15px;
+        max-width: 80%;
+    }
+    
+    .user-message .chat-content {
+        background: #007bff;
+        color: white;
+    }
+    
+    .security-info {
+        background-color: #f8f9fa;
+        border-left: 4px solid #17a2b8;
+        padding: 15px;
+        margin-top: 10px;
+        border-radius: 0.25rem;
+    }
+    
+    /* Animation de chargement pour les réponses du chatbot */
+    .typing-indicator {
+        display: flex;
+        align-items: center;
+        margin: 10px 0;
+    }
+    
+    .typing-indicator span {
+        height: 10px;
+        width: 10px;
+        background-color: #9E9EA1;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 3px;
+        animation: bounce 1.5s infinite ease-in-out;
+    }
+    
+    .typing-indicator span:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+    
+    .typing-indicator span:nth-child(3) {
+        animation-delay: 0.4s;
+    }
+    
+    @keyframes bounce {
+        0%, 60%, 100% {
+            transform: translateY(0);
+        }
+        30% {
+            transform: translateY(-5px);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Inclure Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Données du graphique radar des dimensions de sécurité
+        const securityDimensions = {{ assessment_results.wifi_analysis.security_dimensions|tojson }};
+        
+        // Initialisation du graphique radar
+        const ctxRadar = document.getElementById('security-dimensions-chart').getContext('2d');
+        const radarChart = new Chart(ctxRadar, {
+            type: 'radar',
+            data: {
+                labels: ['Protocole', 'Chiffrement', 'Authentification', 'Mots de passe', 'Confidentialité'],
+                datasets: [{
+                    label: 'Niveau de sécurité',
+                    data: [
+                        securityDimensions.protocol || 0,
+                        securityDimensions.encryption || 0,
+                        securityDimensions.authentication || 0,
+                        securityDimensions.password || 0,
+                        securityDimensions.privacy || 0
+                    ],
+                    fill: true,
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgb(54, 162, 235)',
+                    pointBackgroundColor: 'rgb(54, 162, 235)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgb(54, 162, 235)'
+                }]
+            },
+            options: {
+                scales: {
+                    r: {
+                        angleLines: {
+                            display: true
+                        },
+                        suggestedMin: 0,
+                        suggestedMax: 100
+                    }
+                }
+            }
+        });
+        
+        // Si des données historiques sont disponibles, initialiser le graphique de tendances
+        {% if historical_trends.has_enough_data %}
+            const ctxTrends = document.getElementById('security-trends-chart').getContext('2d');
+            new Chart(ctxTrends, {
+                type: 'line',
+                data: {
+                    labels: {{ historical_trends.dates|tojson }},
+                    datasets: [{
+                        label: 'Score de sécurité',
+                        data: {{ historical_trends.scores|tojson }},
+                        fill: false,
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            min: 0,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        {% endif %}
+        
+        // Gestion du chatbot
+        const chatForm = document.getElementById('chatForm');
+        const userMessageInput = document.getElementById('userMessage');
+        const chatMessages = document.getElementById('chatMessages');
+        
+        chatForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const userMessage = userMessageInput.value.trim();
+            if (!userMessage) return;
+            
+            // Ajouter le message de l'utilisateur
+            addUserMessage(userMessage);
+            
+            // Effacer le champ de saisie
+            userMessageInput.value = '';
+            
+            // Afficher l'indicateur de frappe
+            addTypingIndicator();
+            
+            // Envoyer le message à l'API et obtenir une réponse
+            fetch('/api/security-assistant/chatbot', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: userMessage
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Supprimer l'indicateur de frappe
+                removeTypingIndicator();
+                
+                // Ajouter la réponse de l'assistant
+                if (data.success) {
+                    addAssistantMessage(data.response);
+                } else {
+                    addAssistantMessage({
+                        text: "Désolé, je n'ai pas pu traiter votre demande. Veuillez réessayer."
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                removeTypingIndicator();
+                addAssistantMessage({
+                    text: "Désolé, une erreur s'est produite. Veuillez réessayer."
+                });
+            });
+        });
+        
+        function addUserMessage(message) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'chat-message user-message mb-3';
+            messageDiv.innerHTML = `
+                <div class="chat-bubble">
+                    <div class="chat-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="chat-content">
+                        <p>${escapeHtml(message)}</p>
+                    </div>
+                </div>
+            `;
+            chatMessages.appendChild(messageDiv);
+            scrollToBottom();
+        }
+        
+        function addAssistantMessage(response) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'chat-message assistant-message mb-3';
+            
+            let messageContent = `<p>${escapeHtml(response.text || response)}</p>`;
+            
+            // Si la réponse contient des informations enrichies
+            if (response.has_enrichment) {
+                const securityInfo = response.security_assessment;
+                
+                // Ajouter les informations de sécurité
+                messageContent += `
+                    <div class="security-info mt-2">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0">Score de sécurité global</h6>
+                            <span class="badge bg-${getScoreColorClass(securityInfo.global_score)}">${securityInfo.global_score.toFixed(1)}%</span>
+                        </div>
+                        <div class="progress mb-3" style="height: 8px;">
+                            <div class="progress-bar bg-${getScoreColorClass(securityInfo.global_score)}" 
+                                 role="progressbar" 
+                                 style="width: ${securityInfo.global_score}%;" 
+                                 aria-valuenow="${securityInfo.global_score}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                            </div>
+                        </div>
+                        <p class="small mb-1">${securityInfo.security_status.message}</p>
+                    </div>
+                `;
+                
+                // Si une recommandation prioritaire est disponible
+                if (response.top_recommendation) {
+                    const rec = response.top_recommendation;
+                    messageContent += `
+                        <div class="alert alert-${rec.priority === 'critical' ? 'danger' : (rec.priority === 'high' ? 'warning' : 'info')} mt-2">
+                            <h6 class="alert-heading"><strong>Recommandation prioritaire :</strong></h6>
+                            <p>${escapeHtml(rec.title)}</p>
+                            <p class="small mb-0">${escapeHtml(rec.description)}</p>
+                        </div>
+                    `;
+                }
+            }
+            
+            messageDiv.innerHTML = `
+                <div class="chat-bubble">
+                    <div class="chat-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="chat-content">
+                        ${messageContent}
+                    </div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            scrollToBottom();
+        }
+        
+        function addTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'chat-message assistant-message mb-3 typing-indicator-container';
+            typingDiv.innerHTML = `
+                <div class="chat-bubble">
+                    <div class="chat-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="chat-content">
+                        <div class="typing-indicator">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            chatMessages.appendChild(typingDiv);
+            scrollToBottom();
+        }
+        
+        function removeTypingIndicator() {
+            const typingIndicator = document.querySelector('.typing-indicator-container');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+        
+        function scrollToBottom() {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        function getScoreColorClass(score) {
+            if (score >= 80) return 'success';
+            if (score >= 60) return 'info';
+            if (score >= 40) return 'warning';
+            return 'danger';
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    });
+</script>
+{% endblock %}
