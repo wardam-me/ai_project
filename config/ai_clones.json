@@ -23,7 +23,10 @@
         "start_time": "2025-02-25T10:15:00.000Z",
         "end_time": "2025-02-25T10:20:00.000Z",
         "params": {
-          "datasets": ["network_security", "wifi_threats"],
+          "datasets": [
+            "network_security",
+            "wifi_threats"
+          ],
           "epochs": 10,
           "batch_size": 32,
           "preserve_previous": true
@@ -43,12 +46,12 @@
   },
   {
     "clone_id": "b2f49e81-3c57-4a83-8dba-ef1c8b5b9d24",
-    "name": "Clone Réseau",
+    "name": "Clone R\u00e9seau",
     "specialization": "network",
     "learning_rate": 0.45,
     "confidence_threshold": 0.75,
     "creation_date": "2025-02-26T14:30:00.000Z",
-    "last_activity": "2025-02-27T18:45:00.000Z",
+    "last_activity": "2025-02-27T22:54:44.404371",
     "status": "active",
     "version": "1.1.0",
     "performance_metrics": {
@@ -56,8 +59,8 @@
       "precision": 0.9,
       "recall": 0.85,
       "f1_score": 0.87,
-      "requests_processed": 87,
-      "average_response_time": 0.138
+      "requests_processed": 88,
+      "average_response_time": 0.13762610561197455
     },
     "training_sessions": [
       {
@@ -65,7 +68,10 @@
         "start_time": "2025-02-26T15:00:00.000Z",
         "end_time": "2025-02-26T15:08:00.000Z",
         "params": {
-          "datasets": ["network_security", "device_security"],
+          "datasets": [
+            "network_security",
+            "device_security"
+          ],
           "epochs": 15,
           "batch_size": 32,
           "preserve_previous": true
@@ -86,7 +92,10 @@
         "start_time": "2025-02-27T10:00:00.000Z",
         "end_time": "2025-02-27T10:10:00.000Z",
         "params": {
-          "datasets": ["network_security", "wifi_threats"],
+          "datasets": [
+            "network_security",
+            "wifi_threats"
+          ],
           "epochs": 10,
           "batch_size": 64,
           "preserve_previous": true
@@ -106,7 +115,7 @@
   },
   {
     "clone_id": "c3d5e7f9-01a2-34b5-67c8-90d1e2f3g4h5",
-    "name": "Clone Vulnérabilités",
+    "name": "Clone Vuln\u00e9rabilit\u00e9s",
     "specialization": "vulnerability",
     "learning_rate": 0.6,
     "confidence_threshold": 0.65,
@@ -128,7 +137,9 @@
         "start_time": "2025-02-20T10:00:00.000Z",
         "end_time": "2025-02-20T10:15:00.000Z",
         "params": {
-          "datasets": ["vulnerability_analysis"],
+          "datasets": [
+            "vulnerability_analysis"
+          ],
           "epochs": 20,
           "batch_size": 32,
           "preserve_previous": true
@@ -149,7 +160,10 @@
         "start_time": "2025-02-25T14:00:00.000Z",
         "end_time": "2025-02-25T14:12:00.000Z",
         "params": {
-          "datasets": ["vulnerability_analysis", "wifi_threats"],
+          "datasets": [
+            "vulnerability_analysis",
+            "wifi_threats"
+          ],
           "epochs": 15,
           "batch_size": 48,
           "preserve_previous": true
@@ -157,6 +171,51 @@
         "status": "completed",
         "results": {
           "improvement": "+9.0%",
+          "performance_metrics": {
+            "accuracy": 0.85,
+            "precision": 0.88,
+            "recall": 0.82,
+            "f1_score": 0.85
+          }
+        }
+      }
+    ]
+  },
+  {
+    "clone_id": "fe25403f-a95a-447a-a45b-11b66dc029e9",
+    "name": "Clone de Test",
+    "specialization": "vulnerability",
+    "learning_rate": 0.6,
+    "confidence_threshold": 0.8,
+    "creation_date": "2025-02-27T22:54:44.509771",
+    "last_activity": "2025-02-27T22:54:44.511420",
+    "status": "active",
+    "version": "1.0.1",
+    "performance_metrics": {
+      "accuracy": 0.85,
+      "precision": 0.88,
+      "recall": 0.82,
+      "f1_score": 0.85,
+      "requests_processed": 0,
+      "average_response_time": 0.0
+    },
+    "training_sessions": [
+      {
+        "session_id": "78e39572-7e83-491e-9941-6738ad44dbaa",
+        "start_time": "2025-02-27T22:54:44.511286",
+        "end_time": "2025-02-27T22:54:44.511405",
+        "params": {
+          "datasets": [
+            "vulnerability_analysis",
+            "wifi_threats"
+          ],
+          "epochs": 5,
+          "batch_size": 32,
+          "preserve_previous": true
+        },
+        "status": "completed",
+        "results": {
+          "improvement": "+12.5%",
           "performance_metrics": {
             "accuracy": 0.85,
             "precision": 0.88,
