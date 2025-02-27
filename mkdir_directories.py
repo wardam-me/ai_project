@@ -16,8 +16,15 @@ def create_directories():
         'static/css',
         'static/js',
         'static/img',
+        'static/img/previews',  # Dossier pour les prévisualisations d'infographies
+        'static/img/previews/network',  # Dossier pour les prévisualisations d'infographies réseau 
+        'static/img/previews/protocol',  # Dossier pour les prévisualisations d'infographies de protocole
+        'static/img/previews/vulnerability',  # Dossier pour les prévisualisations d'infographies de vulnérabilité
         'static/fonts',
         'static/exports',  # Dossier pour les infographies exportées
+        'static/exports/network',  # Dossier pour les infographies réseau exportées
+        'static/exports/protocol',  # Dossier pour les infographies de protocole exportées
+        'static/exports/vulnerability',  # Dossier pour les infographies de vulnérabilité exportées
         'static/templates', # Dossier pour les templates d'infographie
         'templates',
         'templates/admin',  # Dossier pour les templates d'administration

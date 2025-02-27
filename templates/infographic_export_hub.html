@@ -1,0 +1,312 @@
+{% extends "layout.html" %}
+
+{% block title %}Hub d'Exportation d'Infographies{% endblock %}
+
+{% block styles %}
+<style>
+    .export-card {
+        transition: all 0.3s ease;
+    }
+    .export-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+    .preview-container {
+        height: 200px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #1a1a1a;
+    }
+    .preview-container img,
+    .preview-container embed {
+        max-height: 100%;
+        max-width: 100%;
+    }
+    .tag {
+        font-size: 0.8rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 0.25rem;
+    }
+    .format-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 0.7rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 0.25rem;
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h2 class="mb-3">
+                        <i class="fas fa-chart-bar me-2"></i>Exportation d'Infographies
+                    </h2>
+                    <p class="text-muted mb-4">
+                        Générez des rapports visuels détaillés de la sécurité de votre réseau dans différents formats.
+                        Exportez un rapport, puis téléchargez-le ou partagez-le avec votre équipe.
+                    </p>
+
+                    <div class="row mb-4">
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100 export-card bg-dark text-white">
+                                <div class="preview-container">
+                                    <embed src="{{ url_for('static', filename='img/previews/network_security_preview.svg') }}" type="image/svg+xml" width="100%" />
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">Sécurité Réseau</h5>
+                                    <p class="card-text">Analyse complète de la sécurité de votre réseau avec scores, distribution des protocoles et appareils vulnérables.</p>
+                                </div>
+                                <div class="card-footer bg-transparent border-top border-secondary">
+                                    <button type="button" class="btn btn-primary btn-sm export-btn" data-type="network_security" data-bs-toggle="modal" data-bs-target="#exportModal">
+                                        <i class="fas fa-file-export me-1"></i> Exporter
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100 export-card bg-dark text-white">
+                                <div class="preview-container">
+                                    <embed src="{{ url_for('static', filename='img/previews/protocol_analysis_preview.svg') }}" type="image/svg+xml" width="100%" />
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">Analyse de Protocoles</h5>
+                                    <p class="card-text">Évaluation détaillée des protocoles WiFi avec comparaison des niveaux de sécurité et vulnérabilités.</p>
+                                </div>
+                                <div class="card-footer bg-transparent border-top border-secondary">
+                                    <button type="button" class="btn btn-primary btn-sm export-btn" data-type="protocol_analysis" data-bs-toggle="modal" data-bs-target="#exportModal">
+                                        <i class="fas fa-file-export me-1"></i> Exporter
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100 export-card bg-dark text-white">
+                                <div class="preview-container">
+                                    <embed src="{{ url_for('static', filename='img/previews/vulnerability_report_preview.svg') }}" type="image/svg+xml" width="100%" />
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">Rapport de Vulnérabilités</h5>
+                                    <p class="card-text">Détection des vulnérabilités critiques de votre réseau avec plan d'action recommandé.</p>
+                                </div>
+                                <div class="card-footer bg-transparent border-top border-secondary">
+                                    <button type="button" class="btn btn-primary btn-sm export-btn" data-type="vulnerability_report" data-bs-toggle="modal" data-bs-target="#exportModal">
+                                        <i class="fas fa-file-export me-1"></i> Exporter
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if export_history %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-history me-2"></i>Historique d'Exportation
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Type de Rapport</th>
+                                    <th>Date de Création</th>
+                                    <th>Tags</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for export in export_history %}
+                                <tr>
+                                    <td>{{ export.report_type_name }}</td>
+                                    <td>{{ export.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                                    <td>
+                                        {% for tag in export.tags %}
+                                        <span class="badge bg-{{ tag.color }}">{{ tag.name }}</span>
+                                        {% endfor %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('static', filename=export.file_path) }}" class="btn btn-sm btn-primary" download>
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                        <a href="{{ url_for('static', filename=export.file_path) }}" class="btn btn-sm btn-info" target="_blank">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal d'exportation -->
+<div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exportModalLabel">Exportation d'Infographie</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="exportForm">
+                    <input type="hidden" id="reportType" name="reportType" value="">
+                    
+                    <div class="mb-3">
+                        <label for="format" class="form-label">Format d'exportation</label>
+                        <select class="form-select" id="format" name="format">
+                            <option value="png" selected>PNG (Image)</option>
+                            <option value="pdf">PDF (Document)</option>
+                            <option value="svg">SVG (Vectoriel)</option>
+                            <option value="html">HTML (Interactif)</option>
+                        </select>
+                        <div class="form-text text-light">
+                            Le format PNG est compatible avec tous les appareils. Le PDF est idéal pour l'impression.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="resolution" class="form-label">Résolution</label>
+                        <select class="form-select" id="resolution" name="resolution">
+                            <option value="standard" selected>Standard (150 DPI)</option>
+                            <option value="high">Haute (200 DPI)</option>
+                            <option value="ultra">Ultra (300 DPI)</option>
+                        </select>
+                        <div class="form-text text-light">
+                            Une résolution plus élevée donne une meilleure qualité mais augmente la taille du fichier.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="interactive" name="interactive" checked>
+                        <label class="form-check-label" for="interactive">Éléments interactifs (format PDF et HTML uniquement)</label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="startExport">
+                    <i class="fas fa-file-export me-2"></i>Générer l'infographie
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Mise à jour du type de rapport dans le modal
+        const exportBtns = document.querySelectorAll('.export-btn');
+        const reportTypeInput = document.getElementById('reportType');
+        const modalTitle = document.getElementById('exportModalLabel');
+        
+        exportBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const type = this.getAttribute('data-type');
+                reportTypeInput.value = type;
+                
+                let typeName = 'Infographie';
+                if (type === 'network_security') {
+                    typeName = 'Sécurité Réseau';
+                } else if (type === 'protocol_analysis') {
+                    typeName = 'Analyse de Protocoles';
+                } else if (type === 'vulnerability_report') {
+                    typeName = 'Rapport de Vulnérabilités';
+                }
+                
+                modalTitle.textContent = `Exportation d'Infographie: ${typeName}`;
+            });
+        });
+        
+        // Gestion de l'interactivité en fonction du format
+        const formatSelect = document.getElementById('format');
+        const interactiveCheck = document.getElementById('interactive');
+        
+        formatSelect.addEventListener('change', function() {
+            if (this.value === 'png' || this.value === 'svg') {
+                interactiveCheck.disabled = true;
+                interactiveCheck.checked = false;
+            } else {
+                interactiveCheck.disabled = false;
+                interactiveCheck.checked = true;
+            }
+        });
+        
+        // Soumission du formulaire d'exportation
+        const exportForm = document.getElementById('exportForm');
+        const startExportBtn = document.getElementById('startExport');
+        
+        startExportBtn.addEventListener('click', function() {
+            const reportType = reportTypeInput.value;
+            const format = formatSelect.value;
+            const resolution = document.getElementById('resolution').value;
+            const interactive = interactiveCheck.checked;
+            
+            if (!reportType) {
+                alert('Erreur: Type de rapport non spécifié.');
+                return;
+            }
+            
+            // Affichage de l'indicateur de chargement
+            startExportBtn.disabled = true;
+            startExportBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Génération en cours...';
+            
+            // Envoi de la requête d'exportation
+            fetch(`/api/export-infographic/${reportType}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    format: format,
+                    resolution: resolution,
+                    interactive: interactive
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Redirection vers l'URL de l'infographie générée
+                    window.location.href = data.redirect_url;
+                } else {
+                    // Affichage d'un message d'erreur
+                    alert(`Erreur lors de l'exportation: ${data.message}`);
+                    startExportBtn.disabled = false;
+                    startExportBtn.innerHTML = '<i class="fas fa-file-export me-2"></i>Générer l\'infographie';
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                alert('Une erreur est survenue lors de l\'exportation.');
+                startExportBtn.disabled = false;
+                startExportBtn.innerHTML = '<i class="fas fa-file-export me-2"></i>Générer l\'infographie';
+            });
+        });
+    });
+</script>
+{% endblock %}
