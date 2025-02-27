@@ -2,6 +2,31 @@
 
 {% block title %}Radar de Sécurité Interactif{% endblock %}
 
+{% block extra_css %}
+<style>
+    .dimension-scores .badge {
+        font-size: 0.9rem;
+        padding: 5px 10px;
+    }
+    
+    .radar-container {
+        position: relative;
+        height: 400px;
+        margin-bottom: 20px;
+    }
+    
+    .accordion-button:not(.collapsed) {
+        background-color: rgba(13, 110, 253, 0.1);
+        color: #0d6efd;
+    }
+    
+    .security-dimension-details {
+        height: 200px;
+        margin-bottom: 15px;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container mt-4">
     <div class="row mb-4">
@@ -221,27 +246,26 @@
                             </div>
                         </div>
                         
-                        <!-- Mots de passe -->
+                        <!-- Mot de passe -->
                         <div class="accordion-item">
                             <h2 class="accordion-header" id="headingPassword">
                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePassword" aria-expanded="false" aria-controls="collapsePassword">
-                                    <strong>Mots de passe <span class="badge bg-{{ 'success' if wifi_analysis.security_dimensions.password >= 80 else 'warning' if wifi_analysis.security_dimensions.password >= 50 else 'danger' }} ms-2">{{ wifi_analysis.security_dimensions.password|round(1) }}</span></strong>
+                                    <strong>Mot de passe <span class="badge bg-{{ 'success' if wifi_analysis.security_dimensions.password >= 80 else 'warning' if wifi_analysis.security_dimensions.password >= 50 else 'danger' }} ms-2">{{ wifi_analysis.security_dimensions.password|round(1) }}</span></strong>
                                 </button>
                             </h2>
                             <div id="collapsePassword" class="accordion-collapse collapse" aria-labelledby="headingPassword" data-bs-parent="#dimensionsAccordion">
                                 <div class="accordion-body">
                                     <div class="row">
                                         <div class="col-md-8">
-                                            <p><strong>Description:</strong> Estime la robustesse des mots de passe basée sur les protocoles utilisés.</p>
-                                            <p><strong>Recommandation:</strong> Utilisez des mots de passe d'au moins 12 caractères avec des lettres, des chiffres et des symboles.</p>
+                                            <p><strong>Description:</strong> Évalue la robustesse estimée des mots de passe WiFi.</p>
+                                            <p><strong>Recommandation:</strong> Utilisez des mots de passe aléatoires d'au moins 12 caractères avec des lettres, chiffres et symboles.</p>
                                             <ul>
-                                                <li><strong>Excellent (>90):</strong> Mots de passe très complexes ou authentification avancée</li>
-                                                <li><strong>Bon (70-90):</strong> Mots de passe complexes</li>
-                                                <li><strong>Moyen (50-70):</strong> Mots de passe standards</li>
-                                                <li><strong>Faible (30-50):</strong> Mots de passe simples</li>
-                                                <li><strong>Critique (<30):</strong> Mots de passe très faibles ou absents</li>
+                                                <li><strong>Excellent (>90):</strong> Mots de passe très forts (>16 caractères, complexes)</li>
+                                                <li><strong>Bon (70-90):</strong> Mots de passe forts (12-16 caractères, mixtes)</li>
+                                                <li><strong>Moyen (50-70):</strong> Mots de passe acceptables (8-12 caractères)</li>
+                                                <li><strong>Faible (30-50):</strong> Mots de passe faibles (<8 caractères)</li>
+                                                <li><strong>Critique (<30):</strong> Mots de passe par défaut ou très faibles</li>
                                             </ul>
-                                            <p><small class="text-muted">Note: L'application estime la robustesse probable des mots de passe basée sur les technologies utilisées.</small></p>
                                         </div>
                                         <div class="col-md-4">
                                             <canvas id="passwordDetailsChart" width="100%" height="200"></canvas>
@@ -262,14 +286,14 @@
                                 <div class="accordion-body">
                                     <div class="row">
                                         <div class="col-md-8">
-                                            <p><strong>Description:</strong> Évalue la protection des données personnelles et de la vie privée.</p>
-                                            <p><strong>Recommandation:</strong> Utilisez des protocoles qui protègent votre vie privée comme WPA3 avec OWE pour les réseaux publics.</p>
+                                            <p><strong>Description:</strong> Évalue la protection de la vie privée offerte par la configuration du réseau.</p>
+                                            <p><strong>Recommandation:</strong> Utilisez des protocoles récents avec une forte protection contre les attaques d'écoute.</p>
                                             <ul>
-                                                <li><strong>Excellent (>90):</strong> WPA3 avec protection de la vie privée</li>
-                                                <li><strong>Bon (70-90):</strong> WPA2 avec configurations de confidentialité</li>
-                                                <li><strong>Moyen (50-70):</strong> Confidentialité standard</li>
-                                                <li><strong>Faible (30-50):</strong> Quelques mesures de confidentialité</li>
-                                                <li><strong>Critique (<30):</strong> Aucune protection de la vie privée</li>
+                                                <li><strong>Excellent (>90):</strong> WPA3 avec protection forte</li>
+                                                <li><strong>Bon (70-90):</strong> WPA2 avec CCMP et protections supplémentaires</li>
+                                                <li><strong>Moyen (50-70):</strong> WPA2 standard</li>
+                                                <li><strong>Faible (30-50):</strong> WPA ou protection limitée</li>
+                                                <li><strong>Critique (<30):</strong> WEP ou réseaux ouverts</li>
                                             </ul>
                                         </div>
                                         <div class="col-md-4">
@@ -285,77 +309,66 @@
         </div>
     </div>
 
-    <!-- Recommandations pour améliorer la sécurité -->
+    <!-- Recommandations de sécurité -->
     <div class="row mb-4">
         <div class="col-md-12">
             <div class="card shadow">
-                <div class="card-header bg-warning text-dark">
-                    <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Recommandations d'Amélioration</h5>
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Recommandations de Sécurité</h5>
                 </div>
                 <div class="card-body">
-                    {% if wifi_analysis.recommendations %}
-                        <div class="list-group">
-                            {% for rec in wifi_analysis.recommendations %}
-                                <div class="list-group-item list-group-item-action">
-                                    <div class="d-flex w-100 justify-content-between">
-                                        <h5 class="mb-1">{{ rec.title }}</h5>
-                                        <small class="text-{{ 'danger' if rec.priority == 'critical' else 'warning' if rec.priority == 'high' else 'primary' if rec.priority == 'medium' else 'info' }}">
-                                            {{ rec.priority|upper }}
-                                        </small>
-                                    </div>
-                                    <p class="mb-1">{{ rec.description }}</p>
-                                    {% if rec.action_items %}
-                                        <ul class="mt-2">
-                                            {% for action in rec.action_items %}
-                                                <li>{{ action }}</li>
-                                            {% endfor %}
-                                        </ul>
-                                    {% endif %}
+                    <div class="row">
+                        <div class="col-md-12">
+                            {% if wifi_analysis.recommendations %}
+                                <div class="list-group">
+                                    {% for rec in wifi_analysis.recommendations %}
+                                        <div class="list-group-item list-group-item-action flex-column align-items-start">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h5 class="mb-1">
+                                                    {% if rec.priority == 'critical' %}
+                                                        <span class="badge bg-danger me-2">Critique</span>
+                                                    {% elif rec.priority == 'high' %}
+                                                        <span class="badge bg-warning text-dark me-2">Élevée</span>
+                                                    {% else %}
+                                                        <span class="badge bg-info text-white me-2">Normale</span>
+                                                    {% endif %}
+                                                    {{ rec.title }}
+                                                </h5>
+                                            </div>
+                                            <p class="mb-2">{{ rec.description }}</p>
+                                            {% if rec.action_items %}
+                                                <small class="text-muted">Actions recommandées:</small>
+                                                <ul class="mt-1 mb-0">
+                                                    {% for action in rec.action_items %}
+                                                        <li>{{ action }}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
                                 </div>
-                            {% endfor %}
+                            {% else %}
+                                <div class="alert alert-success">
+                                    <i class="fas fa-check-circle me-2"></i>Excellente nouvelle ! Aucune recommandation critique n'a été identifiée pour vos réseaux.
+                                </div>
+                            {% endif %}
                         </div>
-                    {% else %}
-                        <div class="alert alert-success">
-                            <i class="fas fa-check-circle me-2"></i> Votre configuration actuelle est optimale. Aucune recommandation spécifique n'est nécessaire.
-                        </div>
-                    {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <div class="text-center mt-4 mb-5">
-        <button class="btn btn-primary me-2" onclick="window.print()">
-            <i class="fas fa-print me-2"></i> Imprimer ce rapport
-        </button>
-        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left me-2"></i> Retour au tableau de bord
-        </a>
-    </div>
 </div>
+
+<!-- Inclusion des données pour JavaScript -->
+<script id="security-dimensions-data" type="application/json">
+    {{ wifi_analysis.security_dimensions|tojson }}
+</script>
 {% endblock %}
 
 {% block extra_js %}
-<!-- Inclure Chart.js -->
+<!-- Inclusion de Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<!-- Données cachées pour les graphiques -->
-<script type="application/json" id="security-dimensions-data">
-    {{ wifi_analysis.security_dimensions|tojson }}
-</script>
-
-<script type="application/json" id="networks-data">
-    {{ networks|tojson }}
-</script>
-
-<script type="application/json" id="historical-data">
-    {{ historical_data|tojson }}
-</script>
-
-<script type="application/json" id="wifi-analysis-data">
-    {{ wifi_analysis|tojson }}
-</script>
-
-<!-- Notre script de visualisation radar -->
+<!-- Script du radar de sécurité -->
 <script src="{{ url_for('static', filename='js/security_radar.js') }}"></script>
 {% endblock %}
