@@ -16,6 +16,9 @@ from module_IA import SecurityAnalysisAI
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Variable singleton pour le gestionnaire de clones
+_clone_manager_instance = None
+
 class AIClone:
     """Représente une instance clonée d'intelligence artificielle avec des paramètres spécifiques"""
     
