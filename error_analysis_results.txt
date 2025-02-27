@@ -1,0 +1,15 @@
+=== RÉSUMÉ DES ERREURS DÉTECTÉES ===
+Total: 8 erreurs potentielles dans 4 fichiers
+
+assistant_securite.py (2 erreurs):
+  1. Except trop général, devrait capturer des exceptions spécifiques
+  2. Except trop général, devrait capturer des exceptions spécifiques
+list_errors.py (2 erreurs):
+  1. Except trop général, devrait capturer des exceptions spécifiques
+  2. Except trop général, devrait capturer des exceptions spécifiques
+network_detector.py (2 erreurs):
+  1. Except trop général, devrait capturer des exceptions spécifiques
+  2. Except trop général, devrait capturer des exceptions spécifiques
+security_assistant.py (2 erreurs):
+  1. Except trop général, devrait capturer des exceptions spécifiques
+  2. Except trop général, devrait capturer des exceptions spécifiques
