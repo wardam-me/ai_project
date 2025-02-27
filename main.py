@@ -28,6 +28,7 @@ from security_scoring import DeviceSecurityScoring
 from assistant_securite import AssistantSecurite
 from gamification import SecurityGamification
 from module_IA import SecurityAI, NetworkOptimizer
+from security_assistant import SecurityAssistant
 from datetime import datetime, timedelta
 
 # Configuration du logging
@@ -40,6 +41,8 @@ security_scoring = DeviceSecurityScoring()
 assistant_securite = AssistantSecurite()
 security_ai = SecurityAI()
 network_optimizer = NetworkOptimizer()
+# Initialiser l'assistant intelligent
+security_assistant = SecurityAssistant(security_ai, network_optimizer, assistant_securite)
 
 # Contexte global pour tous les templates
 @app.context_processor
@@ -1074,6 +1077,60 @@ def ai_analysis():
         wifi_analysis=wifi_analysis
     )
 
+# Nouvelle route pour l'assistant intelligent d'optimisation de sécurité
+@app.route('/security-assistant')
+@login_required
+def intelligent_security_assistant():
+    """Assistant Intelligent d'Optimisation de Sécurité"""
+    # Récupérer les données de topologie pour l'analyse
+    topology_data = network_topology.get_topology_data()
+    
+    # Récupérer des données wifi de test
+    test_networks = [
+        {
+            "ssid": "Réseau_Domicile",
+            "bssid": "00:11:22:33:44:55",
+            "security": "WPA2",
+            "encryption": "AES",
+            "authentication": "PSK",
+            "strength": -65,
+            "frequency": "2.4GHz",
+            "channel": 6
+        },
+        {
+            "ssid": "Réseau_Ancien",
+            "bssid": "AA:BB:CC:DD:EE:FF",
+            "security": "WEP",
+            "encryption": None,
+            "authentication": None,
+            "strength": -70,
+            "frequency": "2.4GHz",
+            "channel": 11
+        },
+        {
+            "ssid": "Réseau_Invité",
+            "bssid": "11:22:33:44:55:66",
+            "security": "OPEN",
+            "encryption": None,
+            "authentication": None,
+            "strength": -60,
+            "frequency": "2.4GHz",
+            "channel": 1
+        }
+    ]
+    
+    # Générer une évaluation complète de la sécurité
+    assessment_results = security_assistant.generate_security_assessment(topology_data, test_networks)
+    
+    # Récupérer les tendances historiques si disponibles
+    historical_trends = security_assistant.get_historical_trends()
+    
+    return render_template(
+        'security_assistant.html',
+        assessment_results=assessment_results,
+        historical_trends=historical_trends
+    )
+
 @app.route('/api/optimize-network')
 @login_required
 def api_optimize_network():
@@ -1223,10 +1280,111 @@ def security_radar():
         networks=test_networks
     )
 
+# Ajout d'une route API pour notre assistant intelligent
+@app.route('/api/security-assistant/assessment', methods=['POST'])
+@login_required
+def api_security_assessment():
+    """API pour obtenir une évaluation complète de la sécurité"""
+    # Récupérer les données de topologie
+    topology_data = network_topology.get_topology_data()
+    
+    # Dans une implémentation réelle, ces données viendraient d'une analyse réseau
+    # Pour la démonstration, utiliser des données d'exemple
+    test_networks = [
+        {
+            "ssid": "Réseau_Domicile",
+            "bssid": "00:11:22:33:44:55",
+            "security": "WPA2",
+            "encryption": "AES",
+            "authentication": "PSK",
+            "strength": -65,
+            "frequency": "2.4GHz",
+            "channel": 6
+        },
+        {
+            "ssid": "Réseau_Ancien",
+            "bssid": "AA:BB:CC:DD:EE:FF",
+            "security": "WEP",
+            "encryption": None,
+            "authentication": None,
+            "strength": -70,
+            "frequency": "2.4GHz",
+            "channel": 11
+        },
+        {
+            "ssid": "Réseau_Invité",
+            "bssid": "11:22:33:44:55:66",
+            "security": "OPEN",
+            "encryption": None,
+            "authentication": None,
+            "strength": -60,
+            "frequency": "2.4GHz",
+            "channel": 1
+        }
+    ]
+    
+    # Générer une évaluation complète de la sécurité
+    assessment_results = security_assistant.generate_security_assessment(topology_data, test_networks)
+    
+    return jsonify(assessment_results)
+
+@app.route('/api/security-assistant/trends')
+@login_required
+def api_security_trends():
+    """API pour obtenir les tendances historiques de sécurité"""
+    historical_trends = security_assistant.get_historical_trends()
+    return jsonify(historical_trends)
+
+@app.route('/api/security-assistant/chatbot', methods=['POST'])
+@login_required
+def api_security_assistant_chatbot():
+    """API pour interagir avec le chatbot de l'assistant intelligent"""
+    data = request.json
+    
+    if not data or 'message' not in data:
+        return jsonify({'success': False, 'error': 'Message manquant'}), 400
+    
+    user_input = data['message']
+    
+    # Récupérer les données de topologie pour le contexte
+    topology_data = network_topology.get_topology_data()
+    
+    # Récupérer des données wifi de test
+    test_networks = [
+        {
+            "ssid": "Réseau_Domicile",
+            "bssid": "00:11:22:33:44:55",
+            "security": "WPA2",
+            "encryption": "AES",
+            "authentication": "PSK",
+            "strength": -65,
+            "frequency": "2.4GHz",
+            "channel": 6
+        },
+        {
+            "ssid": "Réseau_Ancien",
+            "bssid": "AA:BB:CC:DD:EE:FF",
+            "security": "WEP",
+            "encryption": None,
+            "authentication": None,
+            "strength": -70,
+            "frequency": "2.4GHz",
+            "channel": 11
+        }
+    ]
+    
+    # Générer une réponse enrichie avec l'IA
+    response = security_assistant.generate_chatbot_response(user_input, topology_data, test_networks)
+    
+    return jsonify({
+        'success': True,
+        'response': response
+    })
+
 # Point d'entrée principal
 if __name__ == '__main__':
     # Log initial de l'utilisation de la mémoire au démarrage
     MemoryMonitor.log_memory_usage()
     # Démarrer l'application Flask avec l'extension SocketIO
-    # Utilisation du port 8080 pour éviter les conflits de port dans l'environnement Replit
-    socketio.run(app, host="0.0.0.0", port=8080, debug=True)
+    # Utilisation du port 5000 au lieu de 8080 pour respecter les directives de développement de Replit
+    socketio.run(app, host="0.0.0.0", port=5000, debug=True)
