@@ -36,9 +36,13 @@ def create_app():
         from models import User, UserReport, SavedTopology
         db.create_all()
         
-        # Importation des routes
+        # Importation des routes principales
         from routes import register_routes
         register_routes(app)
+        
+        # Importation des routes API
+        from api_routes import register_api_routes
+        register_api_routes(app)
     
     return app
 
