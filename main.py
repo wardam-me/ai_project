@@ -1120,6 +1120,109 @@ def api_analyze_wifi():
     
     return jsonify(wifi_analysis)
 
+@app.route('/security-radar')
+@login_required
+def security_radar():
+    """Visualisation interactive du radar de sécurité"""
+    # Récupérer les données de topologie pour l'analyse
+    topology_data = network_topology.get_topology_data()
+    
+    # Récupérer des données wifi de test
+    test_networks = [
+        {
+            "ssid": "Réseau_Domicile",
+            "bssid": "00:11:22:33:44:55",
+            "security": "WPA2",
+            "encryption": "AES",
+            "authentication": "PSK",
+            "strength": -65,
+            "frequency": "2.4GHz",
+            "channel": 6
+        },
+        {
+            "ssid": "Réseau_Ancien",
+            "bssid": "AA:BB:CC:DD:EE:FF",
+            "security": "WEP",
+            "encryption": None,
+            "authentication": None,
+            "strength": -70,
+            "frequency": "2.4GHz",
+            "channel": 11
+        },
+        {
+            "ssid": "Réseau_Entreprise",
+            "bssid": "22:33:44:55:66:77",
+            "security": "WPA2-Enterprise",
+            "encryption": "AES",
+            "authentication": "ENTERPRISE",
+            "strength": -55,
+            "frequency": "5GHz",
+            "channel": 36
+        },
+        {
+            "ssid": "Réseau_Public",
+            "bssid": "11:22:33:44:55:66",
+            "security": "OPEN",
+            "encryption": None,
+            "authentication": None,
+            "strength": -60,
+            "frequency": "2.4GHz",
+            "channel": 1
+        },
+        {
+            "ssid": "Réseau_Moderne",
+            "bssid": "33:44:55:66:77:88",
+            "security": "WPA3",
+            "encryption": "GCMP",
+            "authentication": "SAE",
+            "strength": -50,
+            "frequency": "5GHz",
+            "channel": 48
+        }
+    ]
+    
+    # Analyser les réseaux WiFi
+    wifi_analysis = security_ai.analyze_wifi_security(test_networks)
+    
+    # Analyser l'optimisation du réseau
+    optimization_results = network_optimizer.optimize_network_security(topology_data)
+    
+    # Générer des données de comparaison historiques pour démonstration
+    historical_data = [
+        {
+            "date": (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d"),
+            "dimensions": {
+                "protocol": 65.0,
+                "encryption": 70.0,
+                "authentication": 60.0,
+                "password": 55.0,
+                "privacy": 50.0
+            }
+        },
+        {
+            "date": (datetime.now() - timedelta(days=15)).strftime("%Y-%m-%d"),
+            "dimensions": {
+                "protocol": 70.0,
+                "encryption": 75.0,
+                "authentication": 65.0,
+                "password": 60.0,
+                "privacy": 55.0
+            }
+        },
+        {
+            "date": datetime.now().strftime("%Y-%m-%d"),
+            "dimensions": wifi_analysis.get('security_dimensions', {})
+        }
+    ]
+    
+    return render_template(
+        'security_radar.html',
+        wifi_analysis=wifi_analysis,
+        optimization_results=optimization_results,
+        historical_data=historical_data,
+        networks=test_networks
+    )
+
 # Point d'entrée principal
 if __name__ == '__main__':
     # Log initial de l'utilisation de la mémoire au démarrage
