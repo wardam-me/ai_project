@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block title %}Analyse IA{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Analyse Avancée par Intelligence Artificielle</h1>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-brain mr-2"></i> Score d'Optimalité du Réseau</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <div class="progress" style="height: 30px;">
+                            <div class="progress-bar bg-{{ 'success' if optimization_results.optimality_score >= 80 else 'warning' if optimization_results.optimality_score >= 50 else 'danger' }}" 
+                                role="progressbar" 
+                                style="width: {{ optimization_results.optimality_score }}%;" 
+                                aria-valuenow="{{ optimization_results.optimality_score }}" 
+                                aria-valuemin="0" 
+                                aria-valuemax="100">
+                                {{ optimization_results.optimality_score|round(1) }}%
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h6 class="text-muted">Statistiques de vulnérabilités</h6>
+                    <ul class="list-group mb-3">
+                        {% for severity, count in optimization_results.vulnerability_statistics.items() %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ severity|capitalize }}
+                                <span class="badge badge-{{ 'primary' if severity == 'low' else 'warning' if severity == 'medium' else 'danger' }} badge-pill">{{ count }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-wifi mr-2"></i> Analyse WiFi</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <div class="progress" style="height: 30px;">
+                            <div class="progress-bar bg-{{ 'success' if wifi_analysis.overall_score >= 80 else 'warning' if wifi_analysis.overall_score >= 50 else 'danger' }}" 
+                                role="progressbar" 
+                                style="width: {{ wifi_analysis.overall_score }}%;" 
+                                aria-valuenow="{{ wifi_analysis.overall_score }}" 
+                                aria-valuemin="0" 
+                                aria-valuemax="100">
+                                {{ wifi_analysis.overall_score|round(1) }}%
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h6 class="text-muted">Niveaux de sécurité</h6>
+                    <ul class="list-group mb-3">
+                        {% for level, count in wifi_analysis.security_levels.items() %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ level|capitalize }}
+                                <span class="badge badge-{{ 'success' if level == 'secure' else 'primary' if level == 'low' else 'warning' if level == 'medium' else 'danger' }} badge-pill">{{ count }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    
+                    <p class="card-text">
+                        <small class="text-muted">{{ wifi_analysis.networks_analyzed }} réseaux analysés</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recommandations prioritaires -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0"><i class="fas fa-exclamation-triangle mr-2"></i> Recommandations Prioritaires</h5>
+        </div>
+        <div class="card-body">
+            {% if optimization_results.recommendations.priority %}
+                <div class="list-group">
+                    {% for rec in optimization_results.recommendations.priority %}
+                        <div class="list-group-item list-group-item-action flex-column align-items-start">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">{{ rec.title }}</h5>
+                                <small class="text-danger">PRIORITÉ</small>
+                            </div>
+                            <p class="mb-1">{{ rec.description }}</p>
+                            <small class="text-muted">
+                                Appareils concernés : {{ rec.affected_devices|join(', ') }}
+                            </small>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle mr-2"></i> Aucun problème prioritaire détecté. Excellente nouvelle!
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Recommandations moyennes -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0"><i class="fas fa-exclamation-circle mr-2"></i> Recommandations Importantes</h5>
+        </div>
+        <div class="card-body">
+            {% if optimization_results.recommendations.medium %}
+                <div class="list-group">
+                    {% for rec in optimization_results.recommendations.medium %}
+                        <div class="list-group-item list-group-item-action flex-column align-items-start">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">{{ rec.title }}</h5>
+                                <small class="text-warning">IMPORTANT</small>
+                            </div>
+                            <p class="mb-1">{{ rec.description }}</p>
+                            <small class="text-muted">
+                                Appareils concernés : {{ rec.affected_devices|join(', ') }}
+                            </small>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle mr-2"></i> Aucun problème de priorité moyenne détecté.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Recommandations WiFi -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="fas fa-wifi mr-2"></i> Recommandations WiFi</h5>
+        </div>
+        <div class="card-body">
+            {% if wifi_analysis.recommendations %}
+                <div class="list-group">
+                    {% for rec in wifi_analysis.recommendations %}
+                        <div class="list-group-item list-group-item-action flex-column align-items-start">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">{{ rec.title }}</h5>
+                                <small class="text-{{ 'danger' if rec.priority == 'critical' else 'warning' if rec.priority == 'high' else 'primary' if rec.priority == 'medium' else 'info' }}">
+                                    {{ rec.priority|upper }}
+                                </small>
+                            </div>
+                            <p class="mb-1">{{ rec.description }}</p>
+                            {% if rec.action_items %}
+                                <ul class="mt-2">
+                                    {% for action in rec.action_items %}
+                                        <li>{{ action }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle mr-2"></i> Aucune recommandation WiFi n'est nécessaire.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Détails des réseaux WiFi -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0"><i class="fas fa-list-alt mr-2"></i> Détails des Réseaux WiFi</h5>
+        </div>
+        <div class="card-body">
+            {% if wifi_analysis.network_scores %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>SSID</th>
+                                <th>Sécurité</th>
+                                <th>Chiffrement</th>
+                                <th>Score</th>
+                                <th>Niveau</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for network in wifi_analysis.network_scores %}
+                                <tr>
+                                    <td>{{ network.ssid }}</td>
+                                    <td>{{ network.security_type }}</td>
+                                    <td>{{ network.encryption or 'Aucun' }}</td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar bg-{{ 'success' if network.security_score >= 80 else 'warning' if network.security_score >= 50 else 'danger' }}" 
+                                                role="progressbar" 
+                                                style="width: {{ network.security_score }}%;" 
+                                                aria-valuenow="{{ network.security_score }}" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="100">
+                                                {{ network.security_score }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-{{ 'success' if network.security_level == 'secure' else 'primary' if network.security_level == 'low' else 'warning' if network.security_level == 'medium' else 'danger' }}">
+                                            {{ network.security_level|capitalize }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle mr-2"></i> Aucun détail de réseau WiFi disponible.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Détails des vulnérabilités -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0"><i class="fas fa-bug mr-2"></i> Vulnérabilités Détectées</h5>
+        </div>
+        <div class="card-body">
+            {% if optimization_results.raw_vulnerabilities %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Type</th>
+                                <th>Sévérité</th>
+                                <th>Probabilité</th>
+                                <th>Description</th>
+                                <th>Recommandation</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for vuln in optimization_results.raw_vulnerabilities %}
+                                <tr>
+                                    <td>{{ vuln.vulnerability_type }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ 'danger' if vuln.severity == 'high' or vuln.severity == 'critical' else 'warning' if vuln.severity == 'medium' else 'primary' }}">
+                                            {{ vuln.severity|capitalize }}
+                                        </span>
+                                    </td>
+                                    <td>{{ (vuln.probability * 100)|round }}%</td>
+                                    <td>{{ vuln.description }}</td>
+                                    <td>{{ vuln.recommendation }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle mr-2"></i> Aucune vulnérabilité détectée.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="text-center mt-4 mb-5">
+        <button class="btn btn-primary mr-2" onclick="window.print()">
+            <i class="fas fa-print mr-2"></i> Imprimer ce rapport
+        </button>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left mr-2"></i> Retour au tableau de bord
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Charts could be added here if needed
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add any JavaScript needed for the page
+    });
+</script>
+{% endblock %}
