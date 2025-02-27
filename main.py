@@ -5,6 +5,7 @@ Application principale pour NetSecure Pro - Analyse de sécurité réseau WiFi
 import os
 import json
 import logging
+import random
 from datetime import datetime
 from functools import wraps
 
