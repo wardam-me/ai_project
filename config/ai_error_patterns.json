@@ -1,0 +1,56 @@
+{
+  "weak_encryption": {
+    "type": "security",
+    "pattern": "encryption.*(weak|outdated|obsolete|WEP)",
+    "severity": "high",
+    "description": "Chiffrement faible ou obsol\u00e8te d\u00e9tect\u00e9"
+  },
+  "open_network": {
+    "type": "security",
+    "pattern": "(open|unsecured|unencrypted) (network|wifi)",
+    "severity": "critical",
+    "description": "R\u00e9seau ouvert sans chiffrement"
+  },
+  "default_credentials": {
+    "type": "security",
+    "pattern": "(default|factory).*(password|credentials)",
+    "severity": "critical",
+    "description": "Identifiants par d\u00e9faut toujours utilis\u00e9s"
+  },
+  "firmware_outdated": {
+    "type": "security",
+    "pattern": "firmware.*(outdated|obsolete)",
+    "severity": "high",
+    "description": "Firmware obsol\u00e8te n\u00e9cessitant une mise \u00e0 jour"
+  },
+  "connection_drops": {
+    "type": "connectivity",
+    "pattern": "(connection|signal).*(drop|lost|weak)",
+    "severity": "medium",
+    "description": "Pertes de connexion intermittentes"
+  },
+  "high_latency": {
+    "type": "performance",
+    "pattern": "(high|excessive).*(latency|ping|delay)",
+    "severity": "medium",
+    "description": "Latence r\u00e9seau \u00e9lev\u00e9e"
+  },
+  "dns_issues": {
+    "type": "connectivity",
+    "pattern": "(dns).*(error|issue|problem|failure)",
+    "severity": "medium",
+    "description": "Probl\u00e8mes de r\u00e9solution DNS"
+  },
+  "ip_conflict": {
+    "type": "configuration",
+    "pattern": "(ip|address).*(conflict|duplicate)",
+    "severity": "high",
+    "description": "Conflit d'adresses IP"
+  },
+  "channel_interference": {
+    "type": "performance",
+    "pattern": "(channel|signal).*(interference|congestion|noise)",
+    "severity": "medium",
+    "description": "Interf\u00e9rence sur le canal WiFi"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "auto_repair": {
+    "description": "Clone pour la d\u00e9tection et r\u00e9paration automatique des erreurs",
+    "features": [
+      "error_detection",
+      "auto_repair",
+      "notification"
+    ],
+    "scan_interval": 3600,
+    "auto_apply_threshold": "medium",
+    "notification_threshold": "low"
+  },
+  "security_optimizer": {
+    "description": "Clone pour l'optimisation continue de la s\u00e9curit\u00e9",
+    "features": [
+      "security_scan",
+      "recommendations",
+      "simulation"
+    ],
+    "scan_interval": 86400,
+    "focus_areas": [
+      "encryption",
+      "authentication",
+      "firmware"
+    ]
+  },
+  "performance_tuner": {
+    "description": "Clone pour l'optimisation des performances r\u00e9seau",
+    "features": [
+      "performance_monitoring",
+      "channel_optimization",
+      "traffic_analysis"
+    ],
+    "scan_interval": 43200,
+    "threshold_adjustments": {
+      "latency": 20,
+      "bandwidth": 10,
+      "signal": 15
+    }
+  }
+}
