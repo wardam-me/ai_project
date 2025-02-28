@@ -1,0 +1,45 @@
+
+# Fichiers Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Fichiers Flask
+instance/
+.webassets-cache
+
+# Fichiers de l'environnement
+.env
+.venv
+venv/
+ENV/
+
+# Fichiers de base de données SQLite
+*.sqlite
+*.db
+
+# Fichiers de cache
+__pycache__/
+.cache/
+.pytest_cache/
+
+# Dossiers spécifiques à votre projet
+instance/ai_reports/
+static/exports/
