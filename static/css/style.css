@@ -6,7 +6,6 @@
     --primary-color: #0d6efd;
     --secondary-bg: #e9ecef;
     --hover-bg: #f8f9fa;
-    --background-color-secondary: #f0f0f0; /* Added secondary background color */
 }
 
 [data-theme="dark"] {
@@ -17,8 +16,6 @@
     --primary-color: #0d6efd;
     --secondary-bg: #2c3034;
     --hover-bg: #343a40;
-    --background-color-secondary: #303030; /* Added secondary background color for dark mode */
-
 }
 
 /* Styles généraux */
@@ -384,54 +381,3 @@ body {
 .table-dark td {
     border-color: var(--border-color);
 }
-
-/* Styles pour la page en construction */
-.construction-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 80vh;
-    padding: 20px;
-}
-
-.construction-box {
-    max-width: 500px;
-    width: 100%;
-    background-color: var(--background-color-secondary);
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    padding: 30px;
-    text-align: center;
-}
-
-.construction-icon {
-    color: var(--primary-color);
-    margin-bottom: 20px;
-}
-
-.construction-separator {
-    height: 2px;
-    background-color: var(--border-color);
-    margin: 25px 0;
-}
-
-.admin-login-container {
-    text-align: left;
-}
-
-.admin-login-form .form-group {
-    margin-bottom: 15px;
-}
-
-.admin-login-form label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: 500;
-}
-
-.admin-login-form .btn-block {
-    width: 100%;
-    margin-top: 10px;
-}
-
-/* Styles pour le mode sombre */

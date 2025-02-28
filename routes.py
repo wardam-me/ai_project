@@ -105,14 +105,7 @@ def register_routes(app):
     # ======================================================
     @app.route('/')
     def accueil():
-        """Page d'accueil de l'application (version en construction)"""
-        # Rediriger les utilisateurs déjà connectés vers le tableau de bord
-        if current_user.is_authenticated:
-            # Si l'utilisateur est admin, le rediriger vers le tableau de bord admin
-            if current_user.is_admin:
-                return redirect(url_for('admin_dashboard'))
-            # Sinon, rediriger vers le tableau de bord utilisateur
-            return redirect(url_for('dashboard'))
+        """Page d'accueil de l'application"""
         return render_template('index.html')
     
     @app.route('/register', methods=['GET', 'POST'])
@@ -142,10 +135,6 @@ def register_routes(app):
     def login():
         """Connexion d'un utilisateur existant"""
         if current_user.is_authenticated:
-            # Si l'utilisateur est admin, le rediriger vers le tableau de bord admin
-            if current_user.is_admin:
-                return redirect(url_for('admin_dashboard'))
-            # Sinon, rediriger vers le tableau de bord utilisateur
             return redirect(url_for('dashboard'))
         
         form = LoginForm()
@@ -157,12 +146,7 @@ def register_routes(app):
                 flash('Connexion réussie !', 'success')
                 
                 next_page = request.args.get('next')
-                
-                # Rediriger selon le rôle
-                if user.is_admin:
-                    return redirect(next_page or url_for('admin_dashboard'))
-                else:
-                    return redirect(next_page or url_for('dashboard'))
+                return redirect(next_page or url_for('dashboard'))
             else:
                 flash('Connexion échouée. Veuillez vérifier votre email et votre mot de passe.', 'danger')
         
@@ -817,15 +801,3 @@ def register_routes(app):
     
     # Retourner l'application configurée
     return app
-
-    @app.route('/maintenance')
-    def maintenance():
-        """Page de maintenance pour indiquer que le site est temporairement indisponible"""
-        return render_template('maintenance.html')
-    
-    # Décommenter cette fonction pour activer le mode maintenance sur toutes les routes
-    # @app.before_request
-    # def check_maintenance_mode():
-    #     """Rediriger vers la page de maintenance si le mode est activé"""
-    #     if os.environ.get('MAINTENANCE_MODE') == 'True' and request.path != '/maintenance':
-    #         return redirect(url_for('maintenance'))
