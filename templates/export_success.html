@@ -2,105 +2,230 @@
 
 {% block title %}Infographie Générée | NetSecure Pro{% endblock %}
 
+{% block styles %}
+<style>
+    .preview-container {
+        position: relative;
+        background-color: #1a1a1a;
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .preview-container:hover {
+        transform: scale(1.01);
+        box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, 0.4);
+    }
+    
+    .preview-container embed,
+    .preview-container img {
+        display: block;
+        max-width: 100%;
+        margin: 0 auto;
+    }
+    
+    .format-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 0.3rem 0.7rem;
+        border-radius: 2rem;
+        font-size: 0.8rem;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+    
+    .details-card {
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        transition: all 0.3s ease;
+    }
+    
+    .details-card:hover {
+        box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, 0.2);
+    }
+    
+    .success-animation {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.05);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+    
+    .action-btn {
+        transition: all 0.3s ease;
+    }
+    
+    .action-btn:hover {
+        transform: translateY(-3px);
+    }
+    
+    .fade-in {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    
+    .fade-in.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    .share-options {
+        display: none;
+        margin-top: 1rem;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container py-4">
     <div class="row">
-        <div class="col-md-12">
-            <div class="card border-0 shadow">
-                <div class="card-header bg-success text-white">
+        <div class="col-md-12 mb-4">
+            <div class="alert alert-success fade-in shadow-sm">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-check-circle fa-2x me-3 success-animation"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h4 class="alert-heading mb-1">Exportation réussie!</h4>
+                        <p class="mb-0">Votre infographie a été générée avec succès. Vous pouvez maintenant la prévisualiser, la télécharger ou la partager.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8 fade-in">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-dark text-white">
                     <h4 class="mb-0">
-                        <i class="fas fa-check-circle me-2"></i>Infographie Générée avec Succès
+                        <i class="fas fa-chart-bar me-2"></i>
+                        {% if report_type == 'network' %}
+                            Rapport de sécurité réseau
+                        {% elif report_type == 'protocol' %}
+                            Analyse des protocoles
+                        {% elif report_type == 'vulnerability' %}
+                            Analyse des vulnérabilités
+                        {% else %}
+                            {{ report_name }}
+                        {% endif %}
                     </h4>
                 </div>
+                <div class="card-body bg-light p-0">
+                    <div class="preview-container">
+                        {% if file_info and file_info.path %}
+                            <span class="format-badge">{{ file_info.format }}</span>
+                            {% if file_info.path.endswith('.svg') %}
+                                <embed src="{{ url_for('static', filename=file_info.path) }}" type="image/svg+xml" width="100%" height="500px" />
+                            {% elif file_info.path.endswith('.pdf') %}
+                                <embed src="{{ url_for('static', filename=file_info.path) }}" type="application/pdf" width="100%" height="500px" />
+                            {% else %}
+                                <img src="{{ url_for('static', filename=file_info.path) }}" alt="Infographie générée" class="img-fluid" />
+                            {% endif %}
+                        {% elif image_path %}
+                            {% if image_path.endswith('.svg') %}
+                                <embed src="{{ url_for('static', filename=image_path) }}" type="image/svg+xml" width="100%" height="500px" />
+                            {% elif image_path.endswith('.pdf') %}
+                                <embed src="{{ url_for('static', filename=image_path) }}" type="application/pdf" width="100%" height="500px" />
+                            {% else %}
+                                <img src="{{ url_for('static', filename=image_path) }}" alt="Infographie générée" class="img-fluid" />
+                            {% endif %}
+                        {% else %}
+                            <div class="text-center p-5">
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    Aperçu non disponible
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-3 bg-dark text-white details-card fade-in">
+                <div class="card-header border-bottom border-secondary">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Détails du Rapport</h5>
+                </div>
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-8">
-                            <div class="bg-dark p-2 rounded mb-3">
-                                {% if file_info and file_info.path %}
-                                    {% if file_info.path.endswith('.svg') %}
-                                        <div class="text-center">
-                                            <embed src="{{ url_for('static', filename=file_info.path) }}" type="image/svg+xml" width="100%" height="450px" />
-                                        </div>
-                                    {% elif file_info.path.endswith('.pdf') %}
-                                        <div class="text-center">
-                                            <embed src="{{ url_for('static', filename=file_info.path) }}" type="application/pdf" width="100%" height="450px" />
-                                        </div>
-                                    {% else %}
-                                        <div class="text-center">
-                                            <img src="{{ url_for('static', filename=file_info.path) }}" alt="Infographie générée" class="img-fluid rounded" />
-                                        </div>
-                                    {% endif %}
-                                {% elif image_path %}
-                                    {% if image_path.endswith('.svg') %}
-                                        <div class="text-center">
-                                            <embed src="{{ url_for('static', filename=image_path) }}" type="image/svg+xml" width="100%" height="450px" />
-                                        </div>
-                                    {% elif image_path.endswith('.pdf') %}
-                                        <div class="text-center">
-                                            <embed src="{{ url_for('static', filename=image_path) }}" type="application/pdf" width="100%" height="450px" />
-                                        </div>
-                                    {% else %}
-                                        <div class="text-center">
-                                            <img src="{{ url_for('static', filename=image_path) }}" alt="Infographie générée" class="img-fluid rounded" />
-                                        </div>
-                                    {% endif %}
+                    <ul class="list-group list-group-flush bg-transparent">
+                        <li class="list-group-item bg-dark text-white border-secondary d-flex justify-content-between align-items-center">
+                            <span><strong>Type:</strong></span>
+                            <span class="badge bg-info rounded-pill">
+                                {% if report_type == 'network' %}
+                                    Sécurité réseau
+                                {% elif report_type == 'protocol' %}
+                                    Protocoles
+                                {% elif report_type == 'vulnerability' %}
+                                    Vulnérabilités
                                 {% else %}
-                                    <div class="text-center">
-                                        <div class="alert alert-warning">
-                                            <i class="fas fa-exclamation-triangle me-2"></i>
-                                            Aperçu non disponible
-                                        </div>
-                                    </div>
+                                    {{ report_name }}
                                 {% endif %}
+                            </span>
+                        </li>
+                        <li class="list-group-item bg-dark text-white border-secondary d-flex justify-content-between align-items-center">
+                            <span><strong>Format:</strong></span>
+                            <span class="badge bg-primary rounded-pill">{{ file_info.format|default(format)|upper }}</span>
+                        </li>
+                        <li class="list-group-item bg-dark text-white border-secondary d-flex justify-content-between align-items-center">
+                            <span><strong>Taille:</strong></span>
+                            <span>{{ file_info.size|default(file_size) }}</span>
+                        </li>
+                        <li class="list-group-item bg-dark text-white border-secondary d-flex justify-content-between align-items-center">
+                            <span><strong>Créé le:</strong></span>
+                            <span>{{ file_info.date|default(created_at) }}</span>
+                        </li>
+                        <li class="list-group-item bg-dark text-white border-secondary d-flex justify-content-between align-items-center">
+                            <span><strong>Analysé avec IA:</strong></span>
+                            <span class="badge bg-success rounded-pill"><i class="fas fa-check-circle me-1"></i>Oui</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card bg-dark text-white fade-in details-card">
+                <div class="card-header border-bottom border-secondary">
+                    <h5 class="mb-0"><i class="fas fa-share-alt me-2"></i>Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ file_info.download_url|default(download_url) }}" class="btn btn-primary action-btn" download>
+                            <i class="fas fa-download me-2"></i>Télécharger le rapport
+                        </a>
+                        <button type="button" class="btn btn-secondary action-btn" id="shareBtn">
+                            <i class="fas fa-share-alt me-2"></i>Partager
+                        </button>
+                        <div class="share-options" id="shareOptions">
+                            <div class="btn-group w-100">
+                                <button type="button" class="btn btn-sm btn-outline-light" title="Copier le lien" id="copyLinkBtn">
+                                    <i class="fas fa-link"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-light" title="Email">
+                                    <i class="fas fa-envelope"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-light" title="Exporter en PDF">
+                                    <i class="fas fa-file-pdf"></i>
+                                </button>
                             </div>
                         </div>
-                        <div class="col-md-4">
-                            <div class="card mb-3 bg-dark text-white">
-                                <div class="card-header">
-                                    <h5 class="mb-0">Détails du Rapport</h5>
-                                </div>
-                                <div class="card-body">
-                                    <ul class="list-group list-group-flush bg-transparent">
-                                        <li class="list-group-item bg-dark text-white border-secondary">
-                                            <strong>Type:</strong> 
-                                            {% if report_type == 'network' %}
-                                                Rapport de sécurité réseau
-                                            {% elif report_type == 'protocol' %}
-                                                Analyse des protocoles
-                                            {% elif report_type == 'vulnerability' %}
-                                                Analyse des vulnérabilités
-                                            {% else %}
-                                                {{ report_name }}
-                                            {% endif %}
-                                        </li>
-                                        <li class="list-group-item bg-dark text-white border-secondary">
-                                            <strong>Format:</strong> {{ file_info.format|default(format)|upper }}
-                                        </li>
-                                        <li class="list-group-item bg-dark text-white border-secondary">
-                                            <strong>Taille:</strong> {{ file_info.size|default(file_size) }}
-                                        </li>
-                                        <li class="list-group-item bg-dark text-white border-secondary">
-                                            <strong>Créé le:</strong> {{ file_info.created_at|default(created_at) }}
-                                        </li>
-                                        <li class="list-group-item bg-dark text-white border-secondary">
-                                            <strong>Analysé avec IA:</strong> <i class="fas fa-check-circle text-success"></i> Oui
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                            
-                            <div class="d-grid gap-2">
-                                <a href="{{ file_info.download_url|default(download_url) }}" class="btn btn-primary" download>
-                                    <i class="fas fa-download me-2"></i>Télécharger
-                                </a>
-                                <a href="{{ url_for('infographic_export_hub') }}" class="btn btn-secondary">
-                                    <i class="fas fa-th-list me-2"></i>Voir tous mes rapports
-                                </a>
-                                <a href="{{ url_for('dashboard') }}" class="btn btn-info">
-                                    <i class="fas fa-home me-2"></i>Retour au Tableau de Bord
-                                </a>
-                            </div>
-                        </div>
+                        <a href="{{ url_for('infographic_export_hub') }}" class="btn btn-info action-btn">
+                            <i class="fas fa-th-list me-2"></i>Voir tous mes rapports
+                        </a>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary action-btn">
+                            <i class="fas fa-home me-2"></i>Retour au Tableau de Bord
+                        </a>
                     </div>
                 </div>
             </div>
@@ -114,10 +239,39 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Animation d'apparition
     setTimeout(function() {
-        document.querySelectorAll('.fade-in').forEach(function(el) {
-            el.classList.add('show');
+        document.querySelectorAll('.fade-in').forEach(function(el, index) {
+            setTimeout(function() {
+                el.classList.add('show');
+            }, index * 100);
         });
     }, 100);
+    
+    // Bouton de partage
+    const shareBtn = document.getElementById('shareBtn');
+    const shareOptions = document.getElementById('shareOptions');
+    
+    if (shareBtn && shareOptions) {
+        shareBtn.addEventListener('click', function() {
+            if (shareOptions.style.display === 'block') {
+                shareOptions.style.display = 'none';
+            } else {
+                shareOptions.style.display = 'block';
+            }
+        });
+    }
+    
+    // Bouton pour copier le lien
+    const copyLinkBtn = document.getElementById('copyLinkBtn');
+    if (copyLinkBtn) {
+        copyLinkBtn.addEventListener('click', function() {
+            const downloadUrl = "{{ url_for('static', filename=file_info.path, _external=True) }}";
+            navigator.clipboard.writeText(downloadUrl).then(function() {
+                alert('Lien copié dans le presse-papier!');
+            }, function() {
+                alert('Impossible de copier le lien. Veuillez réessayer.');
+            });
+        });
+    }
 });
 </script>
 {% endblock %}
