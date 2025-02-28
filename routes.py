@@ -728,6 +728,26 @@ def register_routes(app):
         return render_template('admin/system.html')
     
     # ======================================================
+    # Routes pour la gestion des langues
+    # ======================================================
+    @app.route('/set-language/<language>')
+    def set_language(language):
+        """Change la langue de l'interface utilisateur"""
+        from translation import AVAILABLE_LANGUAGES
+        
+        if language in AVAILABLE_LANGUAGES:
+            session['language'] = language
+            flash(f'Langue changée en {AVAILABLE_LANGUAGES[language]}', 'success')
+        else:
+            # Si la langue demandée n'est pas disponible, utiliser le français
+            session['language'] = 'fr'
+            flash('Langue non disponible, français utilisé par défaut', 'warning')
+            
+        # Rediriger vers la page précédente ou la page d'accueil
+        next_page = request.args.get('next') or request.referrer or url_for('accueil')
+        return redirect(next_page)
+    
+    # ======================================================
     # Routes pour les erreurs
     # ======================================================
     @app.errorhandler(404)
