@@ -735,17 +735,27 @@ def register_routes(app):
         """Change la langue de l'interface utilisateur"""
         from translation import AVAILABLE_LANGUAGES
         
-        if language in AVAILABLE_LANGUAGES:
-            session['language'] = language
-            flash(f'Langue changée en {AVAILABLE_LANGUAGES[language]}', 'success')
-        else:
-            # Si la langue demandée n'est pas disponible, utiliser le français
-            session['language'] = 'fr'
-            flash('Langue non disponible, français utilisé par défaut', 'warning')
+        try:
+            logger.debug(f"Changement de langue demandé: {language}")
+            if language in AVAILABLE_LANGUAGES:
+                session['language'] = language
+                flash(f'Langue changée en {AVAILABLE_LANGUAGES[language]}', 'success')
+                logger.debug(f"Langue changée en {language}")
+            else:
+                # Si la langue demandée n'est pas disponible, utiliser le français
+                session['language'] = 'fr'
+                flash('Langue non disponible, français utilisé par défaut', 'warning')
+                logger.debug("Langue non reconnue, français utilisé par défaut")
             
-        # Rediriger vers la page précédente ou la page d'accueil
-        next_page = request.args.get('next') or request.referrer or url_for('accueil')
-        return redirect(next_page)
+            # Rediriger vers la page précédente ou la page d'accueil
+            next_page = request.args.get('next') or request.referrer or url_for('accueil')
+            logger.debug(f"Redirection vers: {next_page}")
+            return redirect(next_page)
+        except Exception as e:
+            logger.error(f"Erreur lors du changement de langue: {e}")
+            # En cas d'erreur, rediriger vers la page d'accueil
+            flash('Une erreur est survenue lors du changement de langue', 'danger')
+            return redirect(url_for('accueil'))
     
     # ======================================================
     # Routes pour les erreurs
