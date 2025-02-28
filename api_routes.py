@@ -33,6 +33,49 @@ def register_api_routes(app):
     """
     
     # ======================================================
+    # API pour la gestion des langues
+    # ======================================================
+    
+    @app.route('/api/change-language', methods=['POST'])
+    def change_language():
+        """API: Change la langue de l'utilisateur"""
+        try:
+            data = request.json
+            
+            if not data or 'language' not in data:
+                return jsonify({
+                    "success": False,
+                    "error": "Paramètre 'language' manquant"
+                }), 400
+            
+            language = data['language']
+            
+            # Importer le module de traduction
+            from translation import AVAILABLE_LANGUAGES
+            
+            # Vérifier si la langue est disponible
+            if language not in AVAILABLE_LANGUAGES:
+                return jsonify({
+                    "success": False,
+                    "error": f"Langue non supportée: {language}"
+                }), 400
+            
+            # Mettre à jour la langue dans la session
+            session['language'] = language
+            
+            return jsonify({
+                "success": True,
+                "language": language,
+                "name": AVAILABLE_LANGUAGES[language]
+            })
+        except Exception as e:
+            logger.error(f"Erreur lors du changement de langue: {e}")
+            return jsonify({
+                "success": False,
+                "error": str(e)
+            }), 500
+    
+    # ======================================================
     # API pour la gestion des clones IA
     # ======================================================
     
