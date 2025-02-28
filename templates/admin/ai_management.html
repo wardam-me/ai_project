@@ -808,3 +808,703 @@ function calculateDuration(startDateStr, endDateStr) {
 }
 </script>
 {% endblock %}
+{% extends "base.html" %}
+
+{% block title %}Gestion des Clones IA - NetSecure Pro{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h1 class="mb-4">Gestion des Clones d'Intelligence Artificielle</h1>
+    
+    <!-- Statistiques des clones -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total des clones</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ statistics.total_clones }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-brain fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Clones Actifs</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ statistics.status.active }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                En Entraînement</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ statistics.status.training }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-sync fa-spin fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                Clones Inactifs</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ statistics.status.paused + statistics.status.stopped }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-pause-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des clones -->
+    <div class="card shadow mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Clones IA</h5>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createCloneModal">
+                <i class="fas fa-robot me-2"></i>Créer un clone
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nom</th>
+                            <th>Spécialisation</th>
+                            <th>Version</th>
+                            <th>Statut</th>
+                            <th>Taux d'apprentissage</th>
+                            <th>Seuil de confiance</th>
+                            <th>Création</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for clone in clones %}
+                        <tr>
+                            <td>{{ clone.clone_id[:8] }}...</td>
+                            <td>{{ clone.name }}</td>
+                            <td>
+                                <span class="badge 
+                                    {% if clone.specialization == 'network' %}bg-info
+                                    {% elif clone.specialization == 'protocol' %}bg-primary
+                                    {% elif clone.specialization == 'vulnerability' %}bg-danger
+                                    {% else %}bg-secondary{% endif %}">
+                                    {{ clone.specialization }}
+                                </span>
+                            </td>
+                            <td>{{ clone.version }}</td>
+                            <td>
+                                <span class="badge 
+                                    {% if clone.status == 'active' %}bg-success
+                                    {% elif clone.status == 'training' %}bg-warning text-dark
+                                    {% elif clone.status == 'paused' %}bg-info
+                                    {% else %}bg-danger{% endif %}">
+                                    {{ clone.status }}
+                                </span>
+                            </td>
+                            <td>{{ clone.learning_rate }}</td>
+                            <td>{{ clone.confidence_threshold }}</td>
+                            <td>{{ clone.creation_date|datetime }}</td>
+                            <td>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-info" onclick="viewCloneDetails('{{ clone.clone_id }}')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#trainCloneModal" 
+                                            data-clone-id="{{ clone.clone_id }}" data-clone-name="{{ clone.name }}">
+                                        <i class="fas fa-graduation-cap"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editCloneModal"
+                                            data-clone-id="{{ clone.clone_id }}" data-clone-name="{{ clone.name }}"
+                                            data-specialization="{{ clone.specialization }}" data-learning-rate="{{ clone.learning_rate }}"
+                                            data-confidence-threshold="{{ clone.confidence_threshold }}" data-status="{{ clone.status }}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteCloneModal"
+                                            data-clone-id="{{ clone.clone_id }}" data-clone-name="{{ clone.name }}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performances des clones -->
+    <div class="card shadow mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Performances des clones</h5>
+        </div>
+        <div class="card-body">
+            <canvas id="clonePerformanceChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Créer Clone -->
+<div class="modal fade" id="createCloneModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="createCloneForm" action="{{ url_for('admin_create_clone') }}" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Créer un nouveau clone IA</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="clone_name" class="form-label">Nom du clone</label>
+                        <input type="text" class="form-control" id="clone_name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="specialization" class="form-label">Spécialisation</label>
+                        <select class="form-select" id="specialization" name="specialization">
+                            <option value="general">Général</option>
+                            <option value="network">Réseau</option>
+                            <option value="protocol">Protocoles</option>
+                            <option value="vulnerability">Vulnérabilités</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="learning_rate" class="form-label">Taux d'apprentissage</label>
+                        <input type="range" class="form-range" id="learning_rate" name="learning_rate" min="0.01" max="1" step="0.01" value="0.5">
+                        <div class="d-flex justify-content-between">
+                            <small>Faible</small>
+                            <small id="learning_rate_value">0.5</small>
+                            <small>Élevé</small>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confidence_threshold" class="form-label">Seuil de confiance</label>
+                        <input type="range" class="form-range" id="confidence_threshold" name="confidence_threshold" min="0.1" max="0.99" step="0.01" value="0.7">
+                        <div class="d-flex justify-content-between">
+                            <small>Souple</small>
+                            <small id="confidence_threshold_value">0.7</small>
+                            <small>Strict</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Créer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Modifier Clone -->
+<div class="modal fade" id="editCloneModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="editCloneForm" action="{{ url_for('admin_update_clone', clone_id='placeholder') }}" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Modifier le clone</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="edit_name" class="form-label">Nom du clone</label>
+                        <input type="text" class="form-control" id="edit_name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_learning_rate" class="form-label">Taux d'apprentissage</label>
+                        <input type="range" class="form-range" id="edit_learning_rate" name="learning_rate" min="0.01" max="1" step="0.01">
+                        <div class="d-flex justify-content-between">
+                            <small>Faible</small>
+                            <small id="edit_learning_rate_value">0.5</small>
+                            <small>Élevé</small>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_confidence_threshold" class="form-label">Seuil de confiance</label>
+                        <input type="range" class="form-range" id="edit_confidence_threshold" name="confidence_threshold" min="0.1" max="0.99" step="0.01">
+                        <div class="d-flex justify-content-between">
+                            <small>Souple</small>
+                            <small id="edit_confidence_threshold_value">0.7</small>
+                            <small>Strict</small>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_status" class="form-label">Statut</label>
+                        <select class="form-select" id="edit_status" name="status">
+                            <option value="active">Actif</option>
+                            <option value="paused">En pause</option>
+                            <option value="stopped">Arrêté</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Entraîner Clone -->
+<div class="modal fade" id="trainCloneModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="trainCloneForm" action="{{ url_for('admin_train_clone', clone_id='placeholder') }}" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Entraîner le clone</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Vous allez entraîner le clone <strong id="train_clone_name"></strong>.
+                    </div>
+                    <div class="mb-3">
+                        <label for="datasets" class="form-label">Jeux de données</label>
+                        <select class="form-select" id="datasets" name="datasets" multiple>
+                            <option value="network_traffic">Trafic réseau</option>
+                            <option value="security_alerts">Alertes de sécurité</option>
+                            <option value="vulnerabilities">Base de vulnérabilités</option>
+                            <option value="protocols">Analyse de protocoles</option>
+                            <option value="device_profiles">Profils d'appareils</option>
+                        </select>
+                        <small class="form-text text-muted">Maintenir Ctrl pour sélectionner plusieurs jeux de données</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="epochs" class="form-label">Époques d'entraînement</label>
+                        <input type="range" class="form-range" id="epochs" name="epochs" min="5" max="50" step="1" value="10">
+                        <div class="d-flex justify-content-between">
+                            <small>Rapide (5)</small>
+                            <small id="epochs_value">10</small>
+                            <small>Approfondi (50)</small>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="batch_size" class="form-label">Taille de lot</label>
+                        <select class="form-select" id="batch_size" name="batch_size">
+                            <option value="16">Petit (16)</option>
+                            <option value="32" selected>Moyen (32)</option>
+                            <option value="64">Grand (64)</option>
+                            <option value="128">Très grand (128)</option>
+                        </select>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="preserve_previous" name="preserve_previous" checked>
+                        <label class="form-check-label" for="preserve_previous">Conserver les connaissances précédentes</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-graduation-cap me-2"></i>Démarrer l'entraînement
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Supprimer Clone -->
+<div class="modal fade" id="deleteCloneModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="deleteCloneForm" action="{{ url_for('admin_delete_clone', clone_id='placeholder') }}" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmer la suppression</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Vous êtes sur le point de supprimer le clone <strong id="delete_clone_name"></strong>.
+                    </div>
+                    <p>Cette action est irréversible. Toutes les données associées à ce clone seront définitivement perdues.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>Supprimer définitivement
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Détails Clone -->
+<div class="modal fade" id="cloneDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Détails du clone</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="cloneDetailsContent">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                        <p class="mt-2">Chargement des détails...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Mise à jour des valeurs des sliders
+    document.addEventListener('DOMContentLoaded', function() {
+        // Sliders du formulaire de création
+        const learningRateSlider = document.getElementById('learning_rate');
+        const learningRateValue = document.getElementById('learning_rate_value');
+        const confidenceThresholdSlider = document.getElementById('confidence_threshold');
+        const confidenceThresholdValue = document.getElementById('confidence_threshold_value');
+        const epochsSlider = document.getElementById('epochs');
+        const epochsValue = document.getElementById('epochs_value');
+        
+        if (learningRateSlider && learningRateValue) {
+            learningRateSlider.addEventListener('input', function() {
+                learningRateValue.textContent = this.value;
+            });
+        }
+        
+        if (confidenceThresholdSlider && confidenceThresholdValue) {
+            confidenceThresholdSlider.addEventListener('input', function() {
+                confidenceThresholdValue.textContent = this.value;
+            });
+        }
+        
+        if (epochsSlider && epochsValue) {
+            epochsSlider.addEventListener('input', function() {
+                epochsValue.textContent = this.value;
+            });
+        }
+        
+        // Sliders du formulaire d'édition
+        const editLearningRateSlider = document.getElementById('edit_learning_rate');
+        const editLearningRateValue = document.getElementById('edit_learning_rate_value');
+        const editConfidenceThresholdSlider = document.getElementById('edit_confidence_threshold');
+        const editConfidenceThresholdValue = document.getElementById('edit_confidence_threshold_value');
+        
+        if (editLearningRateSlider && editLearningRateValue) {
+            editLearningRateSlider.addEventListener('input', function() {
+                editLearningRateValue.textContent = this.value;
+            });
+        }
+        
+        if (editConfidenceThresholdSlider && editConfidenceThresholdValue) {
+            editConfidenceThresholdSlider.addEventListener('input', function() {
+                editConfidenceThresholdValue.textContent = this.value;
+            });
+        }
+        
+        // Modal d'édition
+        const editCloneModal = document.getElementById('editCloneModal');
+        if (editCloneModal) {
+            editCloneModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const cloneId = button.getAttribute('data-clone-id');
+                const cloneName = button.getAttribute('data-clone-name');
+                const learningRate = button.getAttribute('data-learning-rate');
+                const confidenceThreshold = button.getAttribute('data-confidence-threshold');
+                const status = button.getAttribute('data-status');
+                
+                const form = document.getElementById('editCloneForm');
+                form.setAttribute('action', '{{ url_for("admin_update_clone", clone_id="placeholder") }}'.replace('placeholder', cloneId));
+                
+                document.getElementById('edit_name').value = cloneName;
+                document.getElementById('edit_learning_rate').value = learningRate;
+                document.getElementById('edit_learning_rate_value').textContent = learningRate;
+                document.getElementById('edit_confidence_threshold').value = confidenceThreshold;
+                document.getElementById('edit_confidence_threshold_value').textContent = confidenceThreshold;
+                document.getElementById('edit_status').value = status;
+            });
+        }
+        
+        // Modal d'entraînement
+        const trainCloneModal = document.getElementById('trainCloneModal');
+        if (trainCloneModal) {
+            trainCloneModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const cloneId = button.getAttribute('data-clone-id');
+                const cloneName = button.getAttribute('data-clone-name');
+                
+                const form = document.getElementById('trainCloneForm');
+                form.setAttribute('action', '{{ url_for("admin_train_clone", clone_id="placeholder") }}'.replace('placeholder', cloneId));
+                
+                document.getElementById('train_clone_name').textContent = cloneName;
+            });
+        }
+        
+        // Modal de suppression
+        const deleteCloneModal = document.getElementById('deleteCloneModal');
+        if (deleteCloneModal) {
+            deleteCloneModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const cloneId = button.getAttribute('data-clone-id');
+                const cloneName = button.getAttribute('data-clone-name');
+                
+                const form = document.getElementById('deleteCloneForm');
+                form.setAttribute('action', '{{ url_for("admin_delete_clone", clone_id="placeholder") }}'.replace('placeholder', cloneId));
+                
+                document.getElementById('delete_clone_name').textContent = cloneName;
+            });
+        }
+        
+        // Graphique de performances
+        const ctx = document.getElementById('clonePerformanceChart');
+        if (ctx) {
+            const cloneNames = [{% for clone in clones %}"{{ clone.name }}"{% if not loop.last %}, {% endif %}{% endfor %}];
+            const accuracyData = [{% for clone in clones %}{{ clone.performance_metrics.accuracy }}{% if not loop.last %}, {% endif %}{% endfor %}];
+            const precisionData = [{% for clone in clones %}{{ clone.performance_metrics.precision }}{% if not loop.last %}, {% endif %}{% endfor %}];
+            const recallData = [{% for clone in clones %}{{ clone.performance_metrics.recall }}{% if not loop.last %}, {% endif %}{% endfor %}];
+            const f1ScoreData = [{% for clone in clones %}{{ clone.performance_metrics.f1_score }}{% if not loop.last %}, {% endif %}{% endfor %}];
+            
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: cloneNames,
+                    datasets: [
+                        {
+                            label: 'Précision',
+                            data: accuracyData,
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgb(75, 192, 192)',
+                            pointBackgroundColor: 'rgb(75, 192, 192)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgb(75, 192, 192)'
+                        },
+                        {
+                            label: 'Exactitude',
+                            data: precisionData,
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            borderColor: 'rgb(54, 162, 235)',
+                            pointBackgroundColor: 'rgb(54, 162, 235)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgb(54, 162, 235)'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    elements: {
+                        line: {
+                            borderWidth: 3
+                        }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 1
+                        }
+                    }
+                }
+            });
+        }
+    });
+    
+    // Fonction pour voir les détails d'un clone
+    function viewCloneDetails(cloneId) {
+        const modal = new bootstrap.Modal(document.getElementById('cloneDetailsModal'));
+        modal.show();
+        
+        // Simulation de chargement
+        setTimeout(() => {
+            // Appel AJAX pour récupérer les détails
+            fetch(`/api/admin/clones/${cloneId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const clone = data.clone;
+                        let html = `
+                            <div class="card mb-3">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0">${clone.name}</h5>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush mb-3">
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>ID:</span>
+                                            <span class="text-muted">${clone.clone_id}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Spécialisation:</span>
+                                            <span class="badge bg-info">${clone.specialization}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Statut:</span>
+                                            <span class="badge ${getStatusBadgeClass(clone.status)}">${clone.status}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Version:</span>
+                                            <span>${clone.version}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Taux d'apprentissage:</span>
+                                            <span>${clone.learning_rate}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Seuil de confiance:</span>
+                                            <span>${clone.confidence_threshold}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Date de création:</span>
+                                            <span>${formatDate(clone.creation_date)}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Dernière activité:</span>
+                                            <span>${formatDate(clone.last_activity)}</span>
+                                        </li>
+                                    </ul>
+                                    
+                                    <h6 class="mb-3">Métriques de performance</h6>
+                                    <div class="progress-stacked mb-3">
+                                        <div class="progress" role="progressbar" style="width: ${clone.performance_metrics.accuracy * 100}%">
+                                            <div class="progress-bar bg-success">Précision: ${(clone.performance_metrics.accuracy * 100).toFixed(1)}%</div>
+                                        </div>
+                                    </div>
+                                    <div class="progress-stacked mb-3">
+                                        <div class="progress" role="progressbar" style="width: ${clone.performance_metrics.precision * 100}%">
+                                            <div class="progress-bar bg-info">Exactitude: ${(clone.performance_metrics.precision * 100).toFixed(1)}%</div>
+                                        </div>
+                                    </div>
+                                    <div class="progress-stacked mb-3">
+                                        <div class="progress" role="progressbar" style="width: ${clone.performance_metrics.recall * 100}%">
+                                            <div class="progress-bar bg-warning">Rappel: ${(clone.performance_metrics.recall * 100).toFixed(1)}%</div>
+                                        </div>
+                                    </div>
+                                    <div class="progress-stacked mb-3">
+                                        <div class="progress" role="progressbar" style="width: ${clone.performance_metrics.f1_score * 100}%">
+                                            <div class="progress-bar bg-danger">Score F1: ${(clone.performance_metrics.f1_score * 100).toFixed(1)}%</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <strong>Requêtes traitées:</strong> ${clone.performance_metrics.requests_processed}
+                                        </div>
+                                        <div>
+                                            <strong>Temps de réponse moyen:</strong> ${clone.performance_metrics.average_response_time.toFixed(3)}s
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>`;
+                            
+                        if (clone.training_sessions && clone.training_sessions.length > 0) {
+                            html += `
+                                <h6 class="mb-3">Sessions d'entraînement</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Statut</th>
+                                                <th>Amélioration</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>`;
+                                        
+                            clone.training_sessions.forEach(session => {
+                                html += `
+                                    <tr>
+                                        <td>${formatDate(session.start_time)}</td>
+                                        <td>
+                                            <span class="badge ${session.status === 'completed' ? 'bg-success' : session.status === 'in_progress' ? 'bg-warning text-dark' : 'bg-danger'}">
+                                                ${session.status}
+                                            </span>
+                                        </td>
+                                        <td>${session.results && session.results.improvement ? session.results.improvement : '-'}</td>
+                                    </tr>`;
+                            });
+                            
+                            html += `
+                                        </tbody>
+                                    </table>
+                                </div>`;
+                        }
+                        
+                        document.getElementById('cloneDetailsContent').innerHTML = html;
+                    } else {
+                        document.getElementById('cloneDetailsContent').innerHTML = `
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                Erreur lors du chargement des détails: ${data.error}
+                            </div>`;
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('cloneDetailsContent').innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            Erreur lors du chargement des détails: ${error.message}
+                        </div>`;
+                });
+        }, 500);
+    }
+    
+    // Formater une date
+    function formatDate(dateString) {
+        if (!dateString) return '-';
+        const date = new Date(dateString);
+        return date.toLocaleString();
+    }
+    
+    // Récupérer la classe de badge pour le statut
+    function getStatusBadgeClass(status) {
+        switch (status) {
+            case 'active': return 'bg-success';
+            case 'training': return 'bg-warning text-dark';
+            case 'paused': return 'bg-info';
+            case 'stopped': return 'bg-danger';
+            default: return 'bg-secondary';
+        }
+    }
+</script>
+{% endblock %}

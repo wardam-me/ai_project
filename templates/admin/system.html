@@ -398,3 +398,627 @@
     });
 </script>
 {% endblock %}
+{% extends "base.html" %}
+
+{% block title %}Administration Système - NetSecure Pro{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h1 class="mb-4">Administration Système</h1>
+    
+    <!-- État du système -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                CPU</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="cpu-usage">0%</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-microchip fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Mémoire</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="memory-usage">0%</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-memory fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Espace Disque</div>
+                            <div class="row no-gutters align-items-center">
+                                <div class="col-auto">
+                                    <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800" id="disk-usage">0%</div>
+                                </div>
+                                <div class="col">
+                                    <div class="progress progress-sm mr-2">
+                                        <div class="progress-bar bg-info" role="progressbar" id="disk-progress"
+                                            style="width: 0%" aria-valuenow="0" aria-valuemin="0"
+                                            aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-hdd fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Temps de fonctionnement</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="uptime">0j 0h 0m</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Journaux système -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Journaux système</h6>
+            <div>
+                <button class="btn btn-sm btn-primary" id="refresh-logs">
+                    <i class="fas fa-sync-alt"></i> Actualiser
+                </button>
+                <select class="form-select form-select-sm d-inline-block w-auto ms-2" id="log-level">
+                    <option value="all">Tous</option>
+                    <option value="info">Info</option>
+                    <option value="warning">Avertissement</option>
+                    <option value="error">Erreur</option>
+                    <option value="debug">Debug</option>
+                </select>
+                <select class="form-select form-select-sm d-inline-block w-auto ms-2" id="log-lines">
+                    <option value="50">50 lignes</option>
+                    <option value="100">100 lignes</option>
+                    <option value="200">200 lignes</option>
+                    <option value="500">500 lignes</option>
+                </select>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="log-container bg-dark text-light p-3 rounded" style="height: 300px; overflow-y: auto; font-family: monospace;">
+                <pre id="system-logs">Chargement des journaux...</pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Contrôle des services -->
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Services système</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Service</th>
+                                    <th>État</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Serveur Web</td>
+                                    <td id="web-server-status">
+                                        <span class="badge bg-success">Actif</span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-warning" id="restart-web-server">
+                                            <i class="fas fa-sync-alt"></i> Redémarrer
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Base de données</td>
+                                    <td id="database-status">
+                                        <span class="badge bg-success">Actif</span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-warning" id="restart-database">
+                                            <i class="fas fa-sync-alt"></i> Redémarrer
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Activité IA automatique</td>
+                                    <td id="ai-activity-status">
+                                        <span class="badge bg-secondary">Inactif</span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success" id="start-ai-activity">
+                                            <i class="fas fa-play"></i> Démarrer
+                                        </button>
+                                        <button class="btn btn-sm btn-danger" id="stop-ai-activity" disabled>
+                                            <i class="fas fa-stop"></i> Arrêter
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Moniteur de mémoire</td>
+                                    <td id="memory-monitor-status">
+                                        <span class="badge bg-success">Actif</span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-warning" id="restart-memory-monitor">
+                                            <i class="fas fa-sync-alt"></i> Redémarrer
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Maintenance du système -->
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Maintenance</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h5>Sauvegarde</h5>
+                        <p>Créez une sauvegarde complète de toutes les données de l'application.</p>
+                        <div class="d-flex">
+                            <button class="btn btn-primary" id="create-backup">
+                                <i class="fas fa-download me-2"></i>Créer une sauvegarde
+                            </button>
+                            <div class="ms-2" id="backup-status"></div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="mb-4">
+                        <h5>Nettoyage de la base de données</h5>
+                        <p>Supprimez les données temporaires et optimisez la base de données.</p>
+                        <button class="btn btn-info" id="clean-database">
+                            <i class="fas fa-broom me-2"></i>Nettoyer la base de données
+                        </button>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div>
+                        <h5>Vérification de l'intégrité</h5>
+                        <p>Vérifiez l'intégrité de toutes les données et fichiers du système.</p>
+                        <button class="btn btn-warning" id="check-integrity">
+                            <i class="fas fa-check-circle me-2"></i>Vérifier l'intégrité
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques d'utilisation -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Statistiques d'utilisation</h6>
+        </div>
+        <div class="card-body">
+            <div class="chart-container" style="position: relative; height:300px;">
+                <canvas id="usageChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation pour les actions sensibles -->
+<div class="modal fade" id="confirmActionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmActionTitle">Confirmer l'action</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="confirmActionBody">
+                Êtes-vous sûr de vouloir effectuer cette action ?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-danger" id="confirmActionButton">Confirmer</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Simulation des données système
+        function updateSystemStats() {
+            // Simuler les statistiques du système
+            const cpuUsage = Math.floor(Math.random() * 30) + 10; // 10-40%
+            const memoryUsage = Math.floor(Math.random() * 40) + 20; // 20-60%
+            const diskUsage = Math.floor(Math.random() * 30) + 40; // 40-70%
+            const uptimeHours = Math.floor(Math.random() * 240) + 24; // 24-264 heures
+            
+            // Calculer le temps de fonctionnement en jours, heures, minutes
+            const days = Math.floor(uptimeHours / 24);
+            const hours = uptimeHours % 24;
+            const minutes = Math.floor(Math.random() * 60);
+            
+            // Mettre à jour l'interface
+            document.getElementById('cpu-usage').textContent = `${cpuUsage}%`;
+            document.getElementById('memory-usage').textContent = `${memoryUsage}%`;
+            document.getElementById('disk-usage').textContent = `${diskUsage}%`;
+            document.getElementById('disk-progress').style.width = `${diskUsage}%`;
+            document.getElementById('disk-progress').setAttribute('aria-valuenow', diskUsage);
+            document.getElementById('uptime').textContent = `${days}j ${hours}h ${minutes}m`;
+            
+            // Mettre à jour les données du graphique
+            addDataPoint(usageChart, cpuUsage, memoryUsage, diskUsage);
+        }
+        
+        // Simulation des journaux système
+        function fetchSystemLogs() {
+            const logLevel = document.getElementById('log-level').value;
+            const logLines = document.getElementById('log-lines').value;
+            
+            // Simuler un chargement
+            document.getElementById('system-logs').textContent = 'Chargement des journaux...';
+            
+            // Simuler un délai d'API
+            setTimeout(() => {
+                const logTypes = {
+                    'info': { prefix: 'INFO', color: '\x1b[32m' }, // Vert
+                    'warning': { prefix: 'WARNING', color: '\x1b[33m' }, // Jaune
+                    'error': { prefix: 'ERROR', color: '\x1b[31m' }, // Rouge
+                    'debug': { prefix: 'DEBUG', color: '\x1b[36m' } // Cyan
+                };
+                
+                const filteredTypes = logLevel === 'all' 
+                    ? Object.keys(logTypes) 
+                    : [logLevel];
+                
+                // Générer des logs aléatoires
+                let logs = '';
+                for (let i = 0; i < logLines; i++) {
+                    const now = new Date();
+                    const timestamp = now.toISOString().replace('T', ' ').substr(0, 19);
+                    const randomType = filteredTypes[Math.floor(Math.random() * filteredTypes.length)];
+                    const logInfo = logTypes[randomType];
+                    
+                    // Générer un message de log aléatoire
+                    let message = '';
+                    switch (randomType) {
+                        case 'info':
+                            message = getRandomElement([
+                                'Requête traitée avec succès',
+                                'Utilisateur connecté',
+                                'Module IA chargé avec succès',
+                                'Analyse de sécurité terminée',
+                                'Cache mis à jour',
+                                'Réponse de l\'API reçue'
+                            ]);
+                            break;
+                        case 'warning':
+                            message = getRandomElement([
+                                'Tentative de connexion échouée',
+                                'Cache expiré, régénération nécessaire',
+                                'Utilisation élevée de la mémoire',
+                                'Ralentissement des réponses API',
+                                'Requête traitée mais avec des erreurs mineures',
+                                'Données incomplètes reçues'
+                            ]);
+                            break;
+                        case 'error':
+                            message = getRandomElement([
+                                'Échec de connexion à la base de données',
+                                'Exception lors du traitement de la requête',
+                                'Erreur lors de la génération du rapport',
+                                'Module IA non disponible',
+                                'Timeout de la requête API',
+                                'Permissions insuffisantes pour l\'opération'
+                            ]);
+                            break;
+                        case 'debug':
+                            message = getRandomElement([
+                                'Paramètres de la requête: {id: 123, user: "admin"}',
+                                'Temps d\'exécution: 234ms',
+                                'Cache hit ratio: 76%',
+                                'Modèle IA chargé en 345ms',
+                                'SQLAlchemy session initialized',
+                                'Route appelée: /api/security/analyze'
+                            ]);
+                            break;
+                    }
+                    
+                    // Ajouter le log à la liste
+                    logs += `${timestamp} - ${logInfo.color}${logInfo.prefix}\x1b[0m - [app.${getRandomElement(['routes', 'models', 'api', 'security', 'auth', 'ai'])}] ${message}\n`;
+                }
+                
+                document.getElementById('system-logs').textContent = logs;
+            }, 500);
+        }
+        
+        // Simuler les actions de service
+        function setupServiceControls() {
+            // Redémarrage du serveur web
+            document.getElementById('restart-web-server').addEventListener('click', function() {
+                showConfirmModal(
+                    'Redémarrer le serveur web',
+                    'Le serveur web sera temporairement indisponible pendant le redémarrage. Êtes-vous sûr de vouloir continuer ?',
+                    function() {
+                        simulateServiceAction('web-server-status', 'Redémarrage du serveur web...');
+                    }
+                );
+            });
+            
+            // Redémarrage de la base de données
+            document.getElementById('restart-database').addEventListener('click', function() {
+                showConfirmModal(
+                    'Redémarrer la base de données',
+                    'La base de données sera temporairement indisponible pendant le redémarrage. Toutes les connexions actives seront fermées. Êtes-vous sûr de vouloir continuer ?',
+                    function() {
+                        simulateServiceAction('database-status', 'Redémarrage de la base de données...');
+                    }
+                );
+            });
+            
+            // Gestion de l'activité IA
+            document.getElementById('start-ai-activity').addEventListener('click', function() {
+                document.getElementById('ai-activity-status').innerHTML = '<span class="badge bg-success">Actif</span>';
+                this.disabled = true;
+                document.getElementById('stop-ai-activity').disabled = false;
+                showToast('Activité IA automatique démarrée avec succès');
+            });
+            
+            document.getElementById('stop-ai-activity').addEventListener('click', function() {
+                document.getElementById('ai-activity-status').innerHTML = '<span class="badge bg-secondary">Inactif</span>';
+                this.disabled = true;
+                document.getElementById('start-ai-activity').disabled = false;
+                showToast('Activité IA automatique arrêtée avec succès');
+            });
+            
+            // Redémarrage du moniteur de mémoire
+            document.getElementById('restart-memory-monitor').addEventListener('click', function() {
+                simulateServiceAction('memory-monitor-status', 'Redémarrage du moniteur de mémoire...');
+            });
+        }
+        
+        // Simuler les actions de maintenance
+        function setupMaintenanceControls() {
+            // Création de sauvegarde
+            document.getElementById('create-backup').addEventListener('click', function() {
+                document.getElementById('backup-status').innerHTML = '<div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Chargement...</span></div> <span>Création de la sauvegarde en cours...</span>';
+                
+                // Simuler un délai de création de sauvegarde
+                setTimeout(() => {
+                    document.getElementById('backup-status').innerHTML = '<span class="text-success"><i class="fas fa-check-circle"></i> Sauvegarde créée avec succès</span>';
+                    showToast('Sauvegarde créée avec succès');
+                    
+                    // Effacer le message après quelques secondes
+                    setTimeout(() => {
+                        document.getElementById('backup-status').innerHTML = '';
+                    }, 3000);
+                }, 2000);
+            });
+            
+            // Nettoyage de la base de données
+            document.getElementById('clean-database').addEventListener('click', function() {
+                showConfirmModal(
+                    'Nettoyer la base de données',
+                    'Cette opération va supprimer les données temporaires et optimiser la base de données. L\'application pourrait être plus lente pendant l\'opération. Voulez-vous continuer ?',
+                    function() {
+                        showToast('Nettoyage de la base de données en cours...', 'info');
+                        
+                        // Simuler un délai d'opération
+                        setTimeout(() => {
+                            showToast('Nettoyage de la base de données terminé avec succès', 'success');
+                        }, 1500);
+                    }
+                );
+            });
+            
+            // Vérification d'intégrité
+            document.getElementById('check-integrity').addEventListener('click', function() {
+                showToast('Vérification de l\'intégrité en cours...', 'info');
+                
+                // Simuler un délai de vérification
+                setTimeout(() => {
+                    showToast('Vérification de l\'intégrité terminée : aucun problème détecté', 'success');
+                }, 2000);
+            });
+        }
+        
+        // Initialiser le graphique
+        const ctxUsage = document.getElementById('usageChart').getContext('2d');
+        const usageChart = new Chart(ctxUsage, {
+            type: 'line',
+            data: {
+                labels: Array(10).fill('').map((_, i) => (new Date(Date.now() - (9 - i) * 60000)).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})),
+                datasets: [
+                    {
+                        label: 'CPU',
+                        data: Array(10).fill(0).map(() => Math.floor(Math.random() * 30) + 10),
+                        borderColor: 'rgba(78, 115, 223, 1)',
+                        backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                        borderWidth: 2,
+                        pointRadius: 3,
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: 'Mémoire',
+                        data: Array(10).fill(0).map(() => Math.floor(Math.random() * 40) + 20),
+                        borderColor: 'rgba(28, 200, 138, 1)',
+                        backgroundColor: 'rgba(28, 200, 138, 0.1)',
+                        borderWidth: 2,
+                        pointRadius: 3,
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: 'Disque',
+                        data: Array(10).fill(0).map(() => Math.floor(Math.random() * 30) + 40),
+                        borderColor: 'rgba(54, 185, 204, 1)',
+                        backgroundColor: 'rgba(54, 185, 204, 0.1)',
+                        borderWidth: 2,
+                        pointRadius: 3,
+                        tension: 0.3,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.y + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Ajouter un point de données au graphique
+        function addDataPoint(chart, cpu, memory, disk) {
+            // Ajouter un nouveau timestamp
+            const now = new Date();
+            chart.data.labels.push(now.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}));
+            
+            // Limiter à 10 points de données
+            if (chart.data.labels.length > 10) {
+                chart.data.labels.shift();
+            }
+            
+            // Ajouter les nouvelles valeurs
+            chart.data.datasets[0].data.push(cpu);
+            chart.data.datasets[1].data.push(memory);
+            chart.data.datasets[2].data.push(disk);
+            
+            // Limiter chaque dataset à 10 points
+            chart.data.datasets.forEach(dataset => {
+                if (dataset.data.length > 10) {
+                    dataset.data.shift();
+                }
+            });
+            
+            // Mettre à jour le graphique
+            chart.update();
+        }
+        
+        // Simuler une action de service
+        function simulateServiceAction(statusElementId, toastMessage) {
+            const statusElement = document.getElementById(statusElementId);
+            statusElement.innerHTML = '<span class="badge bg-warning text-dark">Redémarrage...</span>';
+            showToast(toastMessage, 'info');
+            
+            // Simuler un délai de redémarrage
+            setTimeout(() => {
+                statusElement.innerHTML = '<span class="badge bg-success">Actif</span>';
+                showToast(toastMessage.replace('...', ' terminé avec succès'), 'success');
+            }, 1500);
+        }
+        
+        // Afficher une notification toast
+        function showToast(message, type = 'success') {
+            // Ici, vous pourriez utiliser une bibliothèque Toast ou créer une notification personnalisée
+            // Pour cette démo, on utilise une alerte simple
+            alert(message);
+        }
+        
+        // Afficher une modal de confirmation
+        function showConfirmModal(title, message, confirmCallback) {
+            const modal = new bootstrap.Modal(document.getElementById('confirmActionModal'));
+            document.getElementById('confirmActionTitle').textContent = title;
+            document.getElementById('confirmActionBody').textContent = message;
+            
+            // Configurer le bouton de confirmation
+            const confirmButton = document.getElementById('confirmActionButton');
+            const oldClickHandler = confirmButton.onclick;
+            confirmButton.onclick = function() {
+                confirmCallback();
+                modal.hide();
+                // Restaurer l'ancien gestionnaire ou supprimer celui-ci
+                confirmButton.onclick = oldClickHandler;
+            };
+            
+            modal.show();
+        }
+        
+        // Utilitaire pour récupérer un élément aléatoire d'un tableau
+        function getRandomElement(array) {
+            return array[Math.floor(Math.random() * array.length)];
+        }
+        
+        // Initialiser les contrôles et événements
+        document.getElementById('refresh-logs').addEventListener('click', fetchSystemLogs);
+        document.getElementById('log-level').addEventListener('change', fetchSystemLogs);
+        document.getElementById('log-lines').addEventListener('change', fetchSystemLogs);
+        
+        setupServiceControls();
+        setupMaintenanceControls();
+        
+        // Charger les données initiales
+        updateSystemStats();
+        fetchSystemLogs();
+        
+        // Mettre à jour périodiquement
+        setInterval(updateSystemStats, 5000);
+    });
+</script>
+{% endblock %}
