@@ -9,7 +9,7 @@ run = ["sh", "-c", "python main.py"]
 build = ["sh", "-c", "pip install -r requirements.txt"]
 
 [workflows]
-runButton = "Project"
+runButton = "Test Mobile IA"
 
 [[workflows.workflow]]
 name = "Project"
@@ -104,6 +104,14 @@ task = "packager.installForAll"
 task = "shell.exec"
 args = "python main.py"
 waitForPort = 5000
+
+[[workflows.workflow]]
+name = "Test Mobile IA"
+author = 39699562
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python test_mobile_ia_auto.py"
 
 [[ports]]
 localPort = 5000
