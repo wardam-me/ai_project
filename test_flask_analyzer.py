@@ -1,230 +1,200 @@
-
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Script de test pour l'analyseur de projets Flask
+Test pour l'analyseur de projets Flask avec IA
 """
 import os
+import sys
+import unittest
+import tempfile
+import shutil
 import json
 import logging
-import unittest
-from flask_analyzer import FlaskProjectAnalyzer
 
 # Configuration du logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Import du module à tester
+try:
+    from flask_project_analyzer import FlaskProjectAIAnalyzer
+    logger.info("Module d'analyseur Flask importé avec succès")
+except ImportError as e:
+    logger.error(f"Erreur lors de l'importation du module flask_project_analyzer: {e}")
+    sys.exit(1)
+
 class TestFlaskAnalyzer(unittest.TestCase):
-    """Tests unitaires pour l'analyseur de projets Flask"""
-    
+    """Tests pour l'analyseur de projets Flask"""
+
     def setUp(self):
-        """Initialisation des tests"""
-        self.analyzer = FlaskProjectAnalyzer()
-        
-        # Vérifier si nous sommes dans un projet Flask
-        self.is_flask_project = False
-        for file in os.listdir('.'):
-            if file.endswith('.py'):
-                try:
-                    with open(file, 'r', encoding='utf-8') as f:
-                        content = f.read()
-                        if 'Flask(' in content:
-                            self.is_flask_project = True
-                            break
-                except Exception:
-                    pass
-        
-        logger.info(f"Tests initialisés, projet Flask détecté: {self.is_flask_project}")
-    
-    def test_project_structure(self):
-        """Test de l'analyse de la structure du projet"""
-        structure = self.analyzer.analyze_project_structure()
-        
-        self.assertIsNotNone(structure)
-        self.assertIn('directories', structure)
-        self.assertIn('files', structure)
-        self.assertIn('file_types', structure)
-        
-        logger.info(f"Structure du projet analysée: {len(structure['files'])} fichiers")
-    
-    def test_interactions(self):
-        """Test de l'analyse des interactions"""
-        # D'abord analyser la structure
-        self.analyzer.analyze_project_structure()
-        
-        # Ensuite analyser les interactions
-        interactions = self.analyzer.analyze_interactions()
-        
-        self.assertIsNotNone(interactions)
-        self.assertIn('imports', interactions)
-        self.assertIn('routes', interactions)
-        self.assertIn('models', interactions)
-        
-        logger.info(f"Interactions analysées: {len(interactions['routes'])} routes")
-    
-    def test_error_detection(self):
-        """Test de la détection des erreurs"""
-        # D'abord analyser la structure
-        self.analyzer.analyze_project_structure()
-        
-        # Analyser les interactions
-        self.analyzer.analyze_interactions()
-        
-        # Détecter les erreurs
-        errors = self.analyzer.detect_errors()
-        
-        self.assertIsNotNone(errors)
-        self.assertIsInstance(errors, list)
-        
-        if errors:
-            for error in errors:
-                self.assertIn('type', error)
-                self.assertIn('severity', error)
-                self.assertIn('description', error)
-        
-        logger.info(f"Erreurs détectées: {len(errors)}")
-    
-    def test_duplicates(self):
-        """Test de la détection des fichiers dupliqués"""
-        # D'abord analyser la structure
-        self.analyzer.analyze_project_structure()
-        
-        # Détecter les doublons
-        duplicates = self.analyzer.find_duplicates()
-        
-        self.assertIsNotNone(duplicates)
-        self.assertIsInstance(duplicates, list)
-        
-        if duplicates:
-            for duplicate in duplicates:
-                self.assertIn('type', duplicate)
-                self.assertIn('file1', duplicate)
-                self.assertIn('file2', duplicate)
-        
-        logger.info(f"Fichiers dupliqués détectés: {len(duplicates)}")
-    
-    def test_statistics(self):
-        """Test de la génération des statistiques"""
-        # Analyser le projet complet
-        self.analyzer.analyze_project_structure()
-        self.analyzer.analyze_interactions()
-        self.analyzer.detect_errors()
-        self.analyzer.find_duplicates()
-        
-        # Générer les statistiques
-        statistics = self.analyzer.generate_statistics()
-        
-        self.assertIsNotNone(statistics)
-        self.assertIn('file_count', statistics)
-        self.assertIn('error_count', statistics)
-        self.assertIn('duplicate_count', statistics)
-        
-        logger.info(f"Statistiques générées: {statistics['file_count']} fichiers")
-    
-    def test_recommendations(self):
-        """Test de la génération des recommandations"""
-        # Analyser le projet complet
-        self.analyzer.analyze_project_structure()
-        self.analyzer.analyze_interactions()
-        self.analyzer.detect_errors()
-        self.analyzer.find_duplicates()
-        self.analyzer.generate_statistics()
-        
-        # Générer les recommandations
-        recommendations = self.analyzer.generate_recommendations()
-        
-        self.assertIsNotNone(recommendations)
-        self.assertIsInstance(recommendations, list)
-        
-        if recommendations:
-            for rec in recommendations:
-                self.assertIn('priority', rec)
-                self.assertIn('title', rec)
-                self.assertIn('description', rec)
-        
-        logger.info(f"Recommandations générées: {len(recommendations)}")
-    
-    def test_complete_analysis(self):
-        """Test de l'analyse complète"""
-        # Analyser le projet complet en une seule fois
-        results = self.analyzer.analyze_project()
-        
-        self.assertIsNotNone(results)
-        self.assertIn('structure', results)
-        self.assertIn('interactions', results)
-        self.assertIn('errors', results)
-        self.assertIn('duplicates', results)
-        self.assertIn('statistics', results)
-        self.assertIn('recommendations', results)
-        self.assertIn('is_compliant', results)
-        
-        # Vérifier l'évaluation binaire
-        self.assertIn('result', results['is_compliant'])
-        self.assertIn(results['is_compliant']['result'], ['oui', 'non'])
-        
-        logger.info(f"Analyse complète terminée, conformité: {results['is_compliant']['result'].upper()}")
-        logger.info(f"Score de conformité: {results['is_compliant']['score']}/100")
-    
+        """Création d'un projet Flask de test"""
+        self.test_dir = tempfile.mkdtemp()
+
+        # Créer une structure de projet Flask simple
+        os.makedirs(os.path.join(self.test_dir, 'templates'))
+        os.makedirs(os.path.join(self.test_dir, 'static'))
+
+        # Créer app.py avec une clé secrète en dur (problème de sécurité)
+        with open(os.path.join(self.test_dir, 'app.py'), 'w') as f:
+            f.write("""
+from flask import Flask, render_template
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'une_cle_secrete_en_dur'  # Problème de sécurité
+
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+if __name__ == '__main__':
+    app.run(debug=True)  # Mode debug en production
+""")
+
+        # Créer routes.py
+        with open(os.path.join(self.test_dir, 'routes.py'), 'w') as f:
+            f.write("""
+from app import app
+from flask import render_template
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
+""")
+
+        # Créer models.py
+        with open(os.path.join(self.test_dir, 'models.py'), 'w') as f:
+            f.write("""
+from flask_sqlalchemy import SQLAlchemy
+from app import app
+
+db = SQLAlchemy(app)
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+""")
+
+        # Créer un template avec vulnérabilité XSS
+        with open(os.path.join(self.test_dir, 'templates', 'index.html'), 'w') as f:
+            f.write("""
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ma page Flask</title>
+</head>
+<body>
+    <h1>Bienvenue</h1>
+    <div>{{ message|safe }}</div>  <!-- Vulnérabilité XSS -->
+</body>
+</html>
+""")
+
+        # Créer un fichier dupliqué
+        with open(os.path.join(self.test_dir, 'routes_copy.py'), 'w') as f:
+            f.write("""
+from app import app
+from flask import render_template
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
+""")
+
+        logger.info(f"Projet de test créé dans {self.test_dir}")
+
     def tearDown(self):
-        """Nettoyage après les tests"""
-        pass
+        """Nettoyer les fichiers de test"""
+        shutil.rmtree(self.test_dir)
+        logger.info(f"Projet de test supprimé de {self.test_dir}")
+
+    def test_full_analysis(self):
+        """Test de l'analyse complète du projet"""
+        analyzer = FlaskProjectAIAnalyzer(project_dir=self.test_dir)
+        report = analyzer.run_full_analysis()
+
+        # Vérifier que le rapport existe
+        self.assertIsNotNone(report)
+
+        # Vérifier les méta-informations
+        self.assertEqual(report["meta"]["project_dir"], self.test_dir)
+
+        # Vérifier la structure
+        self.assertGreaterEqual(report["project"]["file_count"], 4)  # Au moins 4 fichiers
+        self.assertGreaterEqual(report["project"]["dir_count"], 2)   # Au moins 2 répertoires
+
+        # Vérifier la détection Flask
+        flask_specific = report["structure"]["flask_specific"]
+        self.assertEqual(flask_specific["app_file"], "app.py")
+
+        # Vérifier les problèmes de sécurité
+        security_issues = report["issues"]["security"]
+        self.assertGreaterEqual(security_issues["count"], 2)  # Au moins deux problèmes de sécurité
+
+        # Vérifier les duplications
+        duplicates = report["duplicates"]
+        self.assertGreaterEqual(duplicates["count"], 1)  # Au moins un groupe de duplication
+
+        # Vérifier que le fichier de rapport a été créé
+        report_file = os.path.join(self.test_dir, "flask_ai_analysis_report.json")
+        self.assertTrue(os.path.exists(report_file))
+
+        # Vérifier que le résumé a été créé
+        summary_file = os.path.join(self.test_dir, "flask_ai_analysis_summary.txt")
+        self.assertTrue(os.path.exists(summary_file))
+
+        logger.info("Test d'analyse complète réussi")
+
+    def test_security_detection(self):
+        """Test de la détection des problèmes de sécurité"""
+        analyzer = FlaskProjectAIAnalyzer(project_dir=self.test_dir)
+        analyzer._analyze_project_structure()
+        analyzer._detect_security_issues()
+
+        security_issues = analyzer.report["issues"]["security"]
+
+        # Vérifier la détection de la clé secrète en dur
+        hardcoded_secret = any(issue["type"] == "hardcoded_secret" for issue in security_issues["items"])
+        self.assertTrue(hardcoded_secret, "La clé secrète en dur n'a pas été détectée")
+
+        # Vérifier la détection du mode debug
+        debug_mode = any(issue["type"] == "debug_mode" for issue in security_issues["items"])
+        self.assertTrue(debug_mode, "Le mode debug en production n'a pas été détecté")
+
+        # Vérifier la détection de la vulnérabilité XSS
+        xss_vulnerability = any(issue["type"] == "xss_vulnerability" for issue in security_issues["items"])
+        self.assertTrue(xss_vulnerability, "La vulnérabilité XSS n'a pas été détectée")
+
+        logger.info("Test de détection de sécurité réussi")
+
+    def test_duplicate_detection(self):
+        """Test de la détection des fichiers dupliqués"""
+        analyzer = FlaskProjectAIAnalyzer(project_dir=self.test_dir)
+        analyzer._analyze_project_structure()
+        analyzer._detect_duplicate_files()
+
+        duplicates = analyzer.report["duplicates"]
+
+        # Vérifier qu'au moins un groupe de duplication a été détecté
+        self.assertGreaterEqual(duplicates["count"], 1, "Aucun fichier dupliqué n'a été détecté")
+
+        # Vérifier que routes.py et routes_copy.py sont détectés comme dupliqués
+        routes_detected = False
+        for group in duplicates["groups"]:
+            files = group["files"]
+            if "routes.py" in files and "routes_copy.py" in files:
+                routes_detected = True
+                break
+
+        self.assertTrue(routes_detected, "La duplication entre routes.py et routes_copy.py n'a pas été détectée")
+
+        logger.info("Test de détection de duplication réussi")
 
 
-def run_tests():
-    """Exécute les tests unitaires"""
-    logger.info("Démarrage des tests unitaires pour l'analyseur Flask...")
-    
-    # Exécution des tests
-    runner = unittest.TextTestRunner(verbosity=2)
-    test_suite = unittest.TestLoader().loadTestsFromTestCase(TestFlaskAnalyzer)
-    result = runner.run(test_suite)
-    
-    # Vérification des résultats
-    if result.wasSuccessful():
-        logger.info("Tous les tests ont réussi !")
-        return 0
-    else:
-        logger.error(f"Certains tests ont échoué: {len(result.failures)} échecs, {len(result.errors)} erreurs")
-        return 1
-
+def main():
+    """Fonction principale pour exécuter les tests"""
+    logger.info("Démarrage des tests de l'analyseur Flask...")
+    unittest.main()
 
 if __name__ == "__main__":
-    print("=" * 80)
-    print("TESTS DE L'ANALYSEUR DE PROJETS FLASK")
-    print("=" * 80)
-    print()
-    
-    # Exécution des tests unitaires
-    exit_code = run_tests()
-    
-    # Exécuter une analyse complète en mode démo
-    print("\n" + "=" * 80)
-    print("DÉMONSTRATION DE L'ANALYSEUR")
-    print("=" * 80)
-    
-    analyzer = FlaskProjectAnalyzer()
-    results = analyzer.analyze_project()
-    
-    # Sauvegarder les résultats pour référence
-    try:
-        with open('flask_analysis_results.json', 'w', encoding='utf-8') as f:
-            json.dump(results, f, indent=2, ensure_ascii=False)
-        print("Résultats d'analyse sauvegardés dans flask_analysis_results.json")
-    except Exception as e:
-        print(f"Erreur lors de la sauvegarde des résultats: {e}")
-    
-    # Afficher un résumé
-    print("\nRÉSUMÉ DE L'ANALYSE:")
-    print(f"- {results['statistics'].get('file_count', 0)} fichiers analysés")
-    print(f"- {results['statistics'].get('error_count', 0)} erreurs détectées")
-    print(f"- {results['statistics'].get('duplicate_count', 0)} fichiers dupliqués")
-    print(f"- {len(results.get('recommendations', []))} recommandations")
-    
-    # Afficher le résultat binaire
-    print("\nÉVALUATION BINAIRE:")
-    print(f"Résultat: {results['is_compliant']['result'].upper()}")
-    print(f"Score: {results['is_compliant']['score']}/100")
-    for reason in results['is_compliant']['justification']:
-        print(f"- {reason}")
-    
-    sys.exit(exit_code)
+    main()

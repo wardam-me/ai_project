@@ -2,6 +2,10 @@
 
 {% block title %}Tableau de Bord | NetSecure Pro{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/network-pulse.css') }}">
+{% endblock %}
+
 {% block content %}
 <div class="row mb-4">
     <div class="col-md-6">
@@ -136,15 +140,21 @@
             <div class="card-body">
                 <div class="row align-items-center">
                     <div class="col-md-3 text-center">
-                        <div class="d-inline-block position-relative mb-3">
+                        <div class="security-score-container mb-3">
+                            <!-- Les éléments d'animation seront ajoutés par JavaScript -->
                             <div class="security-score rounded-circle d-flex align-items-center justify-content-center 
                                 {{ 'security-score-high' if network_stats.overall_score >= 80 else 'security-score-medium' if network_stats.overall_score >= 50 else 'security-score-low' }}"
-                                style="width: 120px; height: 120px; font-size: 2.5em;">
+                                style="width: 120px; height: 120px; font-size: 2.5em; position: relative; z-index: 2;">
                                 {{ network_stats.overall_score }}
                             </div>
                         </div>
                         <h4>Score global</h4>
                         <p class="text-muted">Mis à jour {{ network_stats.last_updated|datetime }}</p>
+                        <div class="mt-2">
+                            <span class="badge bg-success network-status-badge">
+                                <i class="fas fa-heartbeat me-1 pulse-icon"></i> Réseau actif
+                            </span>
+                        </div>
                     </div>
                     <div class="col-md-9">
                         <div class="row mb-4">
