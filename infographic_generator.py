@@ -1523,9 +1523,15 @@ class InfographicGenerator:
         if not filename:
             filename = os.path.basename(source_path)
         
-        # Créer le répertoire de téléchargements s'il n'existe pas
-        downloads_dir = os.path.join(EXPORT_DIR, 'downloads')
-        os.makedirs(downloads_dir, exist_ok=True)
+        # Créer le répertoire de téléchargements et ses parents s'ils n'existent pas
+        try:
+            downloads_dir = os.path.join('static/exports', 'downloads')
+            os.makedirs(downloads_dir, exist_ok=True)
+            logger.info(f"Répertoire de téléchargements créé ou confirmé: {downloads_dir}")
+        except Exception as e:
+            logger.error(f"Erreur lors de la création du répertoire de téléchargements: {e}")
+            downloads_dir = os.path.join('static', 'exports', 'downloads')
+            os.makedirs(downloads_dir, exist_ok=True)
         
         # Chemin de destination
         destination_path = os.path.join(downloads_dir, filename)
@@ -1542,7 +1548,7 @@ class InfographicGenerator:
             
             return {
                 'success': True,
-                'path': destination_path,
+                'path': destination_path.replace('static/', ''),
                 'filename': filename,
                 'size': file_size_readable,
                 'date': modification_time.strftime('%d/%m/%Y %H:%M'),
