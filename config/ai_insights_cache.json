@@ -3749,5 +3749,145 @@
         }
       }
     }
+  },
+  "protocol_ts:1740755494.858646": {
+    "average_score": 68,
+    "protocol_distribution": {
+      "WPA3": 20,
+      "WPA2": 45,
+      "WPA": 20,
+      "WEP": 10,
+      "OPEN": 5
+    },
+    "protocols": [
+      {
+        "name": "WPA3",
+        "security_score": 95,
+        "devices": 3,
+        "vulnerabilities": 1,
+        "ai_security_analysis": "Offre le plus haut niveau de sécurité avec authentification SAE"
+      },
+      {
+        "name": "WPA2",
+        "security_score": 80,
+        "devices": 8,
+        "vulnerabilities": 4,
+        "ai_security_analysis": "Sécurité adéquate pour la plupart des usages avec chiffrement AES"
+      },
+      {
+        "name": "WPA",
+        "security_score": 60,
+        "devices": 4,
+        "vulnerabilities": 7,
+        "ai_security_analysis": "Vulnérable à certaines attaques TKIP, migration vers WPA2/3 recommandée"
+      },
+      {
+        "name": "WEP",
+        "security_score": 30,
+        "devices": 2,
+        "vulnerabilities": 9,
+        "ai_security_analysis": "Très vulnérable, à remplacer absolument"
+      },
+      {
+        "name": "OPEN",
+        "security_score": 10,
+        "devices": 1,
+        "vulnerabilities": 12,
+        "ai_security_analysis": "Aucune sécurité, recommandation de migration immédiate"
+      }
+    ],
+    "vulnerability_by_protocol": {
+      "WPA3": {
+        "critical": 0,
+        "high": 0,
+        "medium": 1,
+        "low": 0
+      },
+      "WPA2": {
+        "critical": 0,
+        "high": 1,
+        "medium": 2,
+        "low": 1
+      },
+      "WPA": {
+        "critical": 1,
+        "high": 2,
+        "medium": 3,
+        "low": 1
+      },
+      "WEP": {
+        "critical": 3,
+        "high": 3,
+        "medium": 2,
+        "low": 1
+      },
+      "OPEN": {
+        "critical": 5,
+        "high": 4,
+        "medium": 2,
+        "low": 1
+      }
+    },
+    "protocol_strengths": {
+      "WPA3": {
+        "Authentification": 95,
+        "Chiffrement": 98,
+        "Protection contre les attaques": 90,
+        "Gestion des clés": 92,
+        "Protection vie privée": 85
+      },
+      "WPA2": {
+        "Authentification": 85,
+        "Chiffrement": 90,
+        "Protection contre les attaques": 70,
+        "Gestion des clés": 80,
+        "Protection vie privée": 65
+      }
+    },
+    "recommendations": [
+      {
+        "priority": "critical",
+        "description": "Migrer des réseaux WEP et ouverts vers WPA3",
+        "details": "Les réseaux WEP et ouverts présentent des risques majeurs de sécurité.",
+        "ai_insight": "Le WPA3 offre une protection contre les attaques par force brute grâce à l'authentification SAE et une confidentialité de transfert parfaite."
+      },
+      {
+        "priority": "high",
+        "description": "Mettre à niveau les réseaux WPA vers WPA2/WPA3",
+        "details": "WPA contient des vulnérabilités connues et devrait être remplacé.",
+        "ai_insight": "Le WPA3 offre une protection contre les attaques par force brute grâce à l'authentification SAE et une confidentialité de transfert parfaite."
+      },
+      {
+        "priority": "medium",
+        "description": "Activer le mode de transition WPA3 sur les réseaux WPA2",
+        "details": "Le mode de transition permet de bénéficier des avantages de WPA3 tout en maintenant la compatibilité.",
+        "ai_insight": "Le WPA3 offre une protection contre les attaques par force brute grâce à l'authentification SAE et une confidentialité de transfert parfaite."
+      }
+    ],
+    "ai_protocol_comparison": {
+      "summary": "L'analyse comparative des protocoles révèle des différences significatives en termes de sécurité",
+      "protocols": {
+        "WPA3": {
+          "insight": "Offre le plus haut niveau de sécurité avec authentification SAE",
+          "recommendation": "Continuer d'utiliser WPA3 avec des mots de passe forts"
+        },
+        "WPA2": {
+          "insight": "Sécurité adéquate pour la plupart des usages avec chiffrement AES",
+          "recommendation": "Migrer vers WPA3 si les équipements le supportent"
+        },
+        "WPA": {
+          "insight": "Vulnérable à certaines attaques TKIP, migration vers WPA2/3 recommandée",
+          "recommendation": "Migrer d'urgence vers WPA2 ou idéalement WPA3"
+        },
+        "WEP": {
+          "insight": "Très vulnérable, à remplacer absolument",
+          "recommendation": "Remplacer immédiatement par WPA2 ou WPA3"
+        },
+        "OPEN": {
+          "insight": "Aucune sécurité, recommandation de migration immédiate",
+          "recommendation": "Implémenter immédiatement un chiffrement WPA2 ou WPA3"
+        }
+      }
+    }
   }
 }
