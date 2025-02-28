@@ -323,6 +323,9 @@ class MobileAutoAnalyzer:
         """
         logger.info("Génération du rapport mobile")
         
+        # Estimer le temps de travail nécessaire pour résoudre les problèmes
+        estimated_time = self._estimate_work_time(app_analyses, update_status)
+        
         # Obtenir le score global de sécurité
         app_scores = [analysis.get('security_score', 0) for analysis in app_analyses]
         overall_score = sum(app_scores) / len(app_scores) if app_scores else 0
@@ -352,6 +355,7 @@ class MobileAutoAnalyzer:
             'high_risk_count': len(high_risk_apps),
             'medium_risk_count': len(medium_risk_apps),
             'system_up_to_date': not update_status.get('update_available', False),
+            'estimated_work_time': self._estimate_work_time(app_analyses, update_status),
             'critical_actions': [],
             'recommendations': [],
             'detailed_results': {
@@ -408,6 +412,60 @@ class MobileAutoAnalyzer:
         else:
             return "Critique - Action immédiate requise"
     
+    def _estimate_work_time(self, app_analyses: List[Dict[str, Any]], 
+                            update_status: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Estime le temps de travail nécessaire pour résoudre les problèmes identifiés
+        
+        Args:
+            app_analyses: Liste des analyses d'applications
+            update_status: Statut des mises à jour système
+            
+        Returns:
+            Estimation du temps de travail
+        """
+        # Temps de base en minutes
+        base_time = 10
+        
+        # Calculer le temps pour chaque application à risque
+        app_time = 0
+        for app in app_analyses:
+            if app.get('risk_level') == 'high':
+                app_time += 15  # 15 minutes par application à haut risque
+            elif app.get('risk_level') == 'medium':
+                app_time += 8   # 8 minutes par application à risque moyen
+            else:
+                app_time += 2   # 2 minutes par application à faible risque
+        
+        # Ajouter du temps pour les mises à jour système
+        system_time = 0
+        if update_status.get('update_available', False):
+            if update_status.get('update_priority') == 'critical':
+                system_time = 30  # 30 minutes pour mise à jour critique
+            elif update_status.get('update_priority') == 'high':
+                system_time = 20  # 20 minutes pour mise à jour importante
+            else:
+                system_time = 10  # 10 minutes pour mise à jour ordinaire
+        
+        # Calculer temps total
+        total_minutes = base_time + app_time + system_time
+        
+        # Convertir en heures et minutes
+        hours = total_minutes // 60
+        minutes = total_minutes % 60
+        
+        return {
+            'total_minutes': total_minutes,
+            'hours': hours,
+            'minutes': minutes,
+            'format': f"{hours}h {minutes}min" if hours > 0 else f"{minutes} minutes",
+            'breakdown': {
+                'base_time': base_time,
+                'app_remediation': app_time,
+                'system_updates': system_time
+            }
+        }
+        
     def get_battery_friendly_recommendations(self) -> List[Dict[str, Any]]:
         """
         Retourne des recommandations optimisées pour économiser la batterie
@@ -486,6 +544,14 @@ if __name__ == "__main__":
     print(f"Statut: {report['security_status']}")
     print(f"Applications analysées: {report['apps_analyzed']}")
     print(f"Applications à haut risque: {report['high_risk_count']}")
+    
+    # Afficher l'estimation du temps de travail
+    if report.get('estimated_work_time'):
+        print(f"\nTemps de travail estimé: {report['estimated_work_time']['format']}")
+        print("Détail de l'estimation:")
+        print(f"- Temps de base: {report['estimated_work_time']['breakdown']['base_time']} minutes")
+        print(f"- Correction des applications: {report['estimated_work_time']['breakdown']['app_remediation']} minutes")
+        print(f"- Mises à jour système: {report['estimated_work_time']['breakdown']['system_updates']} minutes")
     
     if report.get('critical_actions'):
         print("\nActions critiques:")
