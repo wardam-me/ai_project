@@ -29,6 +29,57 @@
     </div>
 </div>
 
+<!-- Export rapide des infographies -->
+<div class="row mb-3">
+    <div class="col-md-12">
+        <div class="card bg-light">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-file-export me-2"></i>Export rapide</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 text-center mb-2">
+                        <div class="card h-100 border-primary">
+                            <div class="card-body">
+                                <h5 class="card-title text-primary"><i class="fas fa-network-wired me-2"></i>Rapport réseau</h5>
+                                <p class="card-text">Exportez un rapport complet de sécurité de votre réseau avec analyse IA.</p>
+                                <a href="{{ url_for('one_click_export', report_type='network') }}" class="btn btn-primary">
+                                    <i class="fas fa-download me-2"></i>Télécharger PDF
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-center mb-2">
+                        <div class="card h-100 border-warning">
+                            <div class="card-body">
+                                <h5 class="card-title text-warning"><i class="fas fa-shield-alt me-2"></i>Analyse protocoles</h5>
+                                <p class="card-text">Obtenez une évaluation détaillée des protocoles de sécurité WiFi.</p>
+                                <a href="{{ url_for('one_click_export', report_type='protocol') }}" class="btn btn-warning text-white">
+                                    <i class="fas fa-download me-2"></i>Télécharger PDF
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-center mb-2">
+                        <div class="card h-100 border-danger">
+                            <div class="card-body">
+                                <h5 class="card-title text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Vulnérabilités</h5>
+                                <p class="card-text">Liste des vulnérabilités critiques avec recommandations de correction.</p>
+                                <a href="{{ url_for('one_click_export', report_type='vulnerability') }}" class="btn btn-danger">
+                                    <i class="fas fa-download me-2"></i>Télécharger PDF
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mt-2">
+                    <small class="text-muted">Pour des options d'exportation avancées, accédez au <a href="{{ url_for('infographic_export_hub') }}">centre d'infographies</a></small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Résumé de la sécurité -->
 <div class="row mb-4">
     <div class="col-md-12">
