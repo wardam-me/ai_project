@@ -5,11 +5,11 @@ channel = "stable-24_05"
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["sh", "-c", "python main.py"]
+run = ["sh", "-c", ""]
 build = ["sh", "-c", "pip install -r requirements.txt"]
 
 [workflows]
-runButton = "Project"
+runButton = "Maintenance"
 
 [[workflows.workflow]]
 name = "Project"
@@ -104,6 +104,14 @@ task = "packager.installForAll"
 task = "shell.exec"
 args = "python main.py"
 waitForPort = 5000
+
+[[workflows.workflow]]
+name = "Maintenance"
+author = 39699562
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "echo 'Application en maintenance - Déploiement arrêté temporairement'"
 
 [[ports]]
 localPort = 5000

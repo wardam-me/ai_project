@@ -801,3 +801,15 @@ def register_routes(app):
     
     # Retourner l'application configurée
     return app
+
+    @app.route('/maintenance')
+    def maintenance():
+        """Page de maintenance pour indiquer que le site est temporairement indisponible"""
+        return render_template('maintenance.html')
+    
+    # Décommenter cette fonction pour activer le mode maintenance sur toutes les routes
+    # @app.before_request
+    # def check_maintenance_mode():
+    #     """Rediriger vers la page de maintenance si le mode est activé"""
+    #     if os.environ.get('MAINTENANCE_MODE') == 'True' and request.path != '/maintenance':
+    #         return redirect(url_for('maintenance'))
