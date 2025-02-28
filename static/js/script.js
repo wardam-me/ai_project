@@ -120,29 +120,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // Stocker la préférence de langue dans un cookie
             document.cookie = `preferred_language=${lang}; path=/; max-age=${60*60*24*30}`;
 
-            // Appeler l'API pour changer la langue
-            fetch('/api/change-language', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ language: lang }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    console.log(`Langue changée pour ${lang}`);
-                    // Recharger la page pour appliquer les changements
-                    window.location.reload();
-                } else {
-                    console.error("Erreur lors du changement de langue:", data.error);
-                }
-            })
-            .catch(error => {
-                console.error("Erreur lors de la requête:", error);
-                // En cas d'erreur, recharger quand même la page
-                window.location.reload();
-            });
+            // Rediriger vers la route de changement de langue
+            window.location.href = `/set-language/${lang}?next=${encodeURIComponent(window.location.pathname)}`;
+            
+            // Note: Le reload n'est plus nécessaire car la redirection s'en occupe
         });
     });
 
