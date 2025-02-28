@@ -92,6 +92,14 @@ args = "python test_ai_integration.py"
 [[workflows.workflow]]
 name = "IA Automatique"
 author = 39699562
+mode = "parallel"
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python ia_activite_automatique.py"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
