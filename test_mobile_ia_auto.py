@@ -81,6 +81,11 @@ def run_tests():
         
         if report and 'overall_security_score' in report:
             logger.info(f"✓ Génération de rapport réussie (Score global: {report['overall_security_score']})")
+            if 'estimated_work_time' in report:
+                logger.info(f"✓ Temps de travail estimé: {report['estimated_work_time']['format']}")
+                logger.info(f"  - Temps de base: {report['estimated_work_time']['breakdown']['base_time']} minutes")
+                logger.info(f"  - Correction des applications: {report['estimated_work_time']['breakdown']['app_remediation']} minutes")
+                logger.info(f"  - Mises à jour système: {report['estimated_work_time']['breakdown']['system_updates']} minutes")
         else:
             logger.error("✗ La génération du rapport n'a pas produit de résultat valide")
             return False
