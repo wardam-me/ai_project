@@ -4,16 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}NetSecure Pro - Analyse de Sécurité Réseau{% endblock %}</title>
-    
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    
+
     <!-- Bloc pour CSS spécifique à la page -->
     {% block extra_css %}{% endblock %}
 </head>
@@ -78,6 +78,32 @@
                             </label>
                         </div>
                     </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                          <i class="bi bi-globe"></i> 
+                          {% if current_language == 'fr' %}
+                            Français
+                          {% elif current_language == 'en' %}
+                            English
+                          {% elif current_language == 'ar' %}
+                            العربية
+                          {% else %}
+                            {{ _('nav_language') }}
+                          {% endif %}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                          {% for lang_code, lang_name in available_languages.items() %}
+                            <li>
+                              <a class="dropdown-item {% if current_language == lang_code %}active{% endif %}" 
+                                 href="#" 
+                                 data-language="{{ lang_code }}">
+                                {{ lang_name }}
+                                {% if current_language == lang_code %}<i class="bi bi-check ms-2"></i>{% endif %}
+                              </a>
+                            </li>
+                          {% endfor %}
+                        </ul>
+                      </li>
                     {% if current_user.is_authenticated %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -105,7 +131,7 @@
             </div>
         </div>
     </nav>
-    
+
     <!-- Messages Flash -->
     <div class="container mt-3">
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -119,32 +145,32 @@
             {% endif %}
         {% endwith %}
     </div>
-    
+
     <!-- Contenu principal -->
     <main class="container py-4">
         {% block content %}{% endblock %}
     </main>
-    
+
     <!-- Pied de page -->
     <footer class="footer mt-auto py-3 bg-dark text-white">
         <div class="container text-center">
             <span>Copyright &copy; {{ now.year }} NetSecure Pro. Tous droits réservés.</span>
         </div>
     </footer>
-    
+
     <!-- Bootstrap JS avec Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <!-- D3.js pour les visualisations -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    
+
     <!-- Socket.IO pour les communications en temps réel -->
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-    
+
     <!-- JS commun -->
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
     <script src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
-    
+
     <!-- Bloc pour JS spécifique à la page -->
     {% block extra_js %}{% endblock %}
 </body>

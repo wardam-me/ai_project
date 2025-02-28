@@ -58,6 +58,16 @@ def register_routes(app):
     @app.context_processor
     def inject_now():
         return {'now': datetime.now()}
+        
+    # Contexte pour les traductions
+    @app.context_processor
+    def inject_translations():
+        from translation import get_all_translations, get_user_language, AVAILABLE_LANGUAGES
+        return {
+            'translations': get_all_translations(),
+            'current_language': get_user_language(),
+            'available_languages': AVAILABLE_LANGUAGES
+        }
     
     # Filtres personnalisés pour les templates
     @app.template_filter('datetime')
