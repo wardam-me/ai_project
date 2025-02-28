@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 
-{% block title %}Infographie Générée{% endblock %}
+{% block title %}Infographie Générée | NetSecure Pro{% endblock %}
 
 {% block content %}
 <div class="container py-4">
@@ -16,17 +16,40 @@
                     <div class="row">
                         <div class="col-md-8">
                             <div class="bg-dark p-2 rounded mb-3">
-                                {% if image_path.endswith('.svg') %}
-                                    <div class="text-center">
-                                        <embed src="{{ url_for('static', filename=image_path) }}" type="image/svg+xml" width="100%" height="450px" />
-                                    </div>
-                                {% elif image_path.endswith('.pdf') %}
-                                    <div class="text-center">
-                                        <embed src="{{ url_for('static', filename=image_path) }}" type="application/pdf" width="100%" height="450px" />
-                                    </div>
+                                {% if file_info and file_info.path %}
+                                    {% if file_info.path.endswith('.svg') %}
+                                        <div class="text-center">
+                                            <embed src="{{ url_for('static', filename=file_info.path) }}" type="image/svg+xml" width="100%" height="450px" />
+                                        </div>
+                                    {% elif file_info.path.endswith('.pdf') %}
+                                        <div class="text-center">
+                                            <embed src="{{ url_for('static', filename=file_info.path) }}" type="application/pdf" width="100%" height="450px" />
+                                        </div>
+                                    {% else %}
+                                        <div class="text-center">
+                                            <img src="{{ url_for('static', filename=file_info.path) }}" alt="Infographie générée" class="img-fluid rounded" />
+                                        </div>
+                                    {% endif %}
+                                {% elif image_path %}
+                                    {% if image_path.endswith('.svg') %}
+                                        <div class="text-center">
+                                            <embed src="{{ url_for('static', filename=image_path) }}" type="image/svg+xml" width="100%" height="450px" />
+                                        </div>
+                                    {% elif image_path.endswith('.pdf') %}
+                                        <div class="text-center">
+                                            <embed src="{{ url_for('static', filename=image_path) }}" type="application/pdf" width="100%" height="450px" />
+                                        </div>
+                                    {% else %}
+                                        <div class="text-center">
+                                            <img src="{{ url_for('static', filename=image_path) }}" alt="Infographie générée" class="img-fluid rounded" />
+                                        </div>
+                                    {% endif %}
                                 {% else %}
                                     <div class="text-center">
-                                        <img src="{{ url_for('static', filename=image_path) }}" alt="Infographie générée" class="img-fluid rounded" />
+                                        <div class="alert alert-warning">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                            Aperçu non disponible
+                                        </div>
                                     </div>
                                 {% endif %}
                             </div>
@@ -39,26 +62,35 @@
                                 <div class="card-body">
                                     <ul class="list-group list-group-flush bg-transparent">
                                         <li class="list-group-item bg-dark text-white border-secondary">
-                                            <strong>Type:</strong> {{ report_name }}
+                                            <strong>Type:</strong> 
+                                            {% if report_type == 'network' %}
+                                                Rapport de sécurité réseau
+                                            {% elif report_type == 'protocol' %}
+                                                Analyse des protocoles
+                                            {% elif report_type == 'vulnerability' %}
+                                                Analyse des vulnérabilités
+                                            {% else %}
+                                                {{ report_name }}
+                                            {% endif %}
                                         </li>
                                         <li class="list-group-item bg-dark text-white border-secondary">
-                                            <strong>Format:</strong> {{ format|upper }}
+                                            <strong>Format:</strong> {{ file_info.format|default(format)|upper }}
                                         </li>
                                         <li class="list-group-item bg-dark text-white border-secondary">
-                                            <strong>Résolution:</strong> {{ resolution }}
+                                            <strong>Taille:</strong> {{ file_info.size|default(file_size) }}
                                         </li>
                                         <li class="list-group-item bg-dark text-white border-secondary">
-                                            <strong>Taille:</strong> {{ file_size }}
+                                            <strong>Créé le:</strong> {{ file_info.created_at|default(created_at) }}
                                         </li>
                                         <li class="list-group-item bg-dark text-white border-secondary">
-                                            <strong>Créé le:</strong> {{ created_at }}
+                                            <strong>Analysé avec IA:</strong> <i class="fas fa-check-circle text-success"></i> Oui
                                         </li>
                                     </ul>
                                 </div>
                             </div>
                             
                             <div class="d-grid gap-2">
-                                <a href="{{ download_url }}" class="btn btn-primary" download>
+                                <a href="{{ file_info.download_url|default(download_url) }}" class="btn btn-primary" download>
                                     <i class="fas fa-download me-2"></i>Télécharger
                                 </a>
                                 <a href="{{ url_for('infographic_export_hub') }}" class="btn btn-secondary">

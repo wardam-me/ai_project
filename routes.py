@@ -483,6 +483,42 @@ def register_routes(app):
             return redirect(url_for('infographic_export_hub'))
         
         try:
+            return generate_report(report_type, export_format, use_ai)
+        except Exception as e:
+            logger.error(f"Erreur lors de la génération de l'infographie: {e}")
+            flash(f"Erreur lors de la génération de l'infographie: {str(e)}", 'danger')
+            return redirect(url_for('infographic_export_hub'))
+    
+    @app.route('/one-click-export/<report_type>')
+    @login_required
+    def one_click_export(report_type):
+        """Génère une infographie avec un seul clic en utilisant les paramètres par défaut"""
+        # Paramètres par défaut
+        export_format = 'pdf'  # Format par défaut (plus professionnel)
+        use_ai = True  # Toujours utiliser l'IA pour enrichir les données
+        
+        # Validation des entrées
+        if report_type not in ['network', 'protocol', 'vulnerability']:
+            flash('Type de rapport invalide.', 'danger')
+            return redirect(url_for('dashboard'))
+        
+        logger.info(f"Génération d'un rapport One-Click pour {report_type} (format: {export_format})")
+        
+        try:
+            return generate_report(report_type, export_format, use_ai, one_click=True)
+        except Exception as e:
+            logger.error(f"Erreur lors de la génération du rapport One-Click: {e}")
+            flash(f"Erreur lors de la génération du rapport rapide: {str(e)}", 'danger')
+            return redirect(url_for('dashboard'))
+    
+    def generate_report(report_type, export_format, use_ai, one_click=False):
+        """Fonction utilitaire pour générer un rapport d'infographie"""
+        
+        if export_format not in ['png', 'pdf', 'svg']:
+            flash('Format d\'export invalide.', 'danger')
+            return redirect(url_for('infographic_export_hub'))
+        
+        try:
             # Générer l'infographie
             if report_type == 'network':
                 # Récupérer les données pour le rapport réseau
