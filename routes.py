@@ -615,10 +615,24 @@ def register_routes(app):
             # Préparer les métadonnées pour l'affichage
             file_info = infographic_generator.copy_export_to_user_downloads(output_file)
             
+            # Préparer des noms lisibles pour les types de rapports
+            report_names = {
+                'network': 'Rapport de sécurité réseau',
+                'protocol': 'Analyse des protocoles',
+                'vulnerability': 'Analyse des vulnérabilités'
+            }
+            
+            # Ajouter une petite notification
+            if one_click:
+                flash('Rapport exporté avec succès en un clic !', 'success')
+            else:
+                flash('Rapport exporté avec succès !', 'success')
+                
             return render_template(
                 'export_success.html',
                 file_info=file_info,
-                report_type=report_type
+                report_type=report_type,
+                report_name=report_names.get(report_type, report_type.capitalize())
             )
         
         except Exception as e:

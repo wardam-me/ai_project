@@ -1546,13 +1546,18 @@ class InfographicGenerator:
             file_size_readable = self._get_readable_file_size(file_size)
             modification_time = datetime.fromtimestamp(file_stats.st_mtime)
             
+            # Préparer l'URL de téléchargement
+            relative_path = destination_path.replace('static/', '')
+            download_url = f"/static/{relative_path}"
+            
             return {
                 'success': True,
-                'path': destination_path.replace('static/', ''),
+                'path': relative_path,
                 'filename': filename,
                 'size': file_size_readable,
                 'date': modification_time.strftime('%d/%m/%Y %H:%M'),
-                'format': os.path.splitext(filename)[1][1:].upper()
+                'format': os.path.splitext(filename)[1][1:].upper(),
+                'download_url': download_url
             }
         except Exception as e:
             logger.error(f"Erreur lors de la copie du fichier: {str(e)}")
