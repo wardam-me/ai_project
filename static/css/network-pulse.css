@@ -1,181 +1,214 @@
-/**
- * Animation de pulsation pour l'indicateur de santé du réseau
- * Cette animation crée un effet de pulsation sur le cercle de score de sécurité
+/* 
+ * Styles pour l'animation Network Health Pulse
+ * Ajoute des effets visuels pour l'indicateur de santé réseau
  */
 
-/* Animation principale de pulsation */
-@keyframes pulse-ring {
-  0% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.7);
-  }
-  70% {
-    transform: scale(1);
-    box-shadow: 0 0 0 15px rgba(52, 152, 219, 0);
-  }
-  100% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(52, 152, 219, 0);
-  }
-}
-
-@keyframes pulse-ring-warning {
-  0% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(240, 173, 78, 0.7);
-  }
-  70% {
-    transform: scale(1);
-    box-shadow: 0 0 0 15px rgba(240, 173, 78, 0);
-  }
-  100% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(240, 173, 78, 0);
-  }
-}
-
-@keyframes pulse-ring-danger {
-  0% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(217, 83, 79, 0.7);
-  }
-  70% {
-    transform: scale(1);
-    box-shadow: 0 0 0 15px rgba(217, 83, 79, 0);
-  }
-  100% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(217, 83, 79, 0);
-  }
-}
-
-/* Animation ponctuelle de clignotement */
-@keyframes pulse-dot {
-  0% {
-    transform: scale(0.95);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(0.95);
-  }
-}
-
-/* État normal (santé élevée) */
-.network-pulse {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  animation: pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
-}
-
-/* État d'avertissement (santé moyenne) */
-.network-pulse-warning {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  animation: pulse-ring-warning 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
-}
-
-/* État critique (santé basse) */
-.network-pulse-danger {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  animation: pulse-ring-danger 1.5s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
-}
-
-/* Cercle de score avec animation */
-.security-score {
-  font-weight: bold;
-  color: white;
-  transition: all 0.3s ease;
-  z-index: 2;
-  transform-origin: center;
-  animation: pulse-dot 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
-}
-
-/* Styles pour les différents niveaux de sécurité */
-.security-score-high {
-  background-color: #2ecc71;
-  box-shadow: 0 0 15px rgba(46, 204, 113, 0.5);
-}
-
-.security-score-medium {
-  background-color: #f39c12;
-  box-shadow: 0 0 15px rgba(243, 156, 18, 0.5);
-}
-
-.security-score-low {
-  background-color: #e74c3c;
-  box-shadow: 0 0 15px rgba(231, 76, 60, 0.5);
-}
-
-/* Classe pour l'effet aura */
-.network-aura {
-  position: absolute;
-  width: 120%;
-  height: 120%;
-  top: -10%;
-  left: -10%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
-  z-index: 1;
-  opacity: 0.7;
-  animation: pulse-aura 3s ease-in-out infinite;
-}
-
-@keyframes pulse-aura {
-  0% {
-    opacity: 0.3;
-    transform: scale(0.9);
-  }
-  50% {
-    opacity: 0.7;
-    transform: scale(1.1);  
-  }
-  100% {
-    opacity: 0.3;
-    transform: scale(0.9);
-  }
-}
-
-/* Conteneur de l'indicateur avec position relative pour le positionnement absolu des enfants */
+/* Conteneur de l'indicateur de score de sécurité */
 .security-score-container {
-  position: relative;
-  width: 120px;
-  height: 120px;
-  margin: 0 auto;
+    position: relative;
+    width: 150px;
+    height: 150px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-/* Style supplémentaire pour les points de données dans l'animation */
+/* Base de la pulsation du réseau */
+.network-pulse,
+.network-pulse-warning,
+.network-pulse-danger {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    opacity: 0;
+    z-index: 1;
+    animation: pulse 2s ease-out infinite;
+}
+
+/* Variations de couleur pour différents niveaux de sécurité */
+.network-pulse {
+    background-color: rgba(40, 167, 69, 0.7); /* Vert pour haute sécurité */
+}
+
+.network-pulse-warning {
+    background-color: rgba(255, 193, 7, 0.7); /* Jaune pour sécurité moyenne */
+}
+
+.network-pulse-danger {
+    background-color: rgba(220, 53, 69, 0.7); /* Rouge pour sécurité faible */
+}
+
+/* Effet d'aura autour du score */
+.network-aura {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: radial-gradient(
+        circle,
+        rgba(255, 255, 255, 0.5) 0%,
+        rgba(255, 255, 255, 0.1) 70%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    z-index: 1;
+}
+
+/* Points de données animés */
 .data-point {
-  position: absolute;
-  width: 6px;
-  height: 6px;
-  background-color: rgba(255, 255, 255, 0.8);
-  border-radius: 50%;
-  z-index: 3;
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    z-index: 1;
+    transform: translate(-50%, -50%);
+}
+
+/* Badge indiquant le statut du réseau */
+.network-status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+}
+
+/* Icône avec effet de pulsation */
+.pulse-icon {
+    animation: heartbeat 1.5s ease infinite;
+}
+
+/* Animation pour l'effet de pulsation */
+@keyframes pulse {
+    0% {
+        transform: scale(0.9);
+        opacity: 0.5;
+    }
+    50% {
+        opacity: 0.2;
+    }
+    100% {
+        transform: scale(1.6);
+        opacity: 0;
+    }
 }
 
 /* Animation pour les points de données */
 @keyframes data-point-motion {
-  0% {
-    transform: translate(0, 0) scale(1);
-    opacity: 0;
-  }
-  20% {
-    opacity: 1;
-  }
-  80% {
-    opacity: 1;
-  }
-  100% {
-    transform: translate(var(--tx), var(--ty)) scale(0.5);
-    opacity: 0;
-  }
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+    50% {
+        opacity: 1;
+        transform: translate(-50%, -50%) translateX(var(--tx)) translateY(var(--ty)) scale(1.2);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) translateX(calc(var(--tx) * 2)) translateY(calc(var(--ty) * 2)) scale(0.8);
+    }
+}
+
+/* Animation pour l'icône de battement de cœur */
+@keyframes heartbeat {
+    0% {
+        transform: scale(1);
+    }
+    15% {
+        transform: scale(1.3);
+    }
+    30% {
+        transform: scale(1);
+    }
+    45% {
+        transform: scale(1.3);
+    }
+    60% {
+        transform: scale(1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Style des scores de sécurité */
+.security-score {
+    position: relative;
+    z-index: 3;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    color: #fff;
+    font-weight: bold;
+    transition: all 0.3s ease-in-out;
+}
+
+.security-score-high {
+    background-color: #28a745; /* Vert */
+}
+
+.security-score-medium {
+    background-color: #ffc107; /* Jaune */
+    color: #212529;
+}
+
+.security-score-low {
+    background-color: #dc3545; /* Rouge */
+}
+
+/* Animation lors de la mise à jour */
+.pulse-update {
+    animation: update-pulse 1s ease-out;
+}
+
+@keyframes update-pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 15px rgba(255, 255, 255, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+    }
+}
+
+/* Adaptations pour mode sombre */
+body.dark-mode .network-aura {
+    background: radial-gradient(
+        circle,
+        rgba(30, 30, 30, 0.6) 0%,
+        rgba(20, 20, 20, 0.2) 70%,
+        rgba(0, 0, 0, 0) 100%
+    );
+}
+
+body.dark-mode .data-point {
+    background-color: rgba(200, 200, 200, 0.8);
+}
+
+/* Adaptations pour appareils mobiles */
+@media (max-width: 768px) {
+    .security-score-container {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .security-score {
+        width: 90px !important;
+        height: 90px !important;
+        font-size: 1.8em !important;
+    }
+    
+    .network-pulse,
+    .network-pulse-warning,
+    .network-pulse-danger {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .network-aura {
+        width: 95px;
+        height: 95px;
+    }
 }

@@ -346,6 +346,7 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="{{ url_for('static', filename='js/network-pulse.js') }}"></script>
 <script>
     // Exemple de filtre personnalisé pour formater les dates
     document.addEventListener('DOMContentLoaded', function() {
@@ -356,6 +357,17 @@
                 element.textContent = formatRelativeTime(timestamp);
             }
         });
+        
+        // Simuler une actualisation du score toutes les 2 minutes
+        setInterval(function() {
+            // Variation aléatoire légère du score
+            const currentScore = parseInt(document.querySelector('.security-score').textContent);
+            const variation = Math.floor(Math.random() * 3) - 1; // -1, 0, ou 1
+            const newScore = Math.max(0, Math.min(100, currentScore + variation));
+            
+            // Utiliser la fonction d'actualisation du pouls réseau
+            window.networkPulse.update(newScore);
+        }, 120000);
     });
     
     // Fonction pour afficher les détails d'un appareil dans une fenêtre modale
