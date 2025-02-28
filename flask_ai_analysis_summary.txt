@@ -1,0 +1,63 @@
+RAPPORT D'ANALYSE IA DU PROJET FLASK
+==================================================
+
+Date d'analyse: 2025-02-28 22:27:46
+Répertoire analysé: /home/runner/workspace
+Temps d'exécution: 1.83 secondes
+
+STRUCTURE DU PROJET
+------------------------------
+Nombre de fichiers: 156
+Nombre de répertoires: 28
+
+Extensions de fichiers:
+  - .py: 51
+  - .html: 36
+  - .json: 22
+  - .svg: 10
+  - .png: 7
+
+STRUCTURE FLASK
+------------------------------
+Fichier d'application: app.py
+Pattern Blueprint: Oui
+SQLAlchemy utilisé: Oui
+WTForms utilisé: Oui
+
+Éléments manquants:
+  - configuration_file
+
+PROBLÈMES DÉTECTÉS
+------------------------------
+Problèmes de sécurité: 14
+  - Critiques: 6
+  - Moyens: 8
+  - Faibles: 0
+Problèmes de performance: 2
+Erreurs LSP: 4363
+Groupes de fichiers dupliqués: 2
+
+ANALYSE IA
+------------------------------
+Score: 0/100
+
+Points forts:
+  - Détection de 6 problèmes de sécurité critiques qui nécessitent une attention immédiate.
+  - Détection de 2 groupes de fichiers dupliqués ou similaires, ce qui complique la maintenance.
+
+Recommandations:
+  - [HIGH] Sécuriser les clés secrètes
+    Remplacer les clés secrètes en dur par des variables d'environnement ou un fichier de configuration sécurisé.
+  - [MEDIUM] Désactiver le mode debug en production
+    Configurer le mode debug pour qu'il soit actif uniquement en environnement de développement.
+  - [MEDIUM] Éliminer les fichiers dupliqués
+    Fusionner ou refactoriser les 2 groupes de fichiers similaires pour réduire la duplication.
+
+ESTIMATION DU TEMPS DE TRAVAIL
+------------------------------
+Temps total estimé: 184 minutes
+  - temps_base: 10 minutes
+  - correction_securite: 112 minutes
+  - optimisation_performance: 12 minutes
+  - correction_erreurs_lsp: 30 minutes
+  - elimination_duplications: 20 minutes

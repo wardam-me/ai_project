@@ -1,0 +1,181 @@
+/**
+ * Animation de pulsation pour l'indicateur de santé du réseau
+ * Cette animation crée un effet de pulsation sur le cercle de score de sécurité
+ */
+
+/* Animation principale de pulsation */
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 15px rgba(52, 152, 219, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(52, 152, 219, 0);
+  }
+}
+
+@keyframes pulse-ring-warning {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(240, 173, 78, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 15px rgba(240, 173, 78, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(240, 173, 78, 0);
+  }
+}
+
+@keyframes pulse-ring-danger {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(217, 83, 79, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 15px rgba(217, 83, 79, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(217, 83, 79, 0);
+  }
+}
+
+/* Animation ponctuelle de clignotement */
+@keyframes pulse-dot {
+  0% {
+    transform: scale(0.95);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(0.95);
+  }
+}
+
+/* État normal (santé élevée) */
+.network-pulse {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  animation: pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+}
+
+/* État d'avertissement (santé moyenne) */
+.network-pulse-warning {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  animation: pulse-ring-warning 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+}
+
+/* État critique (santé basse) */
+.network-pulse-danger {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  animation: pulse-ring-danger 1.5s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+}
+
+/* Cercle de score avec animation */
+.security-score {
+  font-weight: bold;
+  color: white;
+  transition: all 0.3s ease;
+  z-index: 2;
+  transform-origin: center;
+  animation: pulse-dot 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+}
+
+/* Styles pour les différents niveaux de sécurité */
+.security-score-high {
+  background-color: #2ecc71;
+  box-shadow: 0 0 15px rgba(46, 204, 113, 0.5);
+}
+
+.security-score-medium {
+  background-color: #f39c12;
+  box-shadow: 0 0 15px rgba(243, 156, 18, 0.5);
+}
+
+.security-score-low {
+  background-color: #e74c3c;
+  box-shadow: 0 0 15px rgba(231, 76, 60, 0.5);
+}
+
+/* Classe pour l'effet aura */
+.network-aura {
+  position: absolute;
+  width: 120%;
+  height: 120%;
+  top: -10%;
+  left: -10%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+  z-index: 1;
+  opacity: 0.7;
+  animation: pulse-aura 3s ease-in-out infinite;
+}
+
+@keyframes pulse-aura {
+  0% {
+    opacity: 0.3;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);  
+  }
+  100% {
+    opacity: 0.3;
+    transform: scale(0.9);
+  }
+}
+
+/* Conteneur de l'indicateur avec position relative pour le positionnement absolu des enfants */
+.security-score-container {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto;
+}
+
+/* Style supplémentaire pour les points de données dans l'animation */
+.data-point {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  z-index: 3;
+}
+
+/* Animation pour les points de données */
+@keyframes data-point-motion {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--tx), var(--ty)) scale(0.5);
+    opacity: 0;
+  }
+}
