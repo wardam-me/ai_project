@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.cookie = `preferred_language=${lang}; path=/; max-age=${60*60*24*30}`;
 
             // Rediriger vers la route de changement de langue
-            window.location.href = `/set-language/${lang}?next=${encodeURIComponent(window.location.pathname)}`;
+            window.location.href = '/set-language/' + lang + '?next=' + encodeURIComponent(window.location.pathname);
             
             // Note: Le reload n'est plus nécessaire car la redirection s'en occupe
         });

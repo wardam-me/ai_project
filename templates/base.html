@@ -95,8 +95,8 @@
                           {% for lang_code, lang_name in available_languages.items() %}
                             <li>
                               <a class="dropdown-item {% if current_language == lang_code %}active{% endif %}" 
-                                 href="#" 
-                                 data-language="{{ lang_code }}">
+                                 href="{{ url_for('set_language', language=lang_code, next=request.path) }}" 
+                                 onclick="event.preventDefault(); document.cookie = 'preferred_language={{ lang_code }}; path=/; max-age=2592000'; window.location.href = this.href;">
                                 {{ lang_name }}
                                 {% if current_language == lang_code %}<i class="bi bi-check ms-2"></i>{% endif %}
                               </a>
