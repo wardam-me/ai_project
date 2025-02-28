@@ -10,6 +10,7 @@
         "static/img/previews/network",
         "static/img/previews/protocol",
         "static/img/previews/vulnerability",
+        "static/fonts",
         "static/exports",
         "static/exports/network",
         "static/exports/protocol",
@@ -20,11 +21,9 @@
         "config",
         "instance"
       ],
-      "missing": [
-        "static/fonts"
-      ],
-      "total_existing": 17,
-      "total_missing": 1
+      "missing": [],
+      "total_existing": 18,
+      "total_missing": 0
     },
     "files": {
       "existing": [
@@ -69,11 +68,9 @@
     }
   },
   "corrections": {
-    "directories_created": [
-      "static/fonts"
-    ],
+    "directories_created": [],
     "files_created": [],
-    "total_dirs_created": 1,
+    "total_dirs_created": 0,
     "total_files_created": 0
   },
   "status": {
