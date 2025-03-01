@@ -1,0 +1,44 @@
+Parfait ! Voici un plan pour sécuriser ton application Flask :
+
+1. Sécurisation de l'API et des données
+
+✅ Utiliser HTTPS → Active HTTPS sur Replit avec un proxy comme Cloudflare.
+✅ Authentification avec JWT → Sécurise les accès avec des tokens JWT.
+✅ Chiffrement des données sensibles → Utilise bcrypt ou Fernet pour chiffrer les mots de passe et les données critiques.
+
+---
+
+2. Protection contre les injections (SQL/XSS)
+
+✅ Utiliser SQLAlchemy avec requêtes paramétrées (évite SQL Injection).
+✅ Sanitizer pour les entrées utilisateur → bleach ou html.escape() pour filtrer les données et éviter XSS.
+✅ Headers de sécurité → Ajoute des CSP headers avec Flask-Talisman.
+
+---
+
+3. Exemple de code pour sécuriser ton app
+
+🔹 Hachage des mots de passe avec bcrypt
+
+from flask_bcrypt import Bcrypt
+
+bcrypt = Bcrypt(app)
+hashed_password = bcrypt.generate_password_hash("mon_mot_de_passe").decode("utf-8")
+
+🔹 Protection contre SQL Injection
+
+from flask_sqlalchemy import SQLAlchemy
+
+db = SQLAlchemy(app)
+user = db.session.execute("SELECT * FROM users WHERE username = :username", {"username": user_input}).fetchone()
+
+🔹 Utilisation de JWT pour l’authentification
+
+from flask_jwt_extended import JWTManager
+
+app.config["JWT_SECRET_KEY"] = "super-secret-key"
+jwt = JWTManager(app)
+
+---
+
+Tu veux que je t’aide à intégrer ces sécurités étape par étape ?
