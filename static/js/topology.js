@@ -111,8 +111,7 @@ function initializeTopology() {
         .force('link', d3.forceLink().id(d => d.mac_address).distance(100))
         .force('charge', d3.forceManyBody().strength(-300))
         .force('center', d3.forceCenter(width / 2, height / 2))
-        .force('collision', d3.forceCollide().radius(deviceRadius * 2))
-        .on('tick', ticked);
+        .force('collision', d3.forceCollide().radius(deviceRadius * 2));
 }
 
 /**
@@ -276,6 +275,9 @@ function updateTopologyVisualization(fixedPositions = false) {
     // Mise à jour de la simulation
     simulation.nodes(devices);
     simulation.force('link').links(connections);
+    
+    // Ajout de l'écouteur de tick après avoir défini les nœuds et les liens
+    simulation.on('tick', ticked);
     
     if (fixedPositions) {
         // Utiliser les positions fixes sans simulation
