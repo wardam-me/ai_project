@@ -91,6 +91,14 @@ task = "shell.exec"
 args = "python ia_activite_automatique.py"
 
 [[workflows.workflow]]
+name = "Test Mobile IA"
+author = 39699562
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python test_mobile_ia_auto.py"
+
+[[workflows.workflow]]
 name = "Flask Server"
 author = "agent"
 
@@ -103,15 +111,7 @@ task = "packager.installForAll"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python main.py"
-waitForPort = 5000
-
-[[workflows.workflow]]
-name = "Test Mobile IA"
-author = 39699562
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "python test_mobile_ia_auto.py"
+waitForPort = 5001
 
 [[ports]]
 localPort = 5000
