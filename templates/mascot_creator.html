@@ -1,361 +1,393 @@
 {% extends "layout.html" %}
 
-{% block title %}Créateur de Mascottes de Cybersécurité | NetSecure Pro{% endblock %}
+{% block title %}NetSecure Pro - Créateur de Mascottes{% endblock %}
 
 {% block styles %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/mascot_creator.css') }}">
 <style>
-    .mascot-preview {
-        border: 2px solid #3498db;
-        border-radius: 10px;
+    .mascot-card {
+        border-radius: 15px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .mascot-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .mascot-svg-container {
+        height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         background-color: #f8f9fa;
-        padding: 20px;
-        margin-bottom: 20px;
-        text-align: center;
+        padding: 15px;
     }
     
-    .mascot-element {
+    .mascot-svg-container svg {
+        max-height: 100%;
+        max-width: 100%;
+    }
+    
+    .security-level {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        border-radius: 20px;
+        padding: 3px 10px;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+    
+    .security-level-novice {
+        background-color: #ffeeba;
+        color: #856404;
+    }
+    
+    .security-level-intermédiaire {
+        background-color: #b8daff;
+        color: #004085;
+    }
+    
+    .security-level-avancé {
+        background-color: #c3e6cb;
+        color: #155724;
+    }
+    
+    .security-level-expert {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .security-level-master {
+        background-color: #f5c6cb;
+        color: #721c24;
+    }
+    
+    .mascot-creator-canvas {
+        background-color: #f8f9fa;
+        border-radius: 15px;
+        overflow: hidden;
+        height: 350px;
+        position: relative;
+    }
+    
+    .element-picker {
+        max-height: 350px;
+        overflow-y: auto;
+    }
+    
+    .element-option {
         cursor: pointer;
-        border: 2px solid transparent;
-        border-radius: 5px;
-        transition: all 0.3s;
+        padding: 8px 12px;
+        border-radius: 8px;
+        margin-bottom: 5px;
+        transition: background-color 0.2s ease;
     }
     
-    .mascot-element:hover {
-        border-color: #3498db;
-        transform: scale(1.05);
+    .element-option:hover {
+        background-color: #e9ecef;
     }
     
-    .mascot-element.selected {
-        border-color: #2ecc71;
-        background-color: rgba(46, 204, 113, 0.1);
+    .element-option.active {
+        background-color: #cfe2ff;
+        border: 1px solid #b8daff;
     }
     
     .color-picker {
-        width: 100%;
-        height: 40px;
-        cursor: pointer;
-        border: none;
-        border-radius: 5px;
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
     }
     
-    .tab-pane {
-        padding-top: 20px;
+    .color-sample {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: 2px solid #dee2e6;
+        cursor: pointer;
+    }
+    
+    .tab-content {
+        height: 350px;
+        overflow-y: auto;
+    }
+    
+    .mascot-controls {
+        background-color: #f8f9fa;
+        border-radius: 15px;
+        padding: 15px;
     }
     
     .mascot-story {
         background-color: #f8f9fa;
-        border-left: 4px solid #3498db;
-        padding: 15px;
-        margin-top: 20px;
-        border-radius: 0 5px 5px 0;
-    }
-    
-    .security-score {
-        font-size: 2.5rem;
-        font-weight: bold;
-        color: #3498db;
-    }
-    
-    .security-level {
-        color: #2c3e50;
-        font-weight: bold;
-    }
-    
-    .security-title {
-        color: #e74c3c;
+        border-radius: 15px;
+        padding: 20px;
         font-style: italic;
     }
     
-    .personality-trait {
-        display: inline-block;
-        background-color: #e67e22;
-        color: white;
-        padding: 5px 10px;
-        margin: 5px;
-        border-radius: 20px;
-        font-size: 0.8rem;
-    }
-    
-    .share-button {
-        cursor: pointer;
-        transition: all 0.3s;
-    }
-    
-    .share-button:hover {
-        transform: scale(1.1);
-    }
-    
-    .card {
-        border: none;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        margin-bottom: 20px;
-        transition: all 0.3s;
-    }
-    
-    .card:hover {
-        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-    }
-    
-    .mascot-gallery-item {
-        cursor: pointer;
-        transition: all 0.3s;
-    }
-    
-    .mascot-gallery-item:hover {
-        transform: translateY(-5px);
+    .security-score-slider {
+        width: 100%;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <h1 class="mb-4 text-center">
-        <i class="fas fa-user-shield me-2"></i>Créateur de Mascottes de Cybersécurité
-    </h1>
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-5 mb-0">
+                <i class="fas fa-user-astronaut me-2"></i>Créateur de Mascottes de Cybersécurité
+            </h1>
+            <p class="lead text-muted">Créez votre mascotte personnalisée qui représente votre niveau de sécurité</p>
+        </div>
+    </div>
     
-    <div class="row">
-        <div class="col-lg-8">
-            <nav>
-                <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                    <button class="nav-link active" id="nav-creator-tab" data-bs-toggle="tab" data-bs-target="#nav-creator" type="button" role="tab" aria-controls="nav-creator" aria-selected="true">
-                        <i class="fas fa-paint-brush me-1"></i>Créateur
-                    </button>
-                    <button class="nav-link" id="nav-gallery-tab" data-bs-toggle="tab" data-bs-target="#nav-gallery" type="button" role="tab" aria-controls="nav-gallery" aria-selected="false">
-                        <i class="fas fa-images me-1"></i>Galerie
-                    </button>
-                    <button class="nav-link" id="nav-learn-tab" data-bs-toggle="tab" data-bs-target="#nav-learn" type="button" role="tab" aria-controls="nav-learn" aria-selected="false">
-                        <i class="fas fa-graduation-cap me-1"></i>Apprentissage
-                    </button>
-                </div>
-            </nav>
-            
-            <div class="tab-content" id="nav-tabContent">
-                <!-- Onglet Créateur -->
-                <div class="tab-pane fade show active" id="nav-creator" role="tabpanel" aria-labelledby="nav-creator-tab">
-                    <div class="card">
-                        <div class="card-body">
-                            <h4 class="card-title mb-3">Personnalisez votre mascotte</h4>
-                            
-                            <form id="mascotForm">
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
-                                        <div class="form-group mb-3">
-                                            <label for="mascotName" class="form-label">Nom de votre mascotte</label>
-                                            <input type="text" class="form-control" id="mascotName" name="name" placeholder="Ex: CyberGuardian" required>
-                                        </div>
-                                        
-                                        <div class="form-group mb-3">
-                                            <label for="mascotPersonality" class="form-label">Personnalité</label>
-                                            <select class="form-select" id="mascotPersonality" name="personality">
-                                                <option value="friendly">Amical</option>
-                                                <option value="serious">Sérieux</option>
-                                                <option value="playful">Joueur</option>
-                                                <option value="wise">Sage</option>
-                                                <option value="brave">Brave</option>
-                                            </select>
-                                        </div>
+    <!-- Onglets -->
+    <ul class="nav nav-tabs mb-4" id="mascotTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="gallery-tab" data-bs-toggle="tab" data-bs-target="#gallery-tab-pane" type="button" role="tab" aria-controls="gallery-tab-pane" aria-selected="true">
+                <i class="fas fa-th-large me-2"></i>Galerie
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="create-tab" data-bs-toggle="tab" data-bs-target="#create-tab-pane" type="button" role="tab" aria-controls="create-tab-pane" aria-selected="false">
+                <i class="fas fa-plus-circle me-2"></i>Créer
+            </button>
+        </li>
+    </ul>
+    
+    <!-- Contenu des onglets -->
+    <div class="tab-content" id="mascotTabsContent">
+        <!-- Onglet Galerie -->
+        <div class="tab-pane fade show active" id="gallery-tab-pane" role="tabpanel" aria-labelledby="gallery-tab" tabindex="0">
+            {% if mascots|length > 0 %}
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4" id="mascotsGallery">
+                    {% for mascot in mascots %}
+                        <div class="col">
+                            <div class="card h-100 mascot-card">
+                                <div class="mascot-svg-container" id="mascot-svg-{{ mascot.id }}">
+                                    <img src="{{ url_for('generate_mascot_svg', mascot_id=mascot.id) }}" alt="Mascotte {{ mascot.name }}" class="img-fluid">
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ mascot.name }}</h5>
+                                    <p class="card-text">
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar-alt me-1"></i>Créée le {{ mascot.created_at|datetime("%d/%m/%Y") }}
+                                        </small>
+                                    </p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge bg-primary">
+                                            <i class="fas fa-shield-alt me-1"></i>Score: {{ mascot.security_score }}/100
+                                        </span>
+                                        <span class="badge {% if mascot.security_score < 40 %}bg-danger{% elif mascot.security_score < 70 %}bg-warning{% else %}bg-success{% endif %}">
+                                            {{ mascot.get_security_level() }}
+                                        </span>
                                     </div>
-                                    
-                                    <div class="col-md-6">
-                                        <div class="row">
-                                            <div class="col-md-4 mb-3">
-                                                <label for="primaryColor" class="form-label">Couleur primaire</label>
-                                                <input type="color" class="color-picker" id="primaryColor" name="primaryColor" value="#3498db">
-                                            </div>
-                                            <div class="col-md-4 mb-3">
-                                                <label for="secondaryColor" class="form-label">Couleur secondaire</label>
-                                                <input type="color" class="color-picker" id="secondaryColor" name="secondaryColor" value="#2ecc71">
-                                            </div>
-                                            <div class="col-md-4 mb-3">
-                                                <label for="accentColor" class="form-label">Couleur accent</label>
-                                                <input type="color" class="color-picker" id="accentColor" name="accentColor" value="#e74c3c">
-                                            </div>
-                                        </div>
-                                        
-                                        <button type="button" id="randomizeBtn" class="btn btn-secondary w-100 mt-2">
-                                            <i class="fas fa-random me-1"></i>Aléatoire
+                                </div>
+                                <div class="card-footer">
+                                    <div class="btn-group w-100" role="group">
+                                        <button type="button" class="btn btn-outline-primary btn-sm view-mascot-story" data-mascot-id="{{ mascot.id }}">
+                                            <i class="fas fa-book me-1"></i>Histoire
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm edit-mascot" data-mascot-id="{{ mascot.id }}">
+                                            <i class="fas fa-edit me-1"></i>Éditer
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger btn-sm delete-mascot" data-mascot-id="{{ mascot.id }}">
+                                            <i class="fas fa-trash-alt me-1"></i>Supprimer
                                         </button>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info" role="alert">
+                    <h4 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Aucune mascotte</h4>
+                    <p>Vous n'avez pas encore créé de mascottes. Utilisez l'onglet "Créer" pour commencer à personnaliser votre première mascotte de cybersécurité !</p>
+                    <hr>
+                    <p class="mb-0">Les mascottes représentent votre niveau de sécurité et peuvent évoluer avec vos compétences.</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Onglet Création -->
+        <div class="tab-pane fade" id="create-tab-pane" role="tabpanel" aria-labelledby="create-tab" tabindex="0">
+            <div class="row">
+                <!-- Prévisualisation de la mascotte -->
+                <div class="col-md-5">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-eye me-2"></i>Prévisualisation</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="mascot-creator-canvas" id="mascotPreview">
+                                <!-- La prévisualisation sera affichée ici -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-sliders-h me-2"></i>Informations générales</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="mascotName" class="form-label">Nom de la mascotte</label>
+                                <input type="text" class="form-control" id="mascotName" placeholder="Donnez un nom à votre mascotte">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="personalityType" class="form-label">Personnalité</label>
+                                <select class="form-select" id="personalityType">
+                                    <option value="friendly">Amicale</option>
+                                    <option value="serious">Sérieuse</option>
+                                    <option value="vigilant">Vigilante</option>
+                                    <option value="playful">Ludique</option>
+                                    <option value="technical">Technique</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="securityScore" class="form-label">Niveau de sécurité (1-100): <span id="securityScoreValue">50</span></label>
+                                <input type="range" class="form-range security-score-slider" id="securityScore" min="1" max="100" value="50">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Options de personnalisation -->
+                <div class="col-md-7">
+                    <div class="card">
+                        <div class="card-header">
+                            <ul class="nav nav-tabs card-header-tabs" id="mascotCustomizationTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="base-tab" data-bs-toggle="tab" data-bs-target="#base-tab-pane" type="button" role="tab" aria-controls="base-tab-pane" aria-selected="true">Base</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="colors-tab" data-bs-toggle="tab" data-bs-target="#colors-tab-pane" type="button" role="tab" aria-controls="colors-tab-pane" aria-selected="false">Couleurs</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="accessories-tab" data-bs-toggle="tab" data-bs-target="#accessories-tab-pane" type="button" role="tab" aria-controls="accessories-tab-pane" aria-selected="false">Accessoires</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="outfit-tab" data-bs-toggle="tab" data-bs-target="#outfit-tab-pane" type="button" role="tab" aria-controls="outfit-tab-pane" aria-selected="false">Tenue</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="background-tab" data-bs-toggle="tab" data-bs-target="#background-tab-pane" type="button" role="tab" aria-controls="background-tab-pane" aria-selected="false">Arrière-plan</button>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="card-body">
+                            <div class="tab-content" id="mascotCustomizationTabsContent">
+                                <!-- Onglet Base -->
+                                <div class="tab-pane fade show active" id="base-tab-pane" role="tabpanel" aria-labelledby="base-tab" tabindex="0">
+                                    <div class="row row-cols-2 row-cols-md-3 g-2 element-picker" id="baseOptions">
+                                        <!-- Les options de base seront chargées ici dynamiquement -->
+                                    </div>
+                                </div>
                                 
-                                <div class="mascot-customization">
-                                    <h5 class="mb-3">Éléments de base</h5>
-                                    <div class="row mb-3" id="baseElements">
-                                        <!-- Les éléments de base seront chargés ici -->
-                                        <div class="text-center">
-                                            <div class="spinner-border text-primary" role="status">
-                                                <span class="visually-hidden">Chargement...</span>
-                                            </div>
+                                <!-- Onglet Couleurs -->
+                                <div class="tab-pane fade" id="colors-tab-pane" role="tabpanel" aria-labelledby="colors-tab" tabindex="0">
+                                    <div class="mb-3">
+                                        <label class="form-label">Couleur principale</label>
+                                        <div class="input-group">
+                                            <input type="color" class="form-control form-control-color" id="primaryColorPicker" value="#3498db">
+                                            <span class="input-group-text" id="primaryColorValue">#3498db</span>
                                         </div>
                                     </div>
                                     
-                                    <h5 class="mb-3">Chapeaux</h5>
-                                    <div class="row mb-3" id="hatElements">
-                                        <!-- Les chapeaux seront chargés ici -->
+                                    <div class="mb-3">
+                                        <label class="form-label">Couleur secondaire</label>
+                                        <div class="input-group">
+                                            <input type="color" class="form-control form-control-color" id="secondaryColorPicker" value="#2ecc71">
+                                            <span class="input-group-text" id="secondaryColorValue">#2ecc71</span>
+                                        </div>
                                     </div>
                                     
-                                    <h5 class="mb-3">Accessoires</h5>
-                                    <div class="row mb-3" id="accessoryElements">
-                                        <!-- Les accessoires seront chargés ici -->
+                                    <div class="mb-3">
+                                        <label class="form-label">Couleur d'accentuation</label>
+                                        <div class="input-group">
+                                            <input type="color" class="form-control form-control-color" id="accentColorPicker" value="#e74c3c">
+                                            <span class="input-group-text" id="accentColorValue">#e74c3c</span>
+                                        </div>
                                     </div>
                                     
-                                    <h5 class="mb-3">Tenues</h5>
-                                    <div class="row mb-3" id="outfitElements">
-                                        <!-- Les tenues seront chargées ici -->
-                                    </div>
-                                    
-                                    <h5 class="mb-3">Arrière-plans</h5>
-                                    <div class="row mb-3" id="backgroundElements">
-                                        <!-- Les arrière-plans seront chargés ici -->
+                                    <div class="mb-3">
+                                        <label class="form-label">Palettes prédéfinies</label>
+                                        <div class="d-flex flex-wrap gap-2" id="colorPalettes">
+                                            <button class="btn btn-sm btn-outline-primary color-palette" data-primary="#3498db" data-secondary="#2ecc71" data-accent="#e74c3c">
+                                                Classique
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-primary color-palette" data-primary="#2c3e50" data-secondary="#e74c3c" data-accent="#f1c40f">
+                                                Cybersécurité
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-primary color-palette" data-primary="#9b59b6" data-secondary="#3498db" data-accent="#e67e22">
+                                                Créatif
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-primary color-palette" data-primary="#1abc9c" data-secondary="#16a085" data-accent="#f1c40f">
+                                                Nature
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-primary color-palette" data-primary="#34495e" data-secondary="#95a5a6" data-accent="#f39c12">
+                                                Professionnel
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                                 
-                                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                                    <button type="button" id="previewBtn" class="btn btn-primary me-md-2">
-                                        <i class="fas fa-eye me-1"></i>Aperçu
-                                    </button>
-                                    <button type="submit" id="saveBtn" class="btn btn-success">
-                                        <i class="fas fa-save me-1"></i>Sauvegarder
-                                    </button>
+                                <!-- Onglet Accessoires -->
+                                <div class="tab-pane fade" id="accessories-tab-pane" role="tabpanel" aria-labelledby="accessories-tab" tabindex="0">
+                                    <ul class="nav nav-pills mb-3" id="accessorySubTabs" role="tablist">
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link active" id="hats-tab" data-bs-toggle="pill" data-bs-target="#hats-tab-pane" type="button" role="tab" aria-controls="hats-tab-pane" aria-selected="true">Chapeaux</button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="glasses-tab" data-bs-toggle="pill" data-bs-target="#glasses-tab-pane" type="button" role="tab" aria-controls="glasses-tab-pane" aria-selected="false">Lunettes</button>
+                                        </li>
+                                    </ul>
+                                    <div class="tab-content" id="accessorySubTabsContent">
+                                        <div class="tab-pane fade show active" id="hats-tab-pane" role="tabpanel" aria-labelledby="hats-tab" tabindex="0">
+                                            <div class="row row-cols-2 row-cols-md-3 g-2 element-picker" id="hatOptions">
+                                                <!-- Les options de chapeaux seront chargées ici dynamiquement -->
+                                            </div>
+                                        </div>
+                                        <div class="tab-pane fade" id="glasses-tab-pane" role="tabpanel" aria-labelledby="glasses-tab" tabindex="0">
+                                            <div class="row row-cols-2 row-cols-md-3 g-2 element-picker" id="glassesOptions">
+                                                <!-- Les options de lunettes seront chargées ici dynamiquement -->
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Onglet Galerie -->
-                <div class="tab-pane fade" id="nav-gallery" role="tabpanel" aria-labelledby="nav-gallery-tab">
-                    <div class="card">
-                        <div class="card-body">
-                            <h4 class="card-title mb-3">Vos mascottes sauvegardées</h4>
-                            
-                            <div class="row" id="mascotGallery">
-                                <!-- Les mascottes sauvegardées seront chargées ici -->
-                                <div class="text-center py-5">
-                                    <div class="spinner-border text-primary" role="status">
-                                        <span class="visually-hidden">Chargement...</span>
+                                
+                                <!-- Onglet Tenue -->
+                                <div class="tab-pane fade" id="outfit-tab-pane" role="tabpanel" aria-labelledby="outfit-tab" tabindex="0">
+                                    <div class="row row-cols-2 row-cols-md-3 g-2 element-picker" id="outfitOptions">
+                                        <!-- Les options de tenue seront chargées ici dynamiquement -->
+                                    </div>
+                                </div>
+                                
+                                <!-- Onglet Arrière-plan -->
+                                <div class="tab-pane fade" id="background-tab-pane" role="tabpanel" aria-labelledby="background-tab" tabindex="0">
+                                    <div class="row row-cols-2 row-cols-md-3 g-2 element-picker" id="backgroundOptions">
+                                        <!-- Les options d'arrière-plan seront chargées ici dynamiquement -->
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                <!-- Onglet Apprentissage -->
-                <div class="tab-pane fade" id="nav-learn" role="tabpanel" aria-labelledby="nav-learn-tab">
-                    <div class="card">
-                        <div class="card-body">
-                            <h4 class="card-title mb-3">À propos des mascottes de cybersécurité</h4>
-                            
-                            <div class="alert alert-info">
-                                <h5><i class="fas fa-info-circle me-2"></i>Pourquoi une mascotte de cybersécurité?</h5>
-                                <p>Votre mascotte personnalisée représente votre profil de sécurité et vous accompagne dans votre parcours de protection numérique. Plus vous améliorez vos pratiques de sécurité, plus votre mascotte devient puissante!</p>
-                            </div>
-                            
-                            <h5 class="mt-4 mb-3">Niveaux de sécurité</h5>
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead class="table-dark">
-                                        <tr>
-                                            <th>Niveau</th>
-                                            <th>Score</th>
-                                            <th>Titre</th>
-                                            <th>Description</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td><span class="badge bg-danger">Novice</span></td>
-                                            <td>0-39</td>
-                                            <td>Apprenti en sécurité</td>
-                                            <td>Vous commencez tout juste votre voyage en cybersécurité.</td>
-                                        </tr>
-                                        <tr>
-                                            <td><span class="badge bg-warning text-dark">Basique</span></td>
-                                            <td>40-59</td>
-                                            <td>Défenseur en formation</td>
-                                            <td>Vous connaissez les principes fondamentaux de la sécurité.</td>
-                                        </tr>
-                                        <tr>
-                                            <td><span class="badge bg-info text-dark">Intermédiaire</span></td>
-                                            <td>60-74</td>
-                                            <td>Protecteur confirmé</td>
-                                            <td>Vous avez une bonne compréhension des menaces courantes.</td>
-                                        </tr>
-                                        <tr>
-                                            <td><span class="badge bg-primary">Avancé</span></td>
-                                            <td>75-89</td>
-                                            <td>Gardien avancé</td>
-                                            <td>Vous maîtrisez la plupart des aspects de la cybersécurité.</td>
-                                        </tr>
-                                        <tr>
-                                            <td><span class="badge bg-success">Expert</span></td>
-                                            <td>90-100</td>
-                                            <td>Expert en cybersécurité</td>
-                                            <td>Votre expertise en sécurité est impressionnante!</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            
-                            <h5 class="mt-4 mb-3">Comment améliorer votre score?</h5>
-                            <ul class="list-group mb-4">
-                                <li class="list-group-item"><i class="fas fa-check-circle text-success me-2"></i>Utilisez des accessoires et équipements de sécurité pour votre mascotte</li>
-                                <li class="list-group-item"><i class="fas fa-check-circle text-success me-2"></i>Résolvez des défis de sécurité dans l'application</li>
-                                <li class="list-group-item"><i class="fas fa-check-circle text-success me-2"></i>Participez aux analyses régulières de votre réseau</li>
-                                <li class="list-group-item"><i class="fas fa-check-circle text-success me-2"></i>Appliquez les recommandations de sécurité proposées</li>
-                                <li class="list-group-item"><i class="fas fa-check-circle text-success me-2"></i>Complétez votre profil de sécurité en ajoutant des informations</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Panneau latéral d'aperçu -->
-        <div class="col-lg-4">
-            <div class="card sticky-top" style="top: 20px;">
-                <div class="card-body">
-                    <h4 class="card-title mb-3">Aperçu</h4>
                     
-                    <div class="mascot-preview mb-3" id="mascotPreview">
-                        <div class="text-center py-5 text-muted">
-                            <i class="fas fa-user-shield fa-4x mb-3"></i>
-                            <p>Votre mascotte apparaîtra ici</p>
-                        </div>
-                    </div>
-                    
-                    <div id="mascotDetails" style="display: none;">
-                        <div class="text-center mb-3">
-                            <h4 id="previewName">Nom de la mascotte</h4>
-                            
-                            <div class="d-flex justify-content-center align-items-center mb-2">
-                                <div class="security-score me-3" id="securityScore">50</div>
-                                <div class="text-start">
-                                    <div class="security-level" id="securityLevel">Niveau de sécurité</div>
-                                    <div class="security-title" id="securityTitle">Titre de sécurité</div>
-                                </div>
-                            </div>
-                            
-                            <div id="personalityTraits">
-                                <!-- Les traits de personnalité seront affichés ici -->
-                            </div>
-                        </div>
-                        
-                        <div class="mascot-story" id="mascotStory">
-                            <!-- L'histoire de la mascotte sera affichée ici -->
-                        </div>
-                        
-                        <div class="d-flex justify-content-center mt-3">
-                            <button type="button" class="btn btn-outline-primary me-2 share-button" title="Télécharger SVG">
-                                <i class="fas fa-download"></i>
+                    <div class="d-flex justify-content-between mt-3">
+                        <button class="btn btn-outline-secondary" id="randomizeMascot">
+                            <i class="fas fa-random me-2"></i>Aléatoire
+                        </button>
+                        <div>
+                            <button class="btn btn-outline-primary me-2" id="resetMascot">
+                                <i class="fas fa-undo me-2"></i>Réinitialiser
                             </button>
-                            <button type="button" class="btn btn-outline-info me-2 share-button" title="Partager par e-mail">
-                                <i class="fas fa-envelope"></i>
-                            </button>
-                            <button type="button" class="btn btn-outline-success share-button" title="Partager sur les réseaux sociaux">
-                                <i class="fas fa-share-alt"></i>
+                            <button class="btn btn-primary" id="saveMascot">
+                                <i class="fas fa-save me-2"></i>Enregistrer
                             </button>
                         </div>
                     </div>
@@ -365,46 +397,23 @@
     </div>
 </div>
 
-<!-- Modal d'affichage de mascotte -->
-<div class="modal fade" id="mascotModal" tabindex="-1" aria-labelledby="mascotModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+<!-- Modal pour l'histoire de la mascotte -->
+<div class="modal fade" id="mascotStoryModal" tabindex="-1" aria-labelledby="mascotStoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="mascotModalLabel">Détails de la mascotte</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                <h5 class="modal-title" id="mascotStoryModalLabel">Histoire de la Mascotte</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="row">
-                    <div class="col-md-6 text-center">
-                        <div id="modalMascotPreview" class="mb-3">
-                            <!-- Aperçu de la mascotte sera affiché ici -->
-                        </div>
-                        <h4 id="modalMascotName"></h4>
-                        <div class="d-flex justify-content-center align-items-center mb-2">
-                            <div class="security-score me-3" id="modalSecurityScore"></div>
-                            <div class="text-start">
-                                <div class="security-level" id="modalSecurityLevel"></div>
-                                <div class="security-title" id="modalSecurityTitle"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div id="modalPersonalityTraits" class="mb-3">
-                            <!-- Traits de personnalité seront affichés ici -->
-                        </div>
-                        <div class="mascot-story" id="modalMascotStory">
-                            <!-- Histoire de la mascotte sera affichée ici -->
-                        </div>
-                    </div>
+                <div class="text-center mb-3" id="modalMascotPreview">
+                    <!-- Prévisualisation de la mascotte -->
+                </div>
+                <div class="mascot-story" id="mascotStoryContent">
+                    <!-- L'histoire de la mascotte sera chargée ici -->
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary me-2" id="editMascotBtn">
-                    <i class="fas fa-edit me-1"></i>Modifier
-                </button>
-                <button type="button" class="btn btn-danger me-2" id="deleteMascotBtn">
-                    <i class="fas fa-trash-alt me-1"></i>Supprimer
-                </button>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
             </div>
         </div>
@@ -412,19 +421,19 @@
 </div>
 
 <!-- Modal de confirmation de suppression -->
-<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+<div class="modal fade" id="deleteMascotModal" tabindex="-1" aria-labelledby="deleteMascotModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="deleteConfirmModalLabel">Confirmer la suppression</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                <h5 class="modal-title" id="deleteMascotModalLabel">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p>Êtes-vous sûr de vouloir supprimer cette mascotte? Cette action est irréversible.</p>
+                <p>Êtes-vous sûr de vouloir supprimer cette mascotte ? Cette action est irréversible.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Supprimer</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteMascot">Supprimer</button>
             </div>
         </div>
     </div>
@@ -433,4 +442,127 @@
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/mascot_creator.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialiser le créateur de mascottes
+        const mascotCreator = new MascotCreator();
+        
+        // Charger les éléments disponibles
+        mascotCreator.loadElements();
+        
+        // Gestionnaire d'événements pour le slider de niveau de sécurité
+        const securityScoreSlider = document.getElementById('securityScore');
+        const securityScoreValue = document.getElementById('securityScoreValue');
+        
+        securityScoreSlider.addEventListener('input', function() {
+            securityScoreValue.textContent = this.value;
+            mascotCreator.updateSecurityScore(parseInt(this.value));
+        });
+        
+        // Gestionnaire d'événements pour le bouton de sauvegarde
+        document.getElementById('saveMascot').addEventListener('click', function() {
+            mascotCreator.saveMascot();
+        });
+        
+        // Gestionnaire d'événements pour le bouton aléatoire
+        document.getElementById('randomizeMascot').addEventListener('click', function() {
+            mascotCreator.randomizeMascot();
+        });
+        
+        // Gestionnaire d'événements pour le bouton de réinitialisation
+        document.getElementById('resetMascot').addEventListener('click', function() {
+            mascotCreator.resetMascot();
+        });
+        
+        // Gestionnaire d'événements pour les pickers de couleurs
+        document.getElementById('primaryColorPicker').addEventListener('input', function() {
+            const color = this.value;
+            document.getElementById('primaryColorValue').textContent = color;
+            mascotCreator.updateColor('primary', color);
+        });
+        
+        document.getElementById('secondaryColorPicker').addEventListener('input', function() {
+            const color = this.value;
+            document.getElementById('secondaryColorValue').textContent = color;
+            mascotCreator.updateColor('secondary', color);
+        });
+        
+        document.getElementById('accentColorPicker').addEventListener('input', function() {
+            const color = this.value;
+            document.getElementById('accentColorValue').textContent = color;
+            mascotCreator.updateColor('accent', color);
+        });
+        
+        // Gestionnaire d'événements pour les palettes de couleurs prédéfinies
+        document.querySelectorAll('.color-palette').forEach(button => {
+            button.addEventListener('click', function() {
+                const primary = this.dataset.primary;
+                const secondary = this.dataset.secondary;
+                const accent = this.dataset.accent;
+                
+                document.getElementById('primaryColorPicker').value = primary;
+                document.getElementById('primaryColorValue').textContent = primary;
+                
+                document.getElementById('secondaryColorPicker').value = secondary;
+                document.getElementById('secondaryColorValue').textContent = secondary;
+                
+                document.getElementById('accentColorPicker').value = accent;
+                document.getElementById('accentColorValue').textContent = accent;
+                
+                mascotCreator.updateColor('primary', primary);
+                mascotCreator.updateColor('secondary', secondary);
+                mascotCreator.updateColor('accent', accent);
+            });
+        });
+        
+        // Gestionnaire d'événements pour afficher l'histoire d'une mascotte
+        document.querySelectorAll('.view-mascot-story').forEach(button => {
+            button.addEventListener('click', function() {
+                const mascotId = this.dataset.mascotId;
+                mascotCreator.loadMascotStory(mascotId);
+            });
+        });
+        
+        // Gestionnaire d'événements pour éditer une mascotte
+        document.querySelectorAll('.edit-mascot').forEach(button => {
+            button.addEventListener('click', function() {
+                const mascotId = this.dataset.mascotId;
+                mascotCreator.editMascot(mascotId);
+                
+                // Activer l'onglet de création
+                const createTab = document.getElementById('create-tab');
+                bootstrap.Tab.getOrCreateInstance(createTab).show();
+            });
+        });
+        
+        // Gestionnaire d'événements pour supprimer une mascotte
+        document.querySelectorAll('.delete-mascot').forEach(button => {
+            button.addEventListener('click', function() {
+                const mascotId = this.dataset.mascotId;
+                document.getElementById('confirmDeleteMascot').dataset.mascotId = mascotId;
+                const deleteModal = new bootstrap.Modal(document.getElementById('deleteMascotModal'));
+                deleteModal.show();
+            });
+        });
+        
+        // Confirmation de suppression d'une mascotte
+        document.getElementById('confirmDeleteMascot').addEventListener('click', function() {
+            const mascotId = this.dataset.mascotId;
+            mascotCreator.deleteMascot(mascotId);
+            
+            const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteMascotModal'));
+            deleteModal.hide();
+        });
+        
+        // Gestionnaire d'événements pour le changement de nom
+        document.getElementById('mascotName').addEventListener('input', function() {
+            mascotCreator.updateName(this.value);
+        });
+        
+        // Gestionnaire d'événements pour le changement de personnalité
+        document.getElementById('personalityType').addEventListener('change', function() {
+            mascotCreator.updatePersonality(this.value);
+        });
+    });
+</script>
 {% endblock %}
