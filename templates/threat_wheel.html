@@ -1,0 +1,296 @@
+{% extends "layout.html" %}
+{% block title %}Roue des Menaces | NetSecure Pro{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+.wheel-container {
+  width: 100%;
+  height: 600px;
+  position: relative;
+  margin-bottom: 30px;
+}
+
+.wheel-tooltip {
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.85);
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 14px;
+  pointer-events: none;
+  z-index: 1000;
+  max-width: 300px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.stats-card {
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: #2a2a2a;
+  transition: transform 0.3s ease;
+}
+
+.stats-card:hover {
+  transform: translateY(-5px);
+}
+
+.stats-value {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+.stats-label {
+  font-size: 1rem;
+  color: #aaa;
+  margin-bottom: 10px;
+}
+
+.stats-info {
+  font-size: 0.9rem;
+  color: #bbb;
+}
+
+.stat-high {
+  color: #FF5252;
+}
+
+.stat-medium {
+  color: #FF9800;
+}
+
+.stat-low {
+  color: #8BC34A;
+}
+
+.category-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.category-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.category-item:hover {
+  transform: scale(1.05);
+}
+
+.category-color {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.category-name {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.faded {
+  opacity: 0.5;
+}
+
+.advanced-controls {
+  background: #2a2a2a;
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 30px;
+}
+
+.filter-group {
+  margin-bottom: 15px;
+}
+
+.filter-label {
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.severity-slider {
+  height: 5px;
+  border-radius: 5px;
+}
+
+.severity-slider .noUi-connect {
+  background: linear-gradient(to right, #8BC34A, #FF9800, #FF5252);
+}
+
+.severity-slider .noUi-handle {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+}
+
+.wheel-controls {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+  gap: 10px;
+}
+
+.wheel-btn {
+  padding: 8px 15px;
+  border-radius: 20px;
+  background: #333;
+  border: none;
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.wheel-btn:hover {
+  background: #444;
+}
+
+.wheel-btn.active {
+  background: #007bff;
+}
+
+/* Animation */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.pulse {
+  animation: pulse 1.5s infinite;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row mb-4">
+    <div class="col-12">
+      <h1 class="text-center mb-3">Roue des Menaces Réseau</h1>
+      <p class="text-center text-muted">Visualisation interactive et ludique des menaces de sécurité réseau</p>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-md-8">
+      <div class="card bg-dark text-white">
+        <div class="card-body">
+          <div class="wheel-controls">
+            <button class="wheel-btn active" data-view="severity">Sévérité</button>
+            <button class="wheel-btn" data-view="frequency">Fréquence</button>
+            <button class="wheel-btn" data-view="recency">Récence</button>
+          </div>
+          
+          <div class="category-legend" id="categoryLegend">
+            <!-- Les catégories seront ajoutées dynamiquement par JavaScript -->
+          </div>
+          
+          <div class="wheel-container" id="threatWheel"></div>
+          
+          <div class="wheel-tooltip" id="wheelTooltip"></div>
+        </div>
+      </div>
+      
+      <div class="advanced-controls mt-4">
+        <h4>Filtres avancés</h4>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="filter-group">
+              <div class="filter-label">Niveau de sévérité</div>
+              <div id="severitySlider" class="severity-slider"></div>
+              <div class="d-flex justify-content-between mt-2">
+                <small class="text-success">Faible</small>
+                <small class="text-warning">Moyen</small>
+                <small class="text-danger">Élevé</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="filter-group">
+              <div class="filter-label">Période de détection</div>
+              <select class="form-select bg-dark text-white" id="timeframeFilter">
+                <option value="all">Toutes les périodes</option>
+                <option value="7">7 derniers jours</option>
+                <option value="30">30 derniers jours</option>
+                <option value="90">90 derniers jours</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <div class="stats-card">
+        <div class="stats-label">Menaces totales</div>
+        <div class="stats-value" id="totalThreats">--</div>
+        <div class="stats-info">Nombre total de menaces détectées</div>
+      </div>
+      
+      <div class="stats-card">
+        <div class="stats-label">Sévérité moyenne</div>
+        <div class="stats-value" id="avgSeverity">--</div>
+        <div class="stats-info">Niveau moyen de gravité des menaces</div>
+      </div>
+      
+      <div class="stats-card">
+        <div class="stats-label">Distribution par sévérité</div>
+        <div class="d-flex justify-content-between">
+          <div class="text-center">
+            <div class="stats-value stat-low" id="lowSeverity">--</div>
+            <div class="stats-info">Faible</div>
+          </div>
+          <div class="text-center">
+            <div class="stats-value stat-medium" id="mediumSeverity">--</div>
+            <div class="stats-info">Moyen</div>
+          </div>
+          <div class="text-center">
+            <div class="stats-value stat-high" id="highSeverity">--</div>
+            <div class="stats-info">Élevé</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="stats-card">
+        <div class="stats-label">Menaces récentes</div>
+        <div class="stats-value" id="recentThreats">--</div>
+        <div class="stats-info">Menaces détectées dans les 7 derniers jours</div>
+      </div>
+      
+      <div class="stats-card">
+        <div class="stats-label">Catégorie la plus active</div>
+        <div class="stats-value" id="topCategory">--</div>
+        <div class="stats-info" id="topCategoryInfo">--</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/nouislider@14.6.3/distribute/nouislider.min.js"></script>
+<script src="{{ url_for('static', filename='js/threat_wheel.js') }}"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialisation de la roue des menaces
+    initThreatWheel();
+    
+    // Chargement des données
+    fetchThreatWheelData();
+  });
+</script>
+{% endblock %}

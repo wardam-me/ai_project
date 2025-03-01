@@ -26,6 +26,7 @@ from protocol_analyzer import ProtocolAnalyzer
 from infographic_generator import InfographicGenerator
 from ai_infographic_assistant import AIInfographicAssistant
 from recommendations import RecommendationSystem
+from threat_color_wheel import get_threat_wheel
 
 # Configuration du logging
 logging.basicConfig(level=logging.DEBUG)
@@ -346,6 +347,84 @@ def register_routes(app):
     # ======================================================
     # Routes pour l'analyse IA
     # ======================================================
+    # ======================================================
+    # Routes pour la roue des menaces
+    # ======================================================
+    @app.route('/threat-wheel')
+    @login_required
+    def threat_wheel():
+        """Page de la roue colorée des menaces réseau"""
+        return render_template('threat_wheel.html')
+    
+    @app.route('/api/threat-wheel-data')
+    @login_required
+    def get_threat_wheel_data():
+        """API: Récupère les données de la roue des menaces en JSON"""
+        # Obtenir l'instance de la roue des menaces
+        threat_wheel_instance = get_threat_wheel()
+        
+        # Récupérer les données formatées pour la visualisation
+        wheel_data = threat_wheel_instance.get_wheel_data()
+        
+        # Ajouter les statistiques
+        wheel_data['stats'] = threat_wheel_instance.get_threat_stats()
+        
+        return jsonify(wheel_data)
+    
+    @app.route('/api/threat-wheel/add', methods=['POST'])
+    @login_required
+    def add_threat():
+        """API: Ajoute une nouvelle menace à la roue"""
+        if not request.is_json:
+            return jsonify({'success': False, 'error': 'JSON attendu'}), 400
+        
+        data = request.json
+        category_id = data.get('category')
+        threat_data = data.get('threat')
+        
+        if not category_id or not threat_data:
+            return jsonify({'success': False, 'error': 'Données de menace incomplètes'}), 400
+        
+        # Ajouter la menace
+        threat_wheel_instance = get_threat_wheel()
+        success = threat_wheel_instance.add_threat(category_id, threat_data)
+        
+        if success:
+            return jsonify({'success': True})
+        else:
+            return jsonify({'success': False, 'error': 'Impossible d\'ajouter la menace'}), 400
+    
+    @app.route('/api/threat-wheel/update/<category_id>/<threat_name>', methods=['PUT'])
+    @login_required
+    def update_threat(category_id, threat_name):
+        """API: Met à jour une menace existante"""
+        if not request.is_json:
+            return jsonify({'success': False, 'error': 'JSON attendu'}), 400
+        
+        updated_data = request.json
+        
+        # Mettre à jour la menace
+        threat_wheel_instance = get_threat_wheel()
+        success = threat_wheel_instance.update_threat(category_id, threat_name, updated_data)
+        
+        if success:
+            return jsonify({'success': True})
+        else:
+            return jsonify({'success': False, 'error': 'Menace non trouvée'}), 404
+    
+    @app.route('/api/threat-wheel/delete/<category_id>/<threat_name>', methods=['DELETE'])
+    @login_required
+    def delete_threat(category_id, threat_name):
+        """API: Supprime une menace existante"""
+        # Supprimer la menace
+        threat_wheel_instance = get_threat_wheel()
+        success = threat_wheel_instance.remove_threat(category_id, threat_name)
+        
+        if success:
+            return jsonify({'success': True})
+        else:
+            return jsonify({'success': False, 'error': 'Menace non trouvée'}), 404
+
     @app.route('/ai-analysis')
     @login_required
     def ai_analysis():
