@@ -1277,6 +1277,60 @@ def echo_analyzer_generate_test():
         flash(f"Données de test générées et analysées! Score de santé réseau: {results['network_health']['score']}/100", "success")
         return redirect(url_for('echo_analyzer_view_report', filename=analyzer.last_analysis))
         
+@app.route('/echo-analyzer/auto-analysis', methods=['POST'])
+@login_required
+def echo_analyzer_auto_analysis():
+    """Lance l'analyseur automatique d'écho pour tous les fichiers disponibles"""
+    try:
+        from echo_data_analyzer import EchoDataAnalyzer
+        import glob
+        
+        # Initialiser l'analyseur
+        analyzer = EchoDataAnalyzer()
+        
+        # Trouver tous les fichiers de données d'écho
+        echo_files = glob.glob(os.path.join(analyzer.data_dir, "*.json"))
+        
+        if not echo_files:
+            flash("Aucun fichier de données d'écho trouvé", "warning")
+            return redirect(url_for('echo_analyzer_dashboard'))
+        
+        # Analyser les fichiers récents (max 5)
+        recent_files = sorted(echo_files, key=os.path.getmtime, reverse=True)[:5]
+        analyzed_files = []
+        
+        for file_path in recent_files:
+            filename = os.path.basename(file_path)
+            # Vérifier si l'analyse existe déjà
+            exists = False
+            for report_file in os.listdir(analyzer.results_dir):
+                if report_file.startswith("echo_analysis_") and report_file.endswith(".json"):
+                    try:
+                        with open(os.path.join(analyzer.results_dir, report_file), 'r') as f:
+                            report = json.load(f)
+                            if report.get("filename") == filename:
+                                exists = True
+                                break
+                    except:
+                        pass
+            
+            if not exists:
+                results = analyzer.perform_full_analysis(filename)
+                analyzed_files.append(filename)
+        
+        if analyzed_files:
+            flash(f"Analyse automatique terminée pour {len(analyzed_files)} fichier(s)", "success")
+        else:
+            flash("Tous les fichiers récents ont déjà été analysés", "info")
+            
+        return redirect(url_for('echo_analyzer_dashboard'))
+    except ImportError:
+        flash("Le module d'analyseur de données d'écho n'est pas disponible", "warning")
+        return redirect(url_for('index'))
+    except Exception as e:
+        flash(f"Erreur lors de l'analyse automatique: {str(e)}", "danger")
+        return redirect(url_for('echo_analyzer_dashboard'))sis))
+        
     except ImportError:
         flash("Le module d'analyseur de données d'écho n'est pas disponible", "warning")
         return redirect(url_for('index'))

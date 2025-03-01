@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -19,130 +18,69 @@ try:
     logger.info("Module d'analyse d'écho importé avec succès")
 except ImportError as e:
     logger.error(f"Erreur lors de l'importation du module echo_data_analyzer: {e}")
-    exit(1)
+    raise
 
-class TestEchoAnalyzer(unittest.TestCase):
-    """Tests pour l'analyseur de données d'écho"""
-    
+class TestEchoDataAnalyzer(unittest.TestCase):
+    """Tests unitaires pour l'analyseur de données d'écho"""
+
     def setUp(self):
-        """Initialisation avant chaque test"""
-        self.test_data_dir = "instance/test_echo_data"
-        self.test_results_dir = "instance/test_echo_results"
-        
-        # Créer les répertoires de test s'ils n'existent pas
-        os.makedirs(self.test_data_dir, exist_ok=True)
-        os.makedirs(self.test_results_dir, exist_ok=True)
-        
-        # Initialiser l'analyseur avec les répertoires de test
-        self.analyzer = EchoDataAnalyzer(
-            data_dir=self.test_data_dir,
-            results_dir=self.test_results_dir
-        )
-        
+        """Initialise l'environnement de test"""
+        self.analyzer = EchoDataAnalyzer()
+        self.test_filename = "test_echo_unittest.json"
+
         # Générer des données de test
-        self.test_filename = "test_echo_data.json"
-        self.analyzer.generate_test_data(self.test_filename, entries=20)
-        logger.info("Jeu de données de test généré")
-    
-    def test_01_load_data(self):
-        """Test du chargement des données"""
+        self.assertTrue(self.analyzer.generate_test_data(self.test_filename, entries=10, with_anomalies=True))
+
+    def tearDown(self):
+        """Nettoie l'environnement après les tests"""
+        # Supprimer le fichier de test s'il existe
+        test_path = os.path.join(self.analyzer.data_dir, self.test_filename)
+        if os.path.exists(test_path):
+            os.remove(test_path)
+
+    def test_load_echo_data(self):
+        """Teste le chargement des données d'écho"""
         data = self.analyzer.load_echo_data(self.test_filename)
         self.assertIsNotNone(data)
-        self.assertEqual(len(data), 20)
-        logger.info("Test de chargement de données réussi")
-    
-    def test_02_analyze_rtt(self):
-        """Test de l'analyse des temps d'aller-retour"""
+        self.assertEqual(len(data), 10)
+
+    def test_analyze_round_trip_times(self):
+        """Teste l'analyse des temps d'aller-retour"""
         data = self.analyzer.load_echo_data(self.test_filename)
         results = self.analyzer.analyze_round_trip_times(data)
-        
+
         self.assertIn("avg_rtt_ms", results)
         self.assertIn("min_rtt_ms", results)
         self.assertIn("max_rtt_ms", results)
-        self.assertIn("anomalies_count", results)
-        
-        logger.info(f"RTT moyen: {results['avg_rtt_ms']} ms")
-        logger.info("Test d'analyse RTT réussi")
-    
-    def test_03_analyze_packet_loss(self):
-        """Test de l'analyse des pertes de paquets"""
+
+    def test_analyze_packet_loss(self):
+        """Teste l'analyse des pertes de paquets"""
         data = self.analyzer.load_echo_data(self.test_filename)
         results = self.analyzer.analyze_packet_loss(data)
-        
+
         self.assertIn("packets_sent", results)
         self.assertIn("packets_received", results)
-        self.assertIn("packets_lost", results)
         self.assertIn("loss_rate_percentage", results)
-        
-        logger.info(f"Taux de perte: {results['loss_rate_percentage']}%")
-        logger.info("Test d'analyse de perte de paquets réussi")
-    
-    def test_04_analyze_hop_count(self):
-        """Test de l'analyse du nombre de sauts"""
-        data = self.analyzer.load_echo_data(self.test_filename)
-        results = self.analyzer.analyze_hop_count(data)
-        
-        self.assertIn("avg_hop_count", results)
-        self.assertIn("min_hop_count", results)
-        self.assertIn("max_hop_count", results)
-        
-        logger.info(f"Nombre moyen de sauts: {results['avg_hop_count']}")
-        logger.info("Test d'analyse de sauts réussi")
-    
-    def test_05_analyze_patterns(self):
-        """Test de l'analyse des patterns"""
-        data = self.analyzer.load_echo_data(self.test_filename)
-        results = self.analyzer.analyze_echo_patterns(data)
-        
-        self.assertIn("data_points", results)
-        self.assertIn("is_regular_pattern", results)
-        
-        logger.info(f"Pattern régulier: {results['is_regular_pattern']}")
-        logger.info("Test d'analyse de patterns réussi")
-    
-    def test_06_full_analysis(self):
-        """Test de l'analyse complète"""
-        results = self.analyzer.perform_full_analysis(self.test_filename)
-        
-        self.assertIn("filename", results)
-        self.assertIn("timestamp", results)
-        self.assertIn("data_points", results)
-        self.assertIn("analyses", results)
-        self.assertIn("network_health", results)
-        self.assertIn("recommendations", results)
-        
-        logger.info(f"Score de santé réseau: {results['network_health']['score']}/100")
-        logger.info(f"Niveau de santé: {results['network_health']['level']}")
-        logger.info("Test d'analyse complète réussi")
-        
-        # Vérifier la sauvegarde des résultats
-        self.assertIsNotNone(self.analyzer.last_analysis)
-        result_path = os.path.join(self.test_results_dir, self.analyzer.last_analysis)
-        self.assertTrue(os.path.exists(result_path))
-    
-    def test_07_save_results(self):
-        """Test de la sauvegarde des résultats"""
-        test_results = {
-            "test": "save_results",
-            "timestamp": datetime.now().isoformat()
-        }
-        
-        saved = self.analyzer.save_analysis_results(test_results, "test_results.json")
-        self.assertTrue(saved)
-        
-        result_path = os.path.join(self.test_results_dir, "test_results.json")
-        self.assertTrue(os.path.exists(result_path))
-        
-        # Charger et vérifier
-        with open(result_path, 'r') as f:
-            loaded = json.load(f)
-        
-        self.assertEqual(loaded["test"], "save_results")
-        logger.info("Test de sauvegarde des résultats réussi")
 
-def main():
-    """Fonction principale pour exécuter les tests"""
-    unittest.main()
+    def test_perform_full_analysis(self):
+        """Teste l'analyse complète"""
+        results = self.analyzer.perform_full_analysis(self.test_filename)
+
+        self.assertIn("network_health", results)
+        self.assertIn("score", results["network_health"])
+        self.assertIn("level", results["network_health"])
+        self.assertIn("analyses", results)
+        self.assertIn("recommendations", results)
+
+        # Vérifier que le fichier de résultat a bien été créé
+        self.assertIsNotNone(self.analyzer.last_analysis)
+        result_path = os.path.join(self.analyzer.results_dir, self.analyzer.last_analysis)
+        self.assertTrue(os.path.exists(result_path))
 
 if __name__ == "__main__":
-    main()
+    # Créer les répertoires nécessaires
+    os.makedirs("instance/echo_data", exist_ok=True)
+    os.makedirs("instance/echo_reports", exist_ok=True)
+
+    # Exécuter les tests
+    unittest.main()

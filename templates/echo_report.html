@@ -383,3 +383,220 @@
   </div>
 </div>
 {% endblock %}
+{% extends "base.html" %}
+
+{% block title %}Rapport d'Analyse d'Écho - {{ report.filename }}{% endblock %}
+
+{% block styles %}
+<style>
+  .health-score {
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+    padding: 15px;
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+    line-height: 70px;
+    margin: 0 auto;
+    color: white;
+  }
+  
+  .excellent { background-color: #28a745; }
+  .bon { background-color: #17a2b8; }
+  .moyen { background-color: #ffc107; }
+  .mauvais { background-color: #fd7e14; }
+  .critique { background-color: #dc3545; }
+  
+  .chart-container {
+    height: 250px;
+    margin-bottom: 20px;
+  }
+  
+  .recommendation-item {
+    padding: 10px;
+    border-left: 4px solid #17a2b8;
+    margin-bottom: 10px;
+    background-color: rgba(23, 162, 184, 0.1);
+  }
+  
+  .ai-insight {
+    padding: 15px;
+    border-radius: 5px;
+    background-color: rgba(108, 117, 125, 0.1);
+    border-left: 4px solid #6c757d;
+    margin-bottom: 15px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Accueil</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('echo_analyzer_dashboard') }}">Analyseur d'Écho</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Rapport</li>
+    </ol>
+  </nav>
+  
+  <div class="card shadow mb-4">
+    <div class="card-header bg-primary text-white">
+      <h3 class="m-0"><i class="fas fa-file-alt mr-2"></i>Rapport d'Analyse d'Écho</h3>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <h4>Informations générales</h4>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item"><strong>Fichier:</strong> {{ report.filename }}</li>
+            <li class="list-group-item"><strong>Date d'analyse:</strong> {{ report.timestamp | replace("T", " ").split(".")[0] }}</li>
+            <li class="list-group-item"><strong>Points de données:</strong> {{ report.data_points }}</li>
+            <li class="list-group-item"><strong>Durée d'analyse:</strong> {{ report.analysis_duration_seconds }} secondes</li>
+          </ul>
+        </div>
+        <div class="col-md-6 text-center">
+          <h4>Score de santé réseau</h4>
+          <div class="health-score {{ report.network_health.level.lower() }}">
+            {{ report.network_health.score }}
+          </div>
+          <h5 class="mt-2">{{ report.network_health.level }}</h5>
+          
+          {% if report.ai_recommendation %}
+          <div class="ai-insight mt-3">
+            <h5><i class="fas fa-robot mr-2"></i>Analyse IA</h5>
+            <p>{{ report.ai_recommendation }}</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      
+      <hr>
+      
+      <h4>Analyse détaillée</h4>
+      <div class="row">
+        <!-- Temps d'aller-retour -->
+        <div class="col-md-6">
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="m-0">Temps d'aller-retour (RTT)</h5>
+            </div>
+            <div class="card-body">
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item"><strong>RTT moyen:</strong> {{ report.analyses.round_trip_times.avg_rtt_ms }} ms</li>
+                <li class="list-group-item"><strong>RTT min/max:</strong> {{ report.analyses.round_trip_times.min_rtt_ms }} / {{ report.analyses.round_trip_times.max_rtt_ms }} ms</li>
+                <li class="list-group-item"><strong>Anomalies:</strong> {{ report.analyses.round_trip_times.anomalies_count }} ({{ report.analyses.round_trip_times.anomalies_percentage }}%)</li>
+              </ul>
+              
+              {% if report.analyses.round_trip_times.ai_latency_insight %}
+              <div class="ai-insight mt-3">
+                <p><i class="fas fa-lightbulb mr-2"></i>{{ report.analyses.round_trip_times.ai_latency_insight }}</p>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        
+        <!-- Pertes de paquets -->
+        <div class="col-md-6">
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="m-0">Pertes de paquets</h5>
+            </div>
+            <div class="card-body">
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item"><strong>Paquets envoyés:</strong> {{ report.analyses.packet_loss.packets_sent }}</li>
+                <li class="list-group-item"><strong>Paquets reçus:</strong> {{ report.analyses.packet_loss.packets_received }}</li>
+                <li class="list-group-item"><strong>Taux de perte:</strong> {{ report.analyses.packet_loss.loss_rate_percentage }}%</li>
+              </ul>
+              
+              {% if report.analyses.packet_loss.ai_loss_insight %}
+              <div class="ai-insight mt-3">
+                <p><i class="fas fa-lightbulb mr-2"></i>{{ report.analyses.packet_loss.ai_loss_insight }}</p>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        
+        <!-- Sauts réseau -->
+        <div class="col-md-6">
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="m-0">Sauts réseau</h5>
+            </div>
+            <div class="card-body">
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item"><strong>Sauts moyen:</strong> {{ report.analyses.hop_count.avg_hop_count }}</li>
+                <li class="list-group-item"><strong>Sauts min/max:</strong> {{ report.analyses.hop_count.min_hop_count }} / {{ report.analyses.hop_count.max_hop_count }}</li>
+                <li class="list-group-item"><strong>Changements de route:</strong> {{ report.analyses.hop_count.route_changes }}</li>
+              </ul>
+              
+              {% if report.analyses.hop_count.ai_hop_insight %}
+              <div class="ai-insight mt-3">
+                <p><i class="fas fa-lightbulb mr-2"></i>{{ report.analyses.hop_count.ai_hop_insight }}</p>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        
+        <!-- Patterns d'écho -->
+        <div class="col-md-6">
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="m-0">Patterns d'écho</h5>
+            </div>
+            <div class="card-body">
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item"><strong>Intervalle moyen:</strong> {{ report.analyses.echo_patterns.avg_interval_seconds }} secondes</li>
+                <li class="list-group-item"><strong>Durée totale:</strong> {{ report.analyses.echo_patterns.time_span_seconds }} secondes</li>
+                <li class="list-group-item"><strong>Pattern régulier:</strong> {{ "Oui" if report.analyses.echo_patterns.is_regular_pattern else "Non" }}</li>
+              </ul>
+              
+              {% if report.analyses.echo_patterns.ai_pattern_insight %}
+              <div class="ai-insight mt-3">
+                <p><i class="fas fa-lightbulb mr-2"></i>{{ report.analyses.echo_patterns.ai_pattern_insight }}</p>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <hr>
+      
+      <h4>Recommandations</h4>
+      <div class="row">
+        <div class="col-12">
+          {% for rec in report.recommendations %}
+          <div class="recommendation-item">
+            <i class="fas fa-check-circle mr-2"></i> {{ rec }}
+          </div>
+          {% endfor %}
+          
+          {% if not report.recommendations %}
+          <div class="alert alert-info">
+            Aucune recommandation spécifique n'a été générée pour ce rapport.
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      
+      <div class="text-center mt-4">
+        <a href="{{ url_for('echo_analyzer_dashboard') }}" class="btn btn-primary"><i class="fas fa-arrow-left mr-2"></i>Retour au tableau de bord</a>
+        <a href="#" class="btn btn-success" onclick="window.print();"><i class="fas fa-print mr-2"></i>Imprimer le rapport</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Ici vous pouvez ajouter des graphiques avec Chart.js si nécessaire
+  });
+</script>
+{% endblock %}
