@@ -14,7 +14,12 @@ from datetime import datetime
 from typing import Dict, Any, Optional, List, Union
 
 from ai_auto_update import AIAutoUpdater
-from flask import current_app, g, jsonify
+try:
+    from flask import current_app, g, jsonify, Flask
+except ImportError:
+    # Pour les tests unitaires où Flask peut ne pas être disponible
+    class Flask:
+        pass
 
 # Configuration du logging
 logging.basicConfig(
@@ -404,7 +409,11 @@ def init_app(app):
     ai_update_integration.initialize_with_app(app)
     
     # Ajouter les routes admin
-    from flask import render_template, request, redirect, url_for, flash
+    try:
+        from flask import render_template, request, redirect, url_for, flash
+    except ImportError:
+        # Pour les tests unitaires où Flask peut ne pas être disponible
+        pass
     
     @app.route('/admin/ai-updates')
     def admin_ai_updates():

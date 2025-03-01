@@ -160,18 +160,18 @@
                             <div class="mb-3">
                                 <label class="form-label">Rappel</label>
                                 <div class="progress">
-                                    <div class="progress-bar bg-info" role="progressbar" style="width: {{ status.updater.metrics.model_performance.recall|default(0) * 100 }}%;" 
-                                         aria-valuenow="{{ status.updater.metrics.model_performance.recall|default(0) * 100 }}" aria-valuemin="0" aria-valuemax="100">
-                                        {{ (status.updater.metrics.model_performance.recall|default(0) * 100)|round(1) }}%
+                                    <div class="progress-bar bg-info" role="progressbar" style="width: {{ status.model_performance.recall|default(0) * 100 }}%;" 
+                                         aria-valuenow="{{ status.model_performance.recall|default(0) * 100 }}" aria-valuemin="0" aria-valuemax="100">
+                                        {{ (status.model_performance.recall|default(0) * 100)|round(1) }}%
                                     </div>
                                 </div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Score F1</label>
                                 <div class="progress">
-                                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ status.updater.metrics.model_performance.f1_score|default(0) * 100 }}%;" 
-                                         aria-valuenow="{{ status.updater.metrics.model_performance.f1_score|default(0) * 100 }}" aria-valuemin="0" aria-valuemax="100">
-                                        {{ (status.updater.metrics.model_performance.f1_score|default(0) * 100)|round(1) }}%
+                                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ status.model_performance.f1_score|default(0) * 100 }}%;" 
+                                         aria-valuenow="{{ status.model_performance.f1_score|default(0) * 100 }}" aria-valuemin="0" aria-valuemax="100">
+                                        {{ (status.model_performance.f1_score|default(0) * 100)|round(1) }}%
                                     </div>
                                 </div>
                             </div>
