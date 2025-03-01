@@ -1,0 +1,229 @@
+
+{% extends "base.html" %}
+
+{% block title %}Analyseur de Données Echo - NetSecure Pro{% endblock %}
+
+{% block styles %}
+<style>
+  .card-stats {
+    min-height: 150px;
+    transition: transform 0.3s;
+  }
+  .card-stats:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  }
+  .health-score {
+    font-size: 2.5rem;
+    font-weight: bold;
+  }
+  .health-excellent {
+    color: #28a745;
+  }
+  .health-good {
+    color: #17a2b8;
+  }
+  .health-medium {
+    color: #ffc107;
+  }
+  .health-bad {
+    color: #fd7e14;
+  }
+  .health-critical {
+    color: #dc3545;
+  }
+  .table-reports tbody tr {
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  .table-reports tbody tr:hover {
+    background-color: rgba(0,0,0,0.05);
+  }
+  .echo-actions {
+    margin-bottom: 1.5rem;
+    background-color: rgba(0,0,0,0.03);
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="row mb-4">
+    <div class="col">
+      <h1>
+        <i class="fas fa-broadcast-tower me-2"></i> 
+        Analyseur de Données Echo
+      </h1>
+      <p class="text-muted">
+        Analysez les données d'écho réseau pour détecter les problèmes potentiels et optimiser vos performances
+      </p>
+      <hr>
+    </div>
+  </div>
+
+  <div class="row echo-actions">
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-upload me-2"></i> Télécharger des données
+          </h5>
+        </div>
+        <div class="card-body">
+          <form action="{{ url_for('echo_analyzer_upload') }}" method="post" enctype="multipart/form-data">
+            <div class="mb-3">
+              <label for="echoDataFile" class="form-label">Fichier de données Echo (JSON)</label>
+              <input class="form-control" type="file" id="echoDataFile" name="echo_data_file" accept=".json" required>
+              <div class="form-text">
+                Téléchargez un fichier JSON contenant vos données d'écho réseau
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-upload me-2"></i> Télécharger et analyser
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-header bg-success text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-vial me-2"></i> Générer des données de test
+          </h5>
+        </div>
+        <div class="card-body">
+          <form action="{{ url_for('echo_analyzer_generate_test') }}" method="post">
+            <div class="mb-3">
+              <label for="entriesCount" class="form-label">Nombre d'entrées</label>
+              <input type="number" class="form-control" id="entriesCount" name="entries" min="10" max="1000" value="100">
+            </div>
+            <div class="mb-3 form-check">
+              <input type="checkbox" class="form-check-input" id="withAnomalies" name="with_anomalies" checked>
+              <label class="form-check-label" for="withAnomalies">Inclure des anomalies</label>
+            </div>
+            <button type="submit" class="btn btn-success">
+              <i class="fas fa-vial me-2"></i> Générer et analyser
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col">
+      <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-history me-2"></i> Rapports d'analyse précédents
+          </h5>
+        </div>
+        <div class="card-body">
+          {% if reports %}
+            <div class="table-responsive">
+              <table class="table table-striped table-reports">
+                <thead>
+                  <tr>
+                    <th>Horodatage</th>
+                    <th>Fichier</th>
+                    <th>Points de données</th>
+                    <th>Score de santé</th>
+                    <th>Niveau</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for report in reports %}
+                    <tr onclick="window.location.href='{{ url_for('echo_analyzer_view_report', filename=report.filename) }}'">
+                      <td>{{ report.timestamp }}</td>
+                      <td>{{ report.filename }}</td>
+                      <td>{{ report.data_points }}</td>
+                      <td>
+                        <div class="progress" style="height: 20px;">
+                          <div class="progress-bar
+                            {% if report.health_score >= 90 %}bg-success
+                            {% elif report.health_score >= 80 %}bg-info
+                            {% elif report.health_score >= 70 %}bg-warning
+                            {% elif report.health_score >= 60 %}bg-warning
+                            {% else %}bg-danger{% endif %}"
+                            role="progressbar"
+                            style="width: {{ report.health_score }}%"
+                            aria-valuenow="{{ report.health_score }}"
+                            aria-valuemin="0"
+                            aria-valuemax="100">{{ report.health_score }}%</div>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="badge 
+                          {% if report.health_level == 'Excellent' %}bg-success
+                          {% elif report.health_level == 'Bon' %}bg-info
+                          {% elif report.health_level == 'Moyen' %}bg-warning
+                          {% elif report.health_level == 'Mauvais' %}bg-warning text-dark
+                          {% else %}bg-danger{% endif %}">
+                          {{ report.health_level }}
+                        </span>
+                      </td>
+                      <td>
+                        <div class="btn-group" role="group">
+                          <a href="{{ url_for('echo_analyzer_view_report', filename=report.filename) }}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-eye"></i>
+                          </a>
+                          <button type="button" class="btn btn-sm btn-danger" 
+                                  onclick="event.stopPropagation(); confirmDelete('{{ report.filename }}')">
+                            <i class="fas fa-trash"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="alert alert-info">
+              <i class="fas fa-info-circle me-2"></i> Aucun rapport d'analyse disponible. Téléchargez des données d'écho ou générez des données de test pour commencer.
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="deleteModalLabel">Confirmer la suppression</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Êtes-vous sûr de vouloir supprimer ce rapport d'analyse ? Cette action est irréversible.</p>
+        <p id="deleteFileName" class="font-monospace fw-bold"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <form id="deleteForm" action="" method="post">
+          <button type="submit" class="btn btn-danger">Supprimer</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function confirmDelete(filename) {
+    document.getElementById('deleteFileName').textContent = filename;
+    document.getElementById('deleteForm').action = "{{ url_for('echo_analyzer_delete_report', filename='') }}" + filename;
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    deleteModal.show();
+  }
+</script>
+{% endblock %}
