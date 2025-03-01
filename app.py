@@ -78,6 +78,14 @@ def create_app():
         # Importation des routes API sécurisées JWT
         from api_secured_routes import register_secured_api_routes
         register_secured_api_routes(app)
+        
+        # Initialisation du système de mise à jour automatique IA
+        try:
+            from ai_update_integration import init_app as init_ai_updates
+            init_ai_updates(app)
+            logger.info("Système de mise à jour automatique IA initialisé avec succès")
+        except Exception as e:
+            logger.error(f"Erreur lors de l'initialisation du système de mise à jour IA: {e}")
     
     return app
 
