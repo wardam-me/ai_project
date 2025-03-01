@@ -74,11 +74,10 @@ class AIUpdateIntegration:
             # Enregistrer les routes d'API pour le système de mise à jour
             self._register_api_routes(app)
             
-            # Ajouter des fonctions de gestion du cycle de vie de l'application
-            @app.before_first_request
-            def start_ai_update_services():
-                self.start()
+            # Démarrer le service directement (before_first_request est déprécié)
+            self.start()
             
+            # Ajouter la fonction de nettoyage lors de la fermeture de l'application
             @app.teardown_appcontext
             def cleanup_ai_update_services(exception=None):
                 self.stop()
@@ -308,8 +307,10 @@ class AIUpdateIntegration:
                 "last_update_time": updater_status["last_update_time"],
                 "total_updates": updater_status["metrics"]["total_updates"],
                 "failed_updates": updater_status["metrics"]["failed_updates"],
-                "available_backups": updater_status["available_backups"]
+                "available_backups": updater_status["available_backups"],
+                "metrics": updater_status["metrics"]
             },
+            "model_performance": updater_status["metrics"]["model_performance"],
             "timestamp": datetime.now().isoformat()
         }
     

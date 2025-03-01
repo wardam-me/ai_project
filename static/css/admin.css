@@ -1,0 +1,198 @@
+/* Styles pour l'interface d'administration de NetSecure Pro */
+
+/* Styles généraux */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+/* Styles de la navbar */
+.navbar-brand {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+/* Cartes d'information */
+.card {
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(33, 40, 50, 0.15);
+    margin-bottom: 1.5rem;
+}
+
+.card .card-header {
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+}
+
+.card-header i {
+    margin-right: 0.5rem;
+}
+
+/* Tableaux de données */
+.table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+/* Statuts */
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+}
+
+.status-active {
+    background-color: #28a745;
+}
+
+.status-inactive {
+    background-color: #dc3545;
+}
+
+.status-warning {
+    background-color: #ffc107;
+}
+
+/* Badges personnalisés */
+.badge-outline-success {
+    color: #28a745;
+    border: 1px solid #28a745;
+    background-color: transparent;
+}
+
+.badge-outline-danger {
+    color: #dc3545;
+    border: 1px solid #dc3545;
+    background-color: transparent;
+}
+
+.badge-outline-warning {
+    color: #ffc107;
+    border: 1px solid #ffc107;
+    background-color: transparent;
+}
+
+/* Formulaires */
+.form-label {
+    font-weight: 500;
+}
+
+/* Progress bars */
+.progress {
+    height: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+/* Statistiques en temps réel */
+.stat-card {
+    padding: 1rem;
+    border-radius: 0.25rem;
+    transition: transform 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+}
+
+.stat-card .stat-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.stat-card .stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.stat-card .stat-label {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+/* Timeline */
+.timeline {
+    position: relative;
+    padding-left: 2rem;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 0.75rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: #dee2e6;
+}
+
+.timeline-item {
+    position: relative;
+    padding-bottom: 1.5rem;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -1.9rem;
+    top: 0.25rem;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #007bff;
+}
+
+.timeline-item.success::before {
+    background-color: #28a745;
+}
+
+.timeline-item.warning::before {
+    background-color: #ffc107;
+}
+
+.timeline-item.danger::before {
+    background-color: #dc3545;
+}
+
+.timeline-date {
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+.timeline-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.timeline-description {
+    font-size: 0.875rem;
+}
+
+/* Détails de version */
+.version-detail-table th {
+    width: 30%;
+    font-weight: 600;
+}
+
+/* Graphiques */
+.chart-container {
+    position: relative;
+    height: 250px;
+}
+
+/* Styles responsifs */
+@media (max-width: 767.98px) {
+    .stat-card {
+        margin-bottom: 1rem;
+    }
+    
+    .chart-container {
+        height: 200px;
+    }
+}
