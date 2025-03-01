@@ -1,0 +1,147 @@
+/* 
+ * Styles pour le créateur de mascottes de cybersécurité 
+ */
+
+.mascot-container {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    margin: 0 auto;
+}
+
+.mascot-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transition: all 0.3s ease;
+}
+
+.mascot-element-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.mascot-element-item {
+    width: 80px;
+    height: 80px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: #f8f9fa;
+    position: relative;
+}
+
+.mascot-element-item:hover {
+    border-color: #3498db;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.mascot-element-item.selected {
+    border-color: #2ecc71;
+    background-color: rgba(46, 204, 113, 0.1);
+}
+
+.mascot-element-item img, 
+.mascot-element-item svg {
+    max-width: 90%;
+    max-height: 90%;
+}
+
+.mascot-element-name {
+    position: absolute;
+    bottom: -20px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #555;
+}
+
+.element-boost {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: #e74c3c;
+    color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.security-level-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: white;
+}
+
+.security-level-novice {
+    background-color: #e74c3c;
+}
+
+.security-level-basic {
+    background-color: #f39c12;
+}
+
+.security-level-intermediate {
+    background-color: #3498db;
+}
+
+.security-level-advanced {
+    background-color: #9b59b6;
+}
+
+.security-level-expert {
+    background-color: #2ecc71;
+}
+
+.mascot-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+.mascot-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.mascot-card .card-img-top {
+    height: 200px;
+    object-fit: contain;
+    background-color: #f8f9fa;
+}
+
+.color-preview {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+    border: 1px solid #ddd;
+}
+
+/* Animation pour les changements d'éléments */
+@keyframes elementChange {
+    0% { opacity: 0; transform: scale(0.8); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+.element-changed {
+    animation: elementChange 0.3s ease;
+}
