@@ -18,7 +18,7 @@ from flask_socketio import emit
 
 from extensions import db, socketio
 from forms import LoginForm, RegistrationForm, SaveTopologyForm
-from models import User, UserReport, SavedTopology
+from models import User, UserReport, SavedTopology, SecurityMascot
 from network_topology import NetworkTopology
 from security_scoring import DeviceSecurityScoring
 from assistant_securite import AssistantSecurite
@@ -40,6 +40,10 @@ protocol_analyzer = ProtocolAnalyzer()
 infographic_generator = InfographicGenerator()
 ai_assistant = AIInfographicAssistant()
 recommendation_system = RecommendationSystem()
+
+# Importer et initialiser le gestionnaire de mascottes
+from mascot_creator import MascotCreator
+mascot_creator = MascotCreator()
 
 # Décorateur pour vérifier si l'utilisateur est administrateur
 def admin_required(f):
@@ -425,6 +429,274 @@ def register_routes(app):
         else:
             return jsonify({'success': False, 'error': 'Menace non trouvée'}), 404
 
+    # ======================================================
+    # Routes pour les mascottes de cybersécurité
+    # ======================================================
+    @app.route('/mascots')
+    @login_required
+    def mascot_creator_view():
+        """Page de création et gestion des mascottes de cybersécurité"""
+        # Récupère les mascottes de l'utilisateur connecté
+        user_mascots = SecurityMascot.query.filter_by(user_id=current_user.id).all()
+        return render_template(
+            'mascot_creator.html',
+            mascots=user_mascots
+        )
+    
+    @app.route('/api/mascots', methods=['GET'])
+    @login_required
+    def get_user_mascots():
+        """API: Récupère toutes les mascottes de l'utilisateur"""
+        user_mascots = SecurityMascot.query.filter_by(user_id=current_user.id).all()
+        
+        mascots_data = []
+        for mascot in user_mascots:
+            mascots_data.append({
+                'id': mascot.id,
+                'name': mascot.name,
+                'base': mascot.base,
+                'hat': mascot.hat,
+                'accessory': mascot.accessory,
+                'outfit': mascot.outfit,
+                'background': mascot.background,
+                'colors': mascot.get_colors(),
+                'personality': mascot.personality,
+                'security_score': mascot.security_score,
+                'security_level': mascot.get_security_level(),
+                'created_at': mascot.created_at.isoformat()
+            })
+            
+        return jsonify(mascots_data)
+    
+    @app.route('/api/mascots/elements', methods=['GET'])
+    @login_required
+    def get_mascot_elements():
+        """API: Récupère tous les éléments disponibles pour la création de mascottes"""
+        elements = mascot_creator.get_all_elements()
+        return jsonify(elements)
+    
+    @app.route('/api/mascots', methods=['POST'])
+    @login_required
+    def create_mascot():
+        """API: Crée une nouvelle mascotte pour l'utilisateur"""
+        if not request.is_json:
+            return jsonify({'success': False, 'error': 'JSON attendu'}), 400
+            
+        data = request.json
+        
+        # Création d'une nouvelle mascotte dans la base de données
+        new_mascot = SecurityMascot(
+            user_id=current_user.id,
+            name=data.get('name', 'Nouvelle Mascotte'),
+            base=data.get('base', 'penguin'),
+            hat=data.get('hat'),
+            accessory=data.get('accessory'),
+            outfit=data.get('outfit'),
+            background=data.get('background'),
+            personality=data.get('personality', 'friendly'),
+            security_score=data.get('security_score', 50)
+        )
+        
+        # Définir les couleurs si elles sont fournies
+        if 'colors' in data:
+            new_mascot.set_colors(data['colors'])
+        
+        try:
+            db.session.add(new_mascot)
+            db.session.commit()
+            
+            # Obtenir l'ID généré et retourner les informations complètes
+            mascot_data = {
+                'id': new_mascot.id,
+                'name': new_mascot.name,
+                'base': new_mascot.base,
+                'hat': new_mascot.hat,
+                'accessory': new_mascot.accessory,
+                'outfit': new_mascot.outfit,
+                'background': new_mascot.background,
+                'colors': new_mascot.get_colors(),
+                'personality': new_mascot.personality,
+                'security_score': new_mascot.security_score,
+                'security_level': new_mascot.get_security_level(),
+                'created_at': new_mascot.created_at.isoformat()
+            }
+            
+            return jsonify({'success': True, 'mascot': mascot_data})
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Erreur lors de la création de la mascotte: {e}")
+            return jsonify({'success': False, 'error': str(e)}), 500
+    
+    @app.route('/api/mascots/<int:mascot_id>', methods=['GET'])
+    @login_required
+    def get_mascot(mascot_id):
+        """API: Récupère une mascotte spécifique"""
+        mascot = SecurityMascot.query.filter_by(id=mascot_id, user_id=current_user.id).first()
+        
+        if not mascot:
+            return jsonify({'success': False, 'error': 'Mascotte non trouvée'}), 404
+        
+        mascot_data = {
+            'id': mascot.id,
+            'name': mascot.name,
+            'base': mascot.base,
+            'hat': mascot.hat,
+            'accessory': mascot.accessory,
+            'outfit': mascot.outfit,
+            'background': mascot.background,
+            'colors': mascot.get_colors(),
+            'personality': mascot.personality,
+            'security_score': mascot.security_score,
+            'security_level': mascot.get_security_level(),
+            'created_at': mascot.created_at.isoformat()
+        }
+        
+        return jsonify({'success': True, 'mascot': mascot_data})
+    
+    @app.route('/api/mascots/<int:mascot_id>', methods=['PUT'])
+    @login_required
+    def update_mascot(mascot_id):
+        """API: Met à jour une mascotte existante"""
+        if not request.is_json:
+            return jsonify({'success': False, 'error': 'JSON attendu'}), 400
+            
+        mascot = SecurityMascot.query.filter_by(id=mascot_id, user_id=current_user.id).first()
+        
+        if not mascot:
+            return jsonify({'success': False, 'error': 'Mascotte non trouvée'}), 404
+        
+        data = request.json
+        
+        # Mettre à jour les champs
+        if 'name' in data:
+            mascot.name = data['name']
+        if 'base' in data:
+            mascot.base = data['base']
+        if 'hat' in data:
+            mascot.hat = data['hat']
+        if 'accessory' in data:
+            mascot.accessory = data['accessory']
+        if 'outfit' in data:
+            mascot.outfit = data['outfit']
+        if 'background' in data:
+            mascot.background = data['background']
+        if 'personality' in data:
+            mascot.personality = data['personality']
+        if 'security_score' in data:
+            mascot.security_score = data['security_score']
+        if 'colors' in data:
+            mascot.set_colors(data['colors'])
+        
+        try:
+            db.session.commit()
+            
+            # Retourner les informations mises à jour
+            mascot_data = {
+                'id': mascot.id,
+                'name': mascot.name,
+                'base': mascot.base,
+                'hat': mascot.hat,
+                'accessory': mascot.accessory,
+                'outfit': mascot.outfit,
+                'background': mascot.background,
+                'colors': mascot.get_colors(),
+                'personality': mascot.personality,
+                'security_score': mascot.security_score,
+                'security_level': mascot.get_security_level(),
+                'created_at': mascot.created_at.isoformat(),
+                'last_modified': mascot.last_modified.isoformat()
+            }
+            
+            return jsonify({'success': True, 'mascot': mascot_data})
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Erreur lors de la mise à jour de la mascotte: {e}")
+            return jsonify({'success': False, 'error': str(e)}), 500
+    
+    @app.route('/api/mascots/<int:mascot_id>', methods=['DELETE'])
+    @login_required
+    def delete_mascot(mascot_id):
+        """API: Supprime une mascotte"""
+        mascot = SecurityMascot.query.filter_by(id=mascot_id, user_id=current_user.id).first()
+        
+        if not mascot:
+            return jsonify({'success': False, 'error': 'Mascotte non trouvée'}), 404
+        
+        try:
+            db.session.delete(mascot)
+            db.session.commit()
+            return jsonify({'success': True})
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Erreur lors de la suppression de la mascotte: {e}")
+            return jsonify({'success': False, 'error': str(e)}), 500
+    
+    @app.route('/api/mascots/generate-svg/<int:mascot_id>', methods=['GET'])
+    @login_required
+    def generate_mascot_svg(mascot_id):
+        """API: Génère une représentation SVG d'une mascotte"""
+        mascot = SecurityMascot.query.filter_by(id=mascot_id, user_id=current_user.id).first()
+        
+        if not mascot:
+            return jsonify({'success': False, 'error': 'Mascotte non trouvée'}), 404
+        
+        # Convertir les données de la mascotte au format attendu par le générateur
+        mascot_data = {
+            'id': mascot.id,
+            'name': mascot.name,
+            'base': mascot.base,
+            'hat': mascot.hat,
+            'accessory': mascot.accessory,
+            'outfit': mascot.outfit,
+            'colors': mascot.get_colors(),
+            'personality': mascot.personality,
+            'security_score': mascot.security_score
+        }
+        
+        # Générer le SVG
+        svg_content = mascot_creator.generate_mascot_svg(mascot_data)
+        
+        # Retourner le SVG avec le bon type de contenu
+        response = app.make_response(svg_content)
+        response.headers.set('Content-Type', 'image/svg+xml')
+        return response
+    
+    @app.route('/api/mascots/random', methods=['GET'])
+    @login_required
+    def generate_random_mascot():
+        """API: Génère une mascotte aléatoire (sans la sauvegarder)"""
+        # Générer une mascotte aléatoire
+        mascot_data = mascot_creator.generate_random_mascot(str(current_user.id))
+        
+        return jsonify({'success': True, 'mascot': mascot_data})
+    
+    @app.route('/api/mascots/story/<int:mascot_id>', methods=['GET'])
+    @login_required
+    def get_mascot_story(mascot_id):
+        """API: Génère une histoire pour la mascotte"""
+        mascot = SecurityMascot.query.filter_by(id=mascot_id, user_id=current_user.id).first()
+        
+        if not mascot:
+            return jsonify({'success': False, 'error': 'Mascotte non trouvée'}), 404
+            
+        # Convertir les données de la mascotte au format attendu par le générateur
+        mascot_data = {
+            'id': mascot.id,
+            'name': mascot.name,
+            'base': mascot.base,
+            'hat': mascot.hat,
+            'accessory': mascot.accessory,
+            'outfit': mascot.outfit,
+            'colors': mascot.get_colors(),
+            'personality': mascot.personality,
+            'security_score': mascot.security_score
+        }
+        
+        # Générer l'histoire
+        story = mascot_creator.generate_mascot_story(mascot_data)
+        
+        return jsonify({'success': True, 'story': story})
+    
     @app.route('/ai-analysis')
     @login_required
     def ai_analysis():
