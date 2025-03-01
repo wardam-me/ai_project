@@ -1,0 +1,436 @@
+{% extends "layout.html" %}
+
+{% block title %}Créateur de Mascottes de Cybersécurité | NetSecure Pro{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/mascot_creator.css') }}">
+<style>
+    .mascot-preview {
+        border: 2px solid #3498db;
+        border-radius: 10px;
+        background-color: #f8f9fa;
+        padding: 20px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    
+    .mascot-element {
+        cursor: pointer;
+        border: 2px solid transparent;
+        border-radius: 5px;
+        transition: all 0.3s;
+    }
+    
+    .mascot-element:hover {
+        border-color: #3498db;
+        transform: scale(1.05);
+    }
+    
+    .mascot-element.selected {
+        border-color: #2ecc71;
+        background-color: rgba(46, 204, 113, 0.1);
+    }
+    
+    .color-picker {
+        width: 100%;
+        height: 40px;
+        cursor: pointer;
+        border: none;
+        border-radius: 5px;
+    }
+    
+    .tab-pane {
+        padding-top: 20px;
+    }
+    
+    .mascot-story {
+        background-color: #f8f9fa;
+        border-left: 4px solid #3498db;
+        padding: 15px;
+        margin-top: 20px;
+        border-radius: 0 5px 5px 0;
+    }
+    
+    .security-score {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #3498db;
+    }
+    
+    .security-level {
+        color: #2c3e50;
+        font-weight: bold;
+    }
+    
+    .security-title {
+        color: #e74c3c;
+        font-style: italic;
+    }
+    
+    .personality-trait {
+        display: inline-block;
+        background-color: #e67e22;
+        color: white;
+        padding: 5px 10px;
+        margin: 5px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+    }
+    
+    .share-button {
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .share-button:hover {
+        transform: scale(1.1);
+    }
+    
+    .card {
+        border: none;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+        transition: all 0.3s;
+    }
+    
+    .card:hover {
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    }
+    
+    .mascot-gallery-item {
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .mascot-gallery-item:hover {
+        transform: translateY(-5px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4 text-center">
+        <i class="fas fa-user-shield me-2"></i>Créateur de Mascottes de Cybersécurité
+    </h1>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <nav>
+                <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                    <button class="nav-link active" id="nav-creator-tab" data-bs-toggle="tab" data-bs-target="#nav-creator" type="button" role="tab" aria-controls="nav-creator" aria-selected="true">
+                        <i class="fas fa-paint-brush me-1"></i>Créateur
+                    </button>
+                    <button class="nav-link" id="nav-gallery-tab" data-bs-toggle="tab" data-bs-target="#nav-gallery" type="button" role="tab" aria-controls="nav-gallery" aria-selected="false">
+                        <i class="fas fa-images me-1"></i>Galerie
+                    </button>
+                    <button class="nav-link" id="nav-learn-tab" data-bs-toggle="tab" data-bs-target="#nav-learn" type="button" role="tab" aria-controls="nav-learn" aria-selected="false">
+                        <i class="fas fa-graduation-cap me-1"></i>Apprentissage
+                    </button>
+                </div>
+            </nav>
+            
+            <div class="tab-content" id="nav-tabContent">
+                <!-- Onglet Créateur -->
+                <div class="tab-pane fade show active" id="nav-creator" role="tabpanel" aria-labelledby="nav-creator-tab">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title mb-3">Personnalisez votre mascotte</h4>
+                            
+                            <form id="mascotForm">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label for="mascotName" class="form-label">Nom de votre mascotte</label>
+                                            <input type="text" class="form-control" id="mascotName" name="name" placeholder="Ex: CyberGuardian" required>
+                                        </div>
+                                        
+                                        <div class="form-group mb-3">
+                                            <label for="mascotPersonality" class="form-label">Personnalité</label>
+                                            <select class="form-select" id="mascotPersonality" name="personality">
+                                                <option value="friendly">Amical</option>
+                                                <option value="serious">Sérieux</option>
+                                                <option value="playful">Joueur</option>
+                                                <option value="wise">Sage</option>
+                                                <option value="brave">Brave</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="row">
+                                            <div class="col-md-4 mb-3">
+                                                <label for="primaryColor" class="form-label">Couleur primaire</label>
+                                                <input type="color" class="color-picker" id="primaryColor" name="primaryColor" value="#3498db">
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <label for="secondaryColor" class="form-label">Couleur secondaire</label>
+                                                <input type="color" class="color-picker" id="secondaryColor" name="secondaryColor" value="#2ecc71">
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <label for="accentColor" class="form-label">Couleur accent</label>
+                                                <input type="color" class="color-picker" id="accentColor" name="accentColor" value="#e74c3c">
+                                            </div>
+                                        </div>
+                                        
+                                        <button type="button" id="randomizeBtn" class="btn btn-secondary w-100 mt-2">
+                                            <i class="fas fa-random me-1"></i>Aléatoire
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="mascot-customization">
+                                    <h5 class="mb-3">Éléments de base</h5>
+                                    <div class="row mb-3" id="baseElements">
+                                        <!-- Les éléments de base seront chargés ici -->
+                                        <div class="text-center">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Chargement...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <h5 class="mb-3">Chapeaux</h5>
+                                    <div class="row mb-3" id="hatElements">
+                                        <!-- Les chapeaux seront chargés ici -->
+                                    </div>
+                                    
+                                    <h5 class="mb-3">Accessoires</h5>
+                                    <div class="row mb-3" id="accessoryElements">
+                                        <!-- Les accessoires seront chargés ici -->
+                                    </div>
+                                    
+                                    <h5 class="mb-3">Tenues</h5>
+                                    <div class="row mb-3" id="outfitElements">
+                                        <!-- Les tenues seront chargées ici -->
+                                    </div>
+                                    
+                                    <h5 class="mb-3">Arrière-plans</h5>
+                                    <div class="row mb-3" id="backgroundElements">
+                                        <!-- Les arrière-plans seront chargés ici -->
+                                    </div>
+                                </div>
+                                
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                                    <button type="button" id="previewBtn" class="btn btn-primary me-md-2">
+                                        <i class="fas fa-eye me-1"></i>Aperçu
+                                    </button>
+                                    <button type="submit" id="saveBtn" class="btn btn-success">
+                                        <i class="fas fa-save me-1"></i>Sauvegarder
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Onglet Galerie -->
+                <div class="tab-pane fade" id="nav-gallery" role="tabpanel" aria-labelledby="nav-gallery-tab">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title mb-3">Vos mascottes sauvegardées</h4>
+                            
+                            <div class="row" id="mascotGallery">
+                                <!-- Les mascottes sauvegardées seront chargées ici -->
+                                <div class="text-center py-5">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Chargement...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Onglet Apprentissage -->
+                <div class="tab-pane fade" id="nav-learn" role="tabpanel" aria-labelledby="nav-learn-tab">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title mb-3">À propos des mascottes de cybersécurité</h4>
+                            
+                            <div class="alert alert-info">
+                                <h5><i class="fas fa-info-circle me-2"></i>Pourquoi une mascotte de cybersécurité?</h5>
+                                <p>Votre mascotte personnalisée représente votre profil de sécurité et vous accompagne dans votre parcours de protection numérique. Plus vous améliorez vos pratiques de sécurité, plus votre mascotte devient puissante!</p>
+                            </div>
+                            
+                            <h5 class="mt-4 mb-3">Niveaux de sécurité</h5>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Niveau</th>
+                                            <th>Score</th>
+                                            <th>Titre</th>
+                                            <th>Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><span class="badge bg-danger">Novice</span></td>
+                                            <td>0-39</td>
+                                            <td>Apprenti en sécurité</td>
+                                            <td>Vous commencez tout juste votre voyage en cybersécurité.</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-warning text-dark">Basique</span></td>
+                                            <td>40-59</td>
+                                            <td>Défenseur en formation</td>
+                                            <td>Vous connaissez les principes fondamentaux de la sécurité.</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-info text-dark">Intermédiaire</span></td>
+                                            <td>60-74</td>
+                                            <td>Protecteur confirmé</td>
+                                            <td>Vous avez une bonne compréhension des menaces courantes.</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-primary">Avancé</span></td>
+                                            <td>75-89</td>
+                                            <td>Gardien avancé</td>
+                                            <td>Vous maîtrisez la plupart des aspects de la cybersécurité.</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-success">Expert</span></td>
+                                            <td>90-100</td>
+                                            <td>Expert en cybersécurité</td>
+                                            <td>Votre expertise en sécurité est impressionnante!</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <h5 class="mt-4 mb-3">Comment améliorer votre score?</h5>
+                            <ul class="list-group mb-4">
+                                <li class="list-group-item"><i class="fas fa-check-circle text-success me-2"></i>Utilisez des accessoires et équipements de sécurité pour votre mascotte</li>
+                                <li class="list-group-item"><i class="fas fa-check-circle text-success me-2"></i>Résolvez des défis de sécurité dans l'application</li>
+                                <li class="list-group-item"><i class="fas fa-check-circle text-success me-2"></i>Participez aux analyses régulières de votre réseau</li>
+                                <li class="list-group-item"><i class="fas fa-check-circle text-success me-2"></i>Appliquez les recommandations de sécurité proposées</li>
+                                <li class="list-group-item"><i class="fas fa-check-circle text-success me-2"></i>Complétez votre profil de sécurité en ajoutant des informations</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Panneau latéral d'aperçu -->
+        <div class="col-lg-4">
+            <div class="card sticky-top" style="top: 20px;">
+                <div class="card-body">
+                    <h4 class="card-title mb-3">Aperçu</h4>
+                    
+                    <div class="mascot-preview mb-3" id="mascotPreview">
+                        <div class="text-center py-5 text-muted">
+                            <i class="fas fa-user-shield fa-4x mb-3"></i>
+                            <p>Votre mascotte apparaîtra ici</p>
+                        </div>
+                    </div>
+                    
+                    <div id="mascotDetails" style="display: none;">
+                        <div class="text-center mb-3">
+                            <h4 id="previewName">Nom de la mascotte</h4>
+                            
+                            <div class="d-flex justify-content-center align-items-center mb-2">
+                                <div class="security-score me-3" id="securityScore">50</div>
+                                <div class="text-start">
+                                    <div class="security-level" id="securityLevel">Niveau de sécurité</div>
+                                    <div class="security-title" id="securityTitle">Titre de sécurité</div>
+                                </div>
+                            </div>
+                            
+                            <div id="personalityTraits">
+                                <!-- Les traits de personnalité seront affichés ici -->
+                            </div>
+                        </div>
+                        
+                        <div class="mascot-story" id="mascotStory">
+                            <!-- L'histoire de la mascotte sera affichée ici -->
+                        </div>
+                        
+                        <div class="d-flex justify-content-center mt-3">
+                            <button type="button" class="btn btn-outline-primary me-2 share-button" title="Télécharger SVG">
+                                <i class="fas fa-download"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-info me-2 share-button" title="Partager par e-mail">
+                                <i class="fas fa-envelope"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-success share-button" title="Partager sur les réseaux sociaux">
+                                <i class="fas fa-share-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal d'affichage de mascotte -->
+<div class="modal fade" id="mascotModal" tabindex="-1" aria-labelledby="mascotModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="mascotModalLabel">Détails de la mascotte</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6 text-center">
+                        <div id="modalMascotPreview" class="mb-3">
+                            <!-- Aperçu de la mascotte sera affiché ici -->
+                        </div>
+                        <h4 id="modalMascotName"></h4>
+                        <div class="d-flex justify-content-center align-items-center mb-2">
+                            <div class="security-score me-3" id="modalSecurityScore"></div>
+                            <div class="text-start">
+                                <div class="security-level" id="modalSecurityLevel"></div>
+                                <div class="security-title" id="modalSecurityTitle"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div id="modalPersonalityTraits" class="mb-3">
+                            <!-- Traits de personnalité seront affichés ici -->
+                        </div>
+                        <div class="mascot-story" id="modalMascotStory">
+                            <!-- Histoire de la mascotte sera affichée ici -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary me-2" id="editMascotBtn">
+                    <i class="fas fa-edit me-1"></i>Modifier
+                </button>
+                <button type="button" class="btn btn-danger me-2" id="deleteMascotBtn">
+                    <i class="fas fa-trash-alt me-1"></i>Supprimer
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmModalLabel">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer cette mascotte? Cette action est irréversible.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Supprimer</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/mascot_creator.js') }}"></script>
+{% endblock %}
