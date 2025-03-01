@@ -1,0 +1,385 @@
+
+{% extends "base.html" %}
+
+{% block title %}Rapport d'analyse Echo - NetSecure Pro{% endblock %}
+
+{% block styles %}
+<style>
+  .health-score {
+    font-size: 4rem;
+    font-weight: bold;
+  }
+  .health-excellent {
+    color: #28a745;
+  }
+  .health-good {
+    color: #17a2b8;
+  }
+  .health-medium {
+    color: #ffc107;
+  }
+  .health-bad {
+    color: #fd7e14;
+  }
+  .health-critical {
+    color: #dc3545;
+  }
+  .metric-card {
+    transition: transform 0.3s;
+  }
+  .metric-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  }
+  .recommendation-item {
+    padding: 1rem;
+    border-left: 4px solid #0d6efd;
+    background-color: rgba(13, 110, 253, 0.05);
+    margin-bottom: 1rem;
+  }
+  .ai-insight {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background-color: rgba(108, 117, 125, 0.05);
+    border: 1px solid rgba(108, 117, 125, 0.2);
+    margin-bottom: 1rem;
+  }
+  .chart-container {
+    height: 300px;
+    margin-bottom: 2rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="row mb-3">
+    <div class="col">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{{ url_for('echo_analyzer_dashboard') }}">Analyseur Echo</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Rapport d'analyse</li>
+        </ol>
+      </nav>
+      <h1>
+        <i class="fas fa-chart-line me-2"></i> 
+        Rapport d'analyse Echo
+      </h1>
+      <p class="text-muted">
+        Fichier: {{ report.filename }} | 
+        Horodatage: {{ report.timestamp }} | 
+        Points de données: {{ report.data_points }}
+      </p>
+      <hr>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card shadow-sm text-center">
+        <div class="card-body">
+          <h5 class="card-title">Score de santé réseau</h5>
+          <div class="health-score 
+            {% if report.network_health.score >= 90 %}health-excellent
+            {% elif report.network_health.score >= 80 %}health-good
+            {% elif report.network_health.score >= 70 %}health-medium
+            {% elif report.network_health.score >= 60 %}health-bad
+            {% else %}health-critical{% endif %}">
+            {{ report.network_health.score }}<span class="h3">/100</span>
+          </div>
+          <h4 class="mt-2">
+            <span class="badge 
+              {% if report.network_health.level == 'Excellent' %}bg-success
+              {% elif report.network_health.level == 'Bon' %}bg-info
+              {% elif report.network_health.level == 'Moyen' %}bg-warning
+              {% elif report.network_health.level == 'Mauvais' %}bg-warning text-dark
+              {% else %}bg-danger{% endif %}">
+              {{ report.network_health.level }}
+            </span>
+          </h4>
+          <p class="card-text">
+            Durée d'analyse: {{ report.analysis_duration_seconds }} secondes
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-8">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-lightbulb me-2"></i> Recommandations
+          </h5>
+        </div>
+        <div class="card-body">
+          {% if report.recommendations %}
+            {% for rec in report.recommendations %}
+              <div class="recommendation-item">
+                <i class="fas fa-check-circle me-2"></i> {{ rec }}
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="alert alert-success">
+              <i class="fas fa-check-circle me-2"></i> Aucun problème majeur détecté. Votre réseau est en bonne santé !
+            </div>
+          {% endif %}
+          
+          {% if report.ai_recommendation %}
+            <div class="ai-insight mt-3">
+              <h6>
+                <i class="fas fa-robot me-2"></i> Analyse IA
+              </h6>
+              <p class="mb-0">{{ report.ai_recommendation }}</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <div class="card shadow-sm metric-card">
+        <div class="card-header bg-info text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-stopwatch me-2"></i> Analyse des temps d'aller-retour (RTT)
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <h6>Temps de réponse moyen</h6>
+              <h3>{{ report.analyses.round_trip_times.avg_rtt_ms }} ms</h3>
+              <div class="progress mt-2 mb-3" style="height: 10px;">
+                <div class="progress-bar bg-info" role="progressbar" 
+                     style="width: {{ min(100, report.analyses.round_trip_times.avg_rtt_ms / 2) }}%" 
+                     aria-valuenow="{{ report.analyses.round_trip_times.avg_rtt_ms }}" 
+                     aria-valuemin="0" aria-valuemax="200"></div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="d-flex justify-content-between">
+                <div>
+                  <h6>Minimum</h6>
+                  <h4>{{ report.analyses.round_trip_times.min_rtt_ms }} ms</h4>
+                </div>
+                <div>
+                  <h6>Maximum</h6>
+                  <h4>{{ report.analyses.round_trip_times.max_rtt_ms }} ms</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <hr>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <h6>Anomalies détectées</h6>
+              <h4>{{ report.analyses.round_trip_times.anomalies_count }} 
+                <small class="text-muted">({{ report.analyses.round_trip_times.anomalies_percentage }}%)</small>
+              </h4>
+            </div>
+            <div class="col-md-6">
+              <h6>Variance RTT</h6>
+              <h4>{{ report.analyses.round_trip_times.rtt_variance }}</h4>
+            </div>
+          </div>
+          
+          {% if report.analyses.round_trip_times.ai_latency_insight %}
+            <div class="ai-insight mt-3">
+              <h6>
+                <i class="fas fa-robot me-2"></i> Analyse IA
+              </h6>
+              <p class="mb-0">{{ report.analyses.round_trip_times.ai_latency_insight }}</p>
+            </div>
+          {% endif %}
+          
+          {% if report.analyses.round_trip_times.ai_anomaly_insight %}
+            <div class="ai-insight mt-3">
+              <h6>
+                <i class="fas fa-exclamation-triangle me-2"></i> Alerte IA
+              </h6>
+              <p class="mb-0">{{ report.analyses.round_trip_times.ai_anomaly_insight }}</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-6">
+      <div class="card shadow-sm metric-card">
+        <div class="card-header bg-warning text-dark">
+          <h5 class="mb-0">
+            <i class="fas fa-exclamation-triangle me-2"></i> Analyse des pertes de paquets
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <h6>Taux de perte</h6>
+              <h3>{{ report.analyses.packet_loss.loss_rate_percentage }}%</h3>
+              <div class="progress mt-2 mb-3" style="height: 10px;">
+                <div class="progress-bar bg-warning" role="progressbar" 
+                     style="width: {{ min(100, report.analyses.packet_loss.loss_rate_percentage * 10) }}%" 
+                     aria-valuenow="{{ report.analyses.packet_loss.loss_rate_percentage }}" 
+                     aria-valuemin="0" aria-valuemax="10"></div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <h6>Paquets perdus</h6>
+              <h4>{{ report.analyses.packet_loss.packets_lost }} / {{ report.analyses.packet_loss.packets_sent }}</h4>
+            </div>
+          </div>
+          
+          {% if report.analyses.packet_loss.ai_loss_insight %}
+            <div class="ai-insight mt-3">
+              <h6>
+                <i class="fas fa-robot me-2"></i> Analyse IA
+              </h6>
+              <p class="mb-0">{{ report.analyses.packet_loss.ai_loss_insight }}</p>
+            </div>
+          {% endif %}
+          
+          {% if report.analyses.packet_loss.ai_loss_risk %}
+            <div class="ai-insight mt-3">
+              <h6>
+                <i class="fas fa-exclamation-triangle me-2"></i> Alerte IA
+              </h6>
+              <p class="mb-0">{{ report.analyses.packet_loss.ai_loss_risk }}</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <div class="card shadow-sm metric-card">
+        <div class="card-header bg-success text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-route me-2"></i> Analyse des sauts réseau
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-4">
+              <h6>Sauts moyen</h6>
+              <h3>{{ report.analyses.hop_count.avg_hop_count }}</h3>
+            </div>
+            <div class="col-md-4">
+              <h6>Minimum</h6>
+              <h4>{{ report.analyses.hop_count.min_hop_count }}</h4>
+            </div>
+            <div class="col-md-4">
+              <h6>Maximum</h6>
+              <h4>{{ report.analyses.hop_count.max_hop_count }}</h4>
+            </div>
+          </div>
+          
+          <hr>
+          
+          <div class="row">
+            <div class="col">
+              <h6>Changements de route détectés</h6>
+              <h4>{{ report.analyses.hop_count.route_changes }}</h4>
+            </div>
+          </div>
+          
+          {% if report.analyses.hop_count.ai_hop_insight %}
+            <div class="ai-insight mt-3">
+              <h6>
+                <i class="fas fa-robot me-2"></i> Analyse IA
+              </h6>
+              <p class="mb-0">{{ report.analyses.hop_count.ai_hop_insight }}</p>
+            </div>
+          {% endif %}
+          
+          {% if report.analyses.hop_count.ai_routing_insight %}
+            <div class="ai-insight mt-3">
+              <h6>
+                <i class="fas fa-exclamation-triangle me-2"></i> Alerte IA
+              </h6>
+              <p class="mb-0">{{ report.analyses.hop_count.ai_routing_insight }}</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-6">
+      <div class="card shadow-sm metric-card">
+        <div class="card-header bg-secondary text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-chart-bar me-2"></i> Analyse des patterns
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <h6>Durée de l'échantillon</h6>
+              <h4>{{ report.analyses.echo_patterns.time_span_seconds }} sec</h4>
+            </div>
+            <div class="col-md-6">
+              <h6>Intervalle moyen</h6>
+              <h4>{{ report.analyses.echo_patterns.avg_interval_seconds }} sec</h4>
+            </div>
+          </div>
+          
+          <hr>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <h6>Pattern régulier</h6>
+              <h4>
+                {% if report.analyses.echo_patterns.is_regular_pattern %}
+                  <i class="fas fa-check-circle text-success"></i> Oui
+                {% else %}
+                  <i class="fas fa-times-circle text-danger"></i> Non
+                {% endif %}
+              </h4>
+            </div>
+            <div class="col-md-6">
+              <h6>Écart-type des intervalles</h6>
+              <h4>{{ report.analyses.echo_patterns.interval_std_dev }}</h4>
+            </div>
+          </div>
+          
+          {% if report.analyses.echo_patterns.ai_pattern_insight %}
+            <div class="ai-insight mt-3">
+              <h6>
+                <i class="fas fa-robot me-2"></i> Analyse IA
+              </h6>
+              <p class="mb-0">{{ report.analyses.echo_patterns.ai_pattern_insight }}</p>
+            </div>
+          {% endif %}
+          
+          {% if report.analyses.echo_patterns.ai_regularity_insight %}
+            <div class="ai-insight mt-3">
+              <h6>
+                <i class="fas fa-lightbulb me-2"></i> Insight IA
+              </h6>
+              <p class="mb-0">{{ report.analyses.echo_patterns.ai_regularity_insight }}</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col">
+      <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-file-alt me-2"></i> Rapport JSON brut
+          </h5>
+        </div>
+        <div class="card-body">
+          <pre class="bg-light p-3 rounded"><code>{{ report | tojson(indent=2) }}</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

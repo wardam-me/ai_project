@@ -113,6 +113,14 @@ task = "shell.exec"
 args = "python main.py"
 waitForPort = 5001
 
+[[workflows.workflow]]
+name = "Test Echo Analyzer"
+author = 39699562
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python test_echo_analyzer.py"
+
 [[ports]]
 localPort = 5000
 externalPort = 80

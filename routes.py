@@ -1162,3 +1162,176 @@ def register_routes(app):
     
     # Retourner l'application configurée
     return app
+
+
+# ======================================================
+# Routes pour l'analyseur de données Echo
+# ======================================================
+
+@app.route('/echo-analyzer')
+@login_required
+def echo_analyzer_dashboard():
+    """Affiche le tableau de bord de l'analyseur de données d'écho"""
+    try:
+        from echo_data_analyzer import EchoDataAnalyzer
+        
+        analyzer = EchoDataAnalyzer()
+        reports_dir = analyzer.results_dir
+        
+        # Lister les rapports disponibles
+        reports = []
+        if os.path.exists(reports_dir):
+            for filename in os.listdir(reports_dir):
+                if filename.startswith('echo_analysis_') and filename.endswith('.json'):
+                    file_path = os.path.join(reports_dir, filename)
+                    with open(file_path, 'r') as f:
+                        try:
+                            data = json.load(f)
+                            reports.append({
+                                'filename': filename,
+                                'timestamp': data.get('timestamp', ''),
+                                'data_points': data.get('data_points', 0),
+                                'health_score': data.get('network_health', {}).get('score', 0),
+                                'health_level': data.get('network_health', {}).get('level', '')
+                            })
+                        except json.JSONDecodeError:
+                            continue
+        
+        # Trier par date (plus récent en premier)
+        reports.sort(key=lambda x: x['timestamp'], reverse=True)
+        
+        return render_template('echo_analyzer.html', 
+                            reports=reports,
+                            active_page='echo-analyzer')
+    except ImportError:
+        flash("Le module d'analyseur de données d'écho n'est pas disponible", "warning")
+        return redirect(url_for('index'))
+
+@app.route('/echo-analyzer/upload', methods=['POST'])
+@login_required
+def echo_analyzer_upload():
+    """Traite le téléchargement d'un fichier de données d'écho"""
+    try:
+        from echo_data_analyzer import EchoDataAnalyzer
+        
+        file = request.files.get('echo_data_file')
+        if not file:
+            flash("Aucun fichier fourni", "danger")
+            return redirect(url_for('echo_analyzer_dashboard'))
+            
+        if not file.filename.endswith('.json'):
+            flash("Seuls les fichiers JSON sont acceptés", "danger")
+            return redirect(url_for('echo_analyzer_dashboard'))
+        
+        # Initialiser l'analyseur
+        analyzer = EchoDataAnalyzer()
+        
+        # Sauvegarder le fichier
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(analyzer.data_dir, filename)
+        file.save(file_path)
+        
+        # Analyser les données
+        results = analyzer.perform_full_analysis(filename)
+        
+        if "error" in results:
+            flash(f"Erreur lors de l'analyse: {results['error']}", "danger")
+            return redirect(url_for('echo_analyzer_dashboard'))
+        
+        flash(f"Analyse terminée avec succès! Score de santé réseau: {results['network_health']['score']}/100", "success")
+        return redirect(url_for('echo_analyzer_view_report', filename=analyzer.last_analysis))
+        
+    except ImportError:
+        flash("Le module d'analyseur de données d'écho n'est pas disponible", "warning")
+        return redirect(url_for('index'))
+    except Exception as e:
+        flash(f"Erreur lors du traitement du fichier: {str(e)}", "danger")
+        return redirect(url_for('echo_analyzer_dashboard'))
+
+@app.route('/echo-analyzer/generate-test', methods=['POST'])
+@login_required
+def echo_analyzer_generate_test():
+    """Génère des données de test pour l'analyseur d'écho"""
+    try:
+        from echo_data_analyzer import EchoDataAnalyzer
+        
+        entries = request.form.get('entries', 100, type=int)
+        with_anomalies = request.form.get('with_anomalies') == 'on'
+        
+        # Initialiser l'analyseur
+        analyzer = EchoDataAnalyzer()
+        
+        # Générer les données de test
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"test_echo_data_{timestamp}.json"
+        
+        success = analyzer.generate_test_data(filename, entries, with_anomalies)
+        
+        if not success:
+            flash("Erreur lors de la génération des données de test", "danger")
+            return redirect(url_for('echo_analyzer_dashboard'))
+        
+        # Analyser les données
+        results = analyzer.perform_full_analysis(filename)
+        
+        flash(f"Données de test générées et analysées! Score de santé réseau: {results['network_health']['score']}/100", "success")
+        return redirect(url_for('echo_analyzer_view_report', filename=analyzer.last_analysis))
+        
+    except ImportError:
+        flash("Le module d'analyseur de données d'écho n'est pas disponible", "warning")
+        return redirect(url_for('index'))
+    except Exception as e:
+        flash(f"Erreur lors de la génération des données de test: {str(e)}", "danger")
+        return redirect(url_for('echo_analyzer_dashboard'))
+
+@app.route('/echo-analyzer/view/<filename>')
+@login_required
+def echo_analyzer_view_report(filename):
+    """Affiche un rapport d'analyse d'écho spécifique"""
+    try:
+        from echo_data_analyzer import EchoDataAnalyzer
+        
+        analyzer = EchoDataAnalyzer()
+        file_path = os.path.join(analyzer.results_dir, filename)
+        
+        if not os.path.exists(file_path):
+            flash(f"Rapport introuvable: {filename}", "danger")
+            return redirect(url_for('echo_analyzer_dashboard'))
+        
+        with open(file_path, 'r') as f:
+            report = json.load(f)
+        
+        return render_template('echo_report.html', 
+                            report=report,
+                            filename=filename,
+                            active_page='echo-analyzer')
+    except ImportError:
+        flash("Le module d'analyseur de données d'écho n'est pas disponible", "warning")
+        return redirect(url_for('index'))
+    except Exception as e:
+        flash(f"Erreur lors de l'affichage du rapport: {str(e)}", "danger")
+        return redirect(url_for('echo_analyzer_dashboard'))
+
+@app.route('/echo-analyzer/delete/<filename>', methods=['POST'])
+@login_required
+def echo_analyzer_delete_report(filename):
+    """Supprime un rapport d'analyse d'écho"""
+    try:
+        from echo_data_analyzer import EchoDataAnalyzer
+        
+        analyzer = EchoDataAnalyzer()
+        file_path = os.path.join(analyzer.results_dir, filename)
+        
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            flash(f"Rapport supprimé: {filename}", "success")
+        else:
+            flash(f"Rapport introuvable: {filename}", "warning")
+        
+        return redirect(url_for('echo_analyzer_dashboard'))
+    except ImportError:
+        flash("Le module d'analyseur de données d'écho n'est pas disponible", "warning")
+        return redirect(url_for('index'))
+    except Exception as e:
+        flash(f"Erreur lors de la suppression du rapport: {str(e)}", "danger")
+        return redirect(url_for('echo_analyzer_dashboard'))

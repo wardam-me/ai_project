@@ -28,6 +28,13 @@ def create_directories():
         'static/templates', # Dossier pour les templates d'infographie
         'templates',
         'templates/admin',  # Dossier pour les templates d'administration
+
+    # Répertoires pour l'analyseur de données echo
+    os.makedirs("instance/echo_data", exist_ok=True)
+    os.makedirs("instance/echo_reports", exist_ok=True)
+    logger.info("Répertoire créé ou déjà existant: instance/echo_data")
+    logger.info("Répertoire créé ou déjà existant: instance/echo_reports")
+
         'config'
     ]
     
